@@ -31,18 +31,12 @@ body:
     validations:
       required: true
 
-  - type: textarea
-    id: bug-context
-    attributes:
-      label: Additional context
-      description: Add any other context you can provide about the problem here.
-
   - type: markdown
     attributes:
       value: |
         ----
 
-        # Details of your environment
+        # Additional Context
 
   - type: input
     id: operating-system
@@ -59,3 +53,9 @@ body:
       placeholder: "e.g. Chrome 129.0.6668.58, Safari 18.0"
     validations:
       required: true
+
+  - type: textarea
+    id: bug-context
+    attributes:
+      label: Anything else?
+      description: Add any other context you can provide about the problem here.
