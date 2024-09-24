@@ -10,6 +10,13 @@ body:
 
         If you feel an open-ended discussion with the Orcfax team and community would be more suitable to forming the right details for your feature request, you can post in our [Discord Suggestions Forum](https://discord.com/channels/918870284331802674/1163402021957804042) instead.
 
+  - type: markdown
+    attributes:
+      value: |
+        ----
+
+        # Feature Description
+
   - type: textarea
     attributes:
       label: What problem are you trying to solve?

@@ -3,6 +3,13 @@ description: "Report a bug or issue with the Orcfax Explorer"
 title: "Bug: "
 labels: ["bug-report"]
 body:
+  - type: markdown
+    attributes:
+      value: |
+        ----
+
+        # Bug Description
+
   - type: textarea
     id: bug-steps
     attributes:
