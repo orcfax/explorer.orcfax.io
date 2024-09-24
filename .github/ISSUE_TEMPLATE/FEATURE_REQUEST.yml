@@ -1,0 +1,32 @@
+name: "🚀 Feature Request"
+description: "I have a specific suggestion for the Orcfax Explorer!"
+title: "Feature: "
+labels: ["feature-request"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        **Thanks for taking the time to suggest a new feature!**
+
+        If you feel an open-ended discussion with the Orcfax team and community would be more suitable to forming the right details for your feature request, you can post in our [Discord Suggestions Forum](https://discord.com/channels/918870284331802674/1163402021957804042) instead.
+
+  - type: textarea
+    attributes:
+      label: What problem are you trying to solve?
+      description: A concise description of what the problem is.
+      placeholder: "e.g. I want to …"
+    validations:
+      required: true
+
+  - type: textarea
+    attributes:
+      label: "Describe the solution you’d like"
+    validations:
+      required: true
+
+  - type: textarea
+    attributes:
+      label: "Describe any alternatives you’ve considered"
+      description: |
+        Can the Orcfax Explorer already do this, but in a less convenient way?
+        Can you do this using other explorers or tools?
