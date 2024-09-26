@@ -1,5 +1,5 @@
 <script context="module" lang="ts">
-	import { ArrowLeft, Folder, FolderOpen } from 'lucide-svelte';
+	import { ArrowRightFromLine, Folder, FolderOpen } from 'lucide-svelte';
 
 	type Icon = 'folder';
 
@@ -12,21 +12,36 @@
 	export const icons = {
 		folder: Folder,
 		folderOpen: FolderOpen,
-		highlight: ArrowLeft
+		highlight: ArrowRightFromLine
 	};
 </script>
 
 <script lang="ts">
 	import { melt, type TreeView } from '@melt-ui/svelte';
-	import { getContext } from 'svelte';
+	import { afterUpdate, getContext } from 'svelte';
 
 	export let treeItems: TreeItem[];
 	export let level = 1;
 
 	const {
 		elements: { item, group },
-		helpers: { isExpanded }
+		helpers: { isExpanded, isSelected },
+		states: { selectedItem }
 	} = getContext<TreeView>('tree');
+
+	const refs: HTMLElement[] = [];
+	let wasDefaultSet = false;
+
+	// Set the first item as selected by default.
+	afterUpdate(() => {
+		if (wasDefaultSet) return;
+
+		const firstFile = refs.find((ref) => ref.getAttribute('data-id') === `bag-info.txt-0`);
+		if (firstFile) {
+			selectedItem.set(firstFile);
+		}
+		wasDefaultSet = true;
+	});
 </script>
 
 {#each treeItems as { title, children, icon }, i}
@@ -36,12 +51,13 @@
 	<li class={level !== 1 ? 'pl-4' : ''}>
 		<button
 			class="flex items-center gap-1 rounded-md p-1 focus:bg-secondary"
+			class:bg-secondary={$isSelected(itemId)}
 			use:melt={$item({
 				id: itemId,
 				hasChildren
 			})}
+			bind:this={refs[i]}
 		>
-			<!-- Add icon. -->
 			{#if icon === 'folder' && hasChildren}
 				<svelte:component
 					this={icons[$isExpanded(itemId) ? 'folderOpen' : 'folder']}
@@ -51,10 +67,9 @@
 
 			<span class="select-none overflow-ellipsis whitespace-nowrap">{title}</span>
 
-			<!-- Selected icon. -->
-			<!-- {#if $isSelected(itemId)}
-				<svelte:component this={icons['highlight']} class="h-4 w-4" />
-			{/if} -->
+			{#if $isSelected(itemId)}
+				<svelte:component this={icons['highlight']} class="h-5 w-5 stroke-primary" />
+			{/if}
 		</button>
 
 		{#if children}

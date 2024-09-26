@@ -27,14 +27,18 @@
 			}
 		});
 
-		expanded.set([`${treeItems[0].title}-0`]);
-
 		return treeItems;
 	}
 
 	$: treeItems = convertNodesIntoTreeItems(directoryTree);
 
 	let expanded = writable<string[]>([]);
+
+	// Expand both folders by default. Not sure how to do this in a more idomatic way.
+	$: expanded.set([
+		`${treeItems[0].title}-0`,
+		`${treeItems[0].children ? treeItems[0].children[2].title + '-2' : ''}`
+	]);
 
 	const ctx = createTreeView({
 		expanded
