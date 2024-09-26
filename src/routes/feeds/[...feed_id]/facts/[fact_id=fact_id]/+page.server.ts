@@ -4,7 +4,7 @@ import * as tar from 'tar-stream';
 import { pipeline } from 'stream';
 import { Readable } from 'stream';
 import type { Archive, ArchivedFile, DirectoryNode, FactSourceMessage } from '$lib/types';
-import { getFactByURN, getFeeds } from '$lib/server/db';
+import { getFactByURN, getFeeds, getSources } from '$lib/server/db';
 import {
 	DBFactStatementSchema,
 	type DBFactStatement,
@@ -22,17 +22,18 @@ export const load: ServerLoad = async ({ parent, params }) => {
 		feed,
 		selectedFact,
 		feeds: getFeeds(network),
-		archive: getArchive(selectedFact)
+		archive: getArchive(network, selectedFact)
 	};
 };
 
-async function getArchive(fact: DBFactStatement): Promise<Archive> {
+async function getArchive(network: Network, fact: DBFactStatement): Promise<Archive> {
 	try {
 		if (!fact.storage_urn)
 			return {
 				fact,
 				directoryTree: null,
-				files: null
+				files: null,
+				sources: null
 			};
 
 		const archivedBagResponse = await fetch(
@@ -57,11 +58,24 @@ async function getArchive(fact: DBFactStatement): Promise<Archive> {
 
 		const directoryTree = await buildFileExplorer(archivedBagTarball);
 		const files = await getArchivedFilesFromTarball(archivedBagTarball);
+		const sources = await getFactSourcesFromFileNames(network, files);
 
-		return { fact, directoryTree, files };
+		return { fact, directoryTree, files, sources };
 	} catch (e) {
 		return error(404, 'No Fact Statement found with that ID');
 	}
+}
+
+async function getFactSourcesFromFileNames(network: Network, files: ArchivedFile[]) {
+	const allSources = await getSources(network);
+	const fileNames = files.map((file) => file.fileName);
+
+	// Assuming source message files in the archive will always contain the name of the source
+	const sources = allSources.filter((source) =>
+		fileNames.some((name) => name.includes(source.name))
+	);
+
+	return sources;
 }
 
 async function getSelectedFact(

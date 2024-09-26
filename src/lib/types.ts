@@ -6,6 +6,7 @@ export type Environment = z.infer<typeof EnvironmentSchema>;
 export type DBFactStatement = z.infer<typeof DBFactStatementSchema>;
 export type DBFeed = z.infer<typeof DBFeedSchema>;
 export type Feed = z.infer<typeof FeedSchema>;
+export type Source = z.infer<typeof SourceSchema>;
 
 export const AssetSchema = z.object({
 	ticker: z.string(),
@@ -280,6 +281,7 @@ export interface Archive {
 	fact: DBFactStatement;
 	directoryTree: DirectoryNode[] | null;
 	files: ArchivedFile[] | null;
+	sources: Source[] | null;
 }
 
 export interface DirectoryNode {
@@ -307,3 +309,13 @@ export interface FactSourceMessage {
 		text: string | { request_url: string; response?: string | object };
 	};
 }
+
+export const SourceSchema = z.object({
+	id: z.string(),
+	name: z.string(),
+	description: z.string(),
+	type: z.enum(['CEX API', 'DEX LP']),
+	website: z.string(),
+	image_path: z.string(),
+	background_color: z.string()
+});

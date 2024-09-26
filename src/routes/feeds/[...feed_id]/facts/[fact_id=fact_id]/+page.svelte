@@ -17,6 +17,7 @@
 	import ArchiveExplorer from '$lib/components/ArchiveExplorer.svelte';
 	import { ArrowLeft } from 'lucide-svelte';
 	import FeedChart from '../../components/FeedChart.svelte';
+	import CollectionDetails from '$lib/components/CollectionDetails.svelte';
 
 	export let data;
 
@@ -25,6 +26,7 @@
 
 	$: feed = formatFeedForDisplay(data.feed);
 	$: chartFacts = data.chartFacts;
+	$: archive = data.archive;
 
 	async function handleSelectedFactChange(newFactStatement: FactStatement) {
 		const params = new URLSearchParams($page.url.searchParams);
@@ -67,6 +69,9 @@
 			>
 				<FactSummary {feed} fact={selectedFact} />
 				<div class="flex flex-col space-y-8">
+					{#await archive then archive}
+						<CollectionDetails {archive} />
+					{/await}
 					<PublicationDetails fact={selectedFact} />
 					<div class="hidden lg:block">
 						<ArchiveDetails fact={selectedFact} />

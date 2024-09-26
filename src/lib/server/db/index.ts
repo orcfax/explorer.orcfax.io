@@ -12,7 +12,9 @@ import {
 	type DBFeedWithData,
 	PolicySchema,
 	NetworkSchema,
-	type Network
+	type Network,
+	type Source,
+	SourceSchema
 } from '$lib/types';
 import { format, sub } from 'date-fns';
 import { env } from '$env/dynamic/public';
@@ -66,6 +68,12 @@ export async function getFactsPage(
 	const facts = validateAndParseFactStatements(items);
 
 	return { facts, totalPages, totalFacts: totalItems };
+}
+
+export async function getSources(network: Network): Promise<Source[]> {
+	// TODO: Hook up network to sources in db and filter
+	const sources = await db.collection('sources').getFullList();
+	return z.array(SourceSchema).parse(sources);
 }
 
 export async function getFeeds(network: Network): Promise<DBFeedWithData[]> {

@@ -2,7 +2,9 @@
 	import { formatFeedForDisplay } from '$lib/client/helpers';
 	import FactTable from '$lib/components/FactTable.svelte';
 	import FeedsList from '$lib/components/FeedsList.svelte';
+	import Loading from '$lib/components/Loading.svelte';
 	import NetworkSummary from '$lib/components/NetworkSummary.svelte';
+	import SourceTable from '$lib/components/SourceTable.svelte';
 
 	export let data;
 
@@ -23,5 +25,16 @@
 				<FactTable />
 			</div>
 		</section>
+
+		{#await data.sources}
+			<Loading />
+		{:then sources}
+			<section id={`allSources`} class="hidden sm:flex flex-col mt-14">
+				<h1 class="font-bold text-3xl pb-4">All Sources</h1>
+				<div class="section-container p-7">
+					<SourceTable {sources} />
+				</div>
+			</section>
+		{/await}
 	</div>
 </main>
