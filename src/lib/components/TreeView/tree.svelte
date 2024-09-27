@@ -19,13 +19,14 @@
 <script lang="ts">
 	import { melt, type TreeView } from '@melt-ui/svelte';
 	import { afterUpdate, getContext } from 'svelte';
+	import { selectedItemStore } from '$lib/stores/archive';
 
 	export let treeItems: TreeItem[];
 	export let level = 1;
 
 	const {
 		elements: { item, group },
-		helpers: { isExpanded, isSelected },
+		helpers: { isExpanded },
 		states: { selectedItem }
 	} = getContext<TreeView>('tree');
 
@@ -50,8 +51,8 @@
 
 	<li class={level !== 1 ? 'pl-4' : ''}>
 		<button
-			class="flex items-center gap-1 rounded-md p-1 focus:bg-secondary"
-			class:bg-secondary={$isSelected(itemId)}
+			class="flex items-center gap-1 rounded-md p-1 px-2 focus:ring-2 focus:ring-ring focus:outline-none"
+			class:bg-input={$selectedItemStore && itemId.includes($selectedItemStore)}
 			use:melt={$item({
 				id: itemId,
 				hasChildren
@@ -65,11 +66,11 @@
 				/>
 			{/if}
 
-			<span class="select-none overflow-ellipsis whitespace-nowrap">{title}</span>
-
-			{#if $isSelected(itemId)}
+			<!-- {#if $selectedItemStore && itemId.includes($selectedItemStore)}
 				<svelte:component this={icons['highlight']} class="h-5 w-5 stroke-primary" />
-			{/if}
+			{/if} -->
+
+			<span class="select-none overflow-ellipsis whitespace-nowrap">{title}</span>
 		</button>
 
 		{#if children}

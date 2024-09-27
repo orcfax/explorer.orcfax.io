@@ -52,6 +52,8 @@
 
 	selectedItem.subscribe((value) => {
 		if (!value) selectedItemStore.set(null);
+		// If the item is a folder, do not select it
+		else if (value.hasAttribute('aria-expanded')) return;
 		else {
 			selectedItemStore.set(value.getAttribute('data-id'));
 		}
