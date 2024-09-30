@@ -60,9 +60,9 @@
 							<DataSourceIcon />
 						</Card.Header>
 						<Card.Content>
-							<div class="text-2xl font-bold">10</div>
-							<p class="text-xs mt-1">4 DEX LPs</p>
-							<p class="text-xs">6 CEX APIs</p>
+							<div class="text-2xl font-bold">14</div>
+							<p class="text-xs mt-1">6 DEX LPs</p>
+							<p class="text-xs">8 CEX APIs</p>
 						</Card.Content>
 					</Card.Root>
 				</li>

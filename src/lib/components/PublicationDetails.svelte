@@ -13,7 +13,7 @@
 
 <svelte:window bind:innerWidth bind:innerHeight />
 
-<section class="w-full md:w-max flex flex-col">
+<section class="w-fit md:w-full flex flex-col">
 	<h3 class="font-bold text-2xl pb-4">Publication Details</h3>
 	<div class="p-6 section-container bg-card text-card-foreground">
 		<div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-4">

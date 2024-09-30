@@ -16,7 +16,7 @@
 <section class="w-full md:w-fit flex flex-col self-start">
 	<h3 class="font-bold text-2xl pb-4">Archival Details</h3>
 	<div class="p-6 section-container bg-card text-card-foreground">
-		<div class="flex flex-wrap gap-4 w-fit">
+		<div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
 			<FactCardField
 				name="Arweave Tx ID"
 				value={fact.storage_urn}

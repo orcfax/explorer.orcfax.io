@@ -18,6 +18,8 @@
 	import { ArrowLeft } from 'lucide-svelte';
 	import FeedChart from '../../components/FeedChart.svelte';
 	import CollectionDetails from '$lib/components/CollectionDetails.svelte';
+	import CalculationDetails from '$lib/components/CalculationDetails.svelte';
+	import ValidationDetails from '$lib/components/ValidationDetails.svelte';
 
 	export let data;
 
@@ -38,7 +40,9 @@
 	}
 </script>
 
-<div class="flex flex-col justify-center items-center w-full px-4 md:px-10 space-y-14">
+<div
+	class="flex flex-col justify-center items-center w-full max-w-screen-xl mx-auto px-4 md:px-10 space-y-14"
+>
 	<div class="flex flex-col justify-center items-center w-full">
 		<a
 			href="/"
@@ -65,20 +69,27 @@
 		</h2>
 		<div class="section-container p-7 space-y-10 flex flex-col items-center w-full">
 			<div
-				class="flex flex-col w-full items-center space-y-8 lg:space-x-8 md:flex-row md:justify-around"
+				class="flex flex-col w-full items-start space-y-8 lg:space-x-8 lg:flex-row md:justify-around"
 			>
-				<FactSummary {feed} fact={selectedFact} />
+				<div class="lg:sticky lg:top-28">
+					<FactSummary {feed} fact={selectedFact} />
+				</div>
 				<div class="flex flex-col space-y-8">
-					{#await archive then archive}
+					<div class="flex flex-col space-y-8 xl:flex-row xl:space-x-8 xl:space-y-0">
 						<CollectionDetails {archive} />
-					{/await}
+						<div class="flex flex-col space-y-8">
+							<CalculationDetails {archive} />
+							<ValidationDetails {archive} />
+						</div>
+					</div>
+
 					<PublicationDetails fact={selectedFact} />
 					<div class="hidden lg:block">
 						<ArchiveDetails fact={selectedFact} />
 					</div>
 				</div>
 			</div>
-			<div class="block lg:hidden">
+			<div class="block lg:hidden self-start">
 				<ArchiveDetails fact={selectedFact} />
 			</div>
 

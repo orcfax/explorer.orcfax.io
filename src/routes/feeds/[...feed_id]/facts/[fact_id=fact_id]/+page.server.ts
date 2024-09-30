@@ -6,12 +6,16 @@ import { Readable } from 'stream';
 import type { Archive, ArchivedFile, DirectoryNode, FactSourceMessage } from '$lib/types';
 import { getFactByURN, getFeeds, getSources } from '$lib/server/db';
 import {
+	CEXValidationFileSchema,
 	DBFactStatementSchema,
+	DEXValidationFileSchema,
+	SourceSchema,
 	type DBFactStatement,
 	type DBFeedWithData,
 	type Network
 } from '$lib/types';
 import { error, type ServerLoad } from '@sveltejs/kit';
+import { z } from 'zod';
 
 export const load: ServerLoad = async ({ parent, params }) => {
 	const { feed, network } = await parent();
@@ -33,7 +37,8 @@ async function getArchive(network: Network, fact: DBFactStatement): Promise<Arch
 				fact,
 				directoryTree: null,
 				files: null,
-				sources: null
+				sources: null,
+				validationDetails: null
 			};
 
 		const archivedBagResponse = await fetch(
@@ -58,24 +63,102 @@ async function getArchive(network: Network, fact: DBFactStatement): Promise<Arch
 
 		const directoryTree = await buildFileExplorer(archivedBagTarball);
 		const files = await getArchivedFilesFromTarball(archivedBagTarball);
-		const sources = await getFactSourcesFromFileNames(network, files);
+		const { sources, validationDetails } = await getDetailsFromArchiveFiles(network, files);
 
-		return { fact, directoryTree, files, sources };
+		return { fact, directoryTree, files, sources, validationDetails };
 	} catch (e) {
 		return error(404, 'No Fact Statement found with that ID');
 	}
 }
 
-async function getFactSourcesFromFileNames(network: Network, files: ArchivedFile[]) {
-	const allSources = await getSources(network);
-	const fileNames = files.map((file) => file.fileName);
+async function getDetailsFromArchiveFiles(
+	network: Network,
+	files: ArchivedFile[]
+): Promise<Pick<Archive, 'sources' | 'validationDetails'>> {
+	try {
+		const allSources = await getSources(network);
+		const allFileNames = files.map((file) => file.fileName);
+		const messageFileNames = allFileNames
+			.filter((name) => name.includes('message-'))
+			.map((name) => name.toLowerCase());
 
-	// Assuming source message files in the archive will always contain the name of the source
-	const sources = allSources.filter((source) =>
-		fileNames.some((name) => name.includes(source.name))
-	);
+		// Map file names to sources with exact name matching
+		const sources = messageFileNames.map((name) => {
+			const words = name.split(/[^a-zA-Z0-9]+/);
+			const source = allSources.find((source) => {
+				return words.includes(source.name.toLowerCase());
+			});
+			// TODO: This isn't being caught properly
+			if (!source) throw new Error(`Source not found in db: ${name}`);
+			return source;
+		});
 
-	return sources;
+		const validationFile = files.find((file) => file.fileName.includes('validation-'));
+		if (!validationFile) {
+			console.log('Validation file not found in archive');
+			throw new Error('Validation file not found in archive');
+		}
+
+		const isCEX = sources.length > 0 && sources[0].type === 'CEX API';
+		const isDEX = sources.length > 0 && sources[0].type === 'DEX LP';
+
+		if (isCEX) {
+			console.log('test');
+			const contents = CEXValidationFileSchema.parse(validationFile.content);
+			console.log('test 2');
+			const collectedDataPoints =
+				contents.additionalType[1].about.variableMeasured.valueReference || [];
+			console.log('test 3');
+			const res = sources.map((source, i) => ({
+				...source,
+				assetPairValue: collectedDataPoints[i]
+			}));
+			const collectionTimestamp = contents.additionalType[0].recordedIn.hasPart[0].text;
+			const collectorNodeID = contents.isBasedOn.identifier;
+			const contentSignature = contents.additionalType[0].recordedIn.description.sha256;
+			const calculationMethod = contents.additionalType[1].description;
+			const validationDate = contents.additionalType[0].startDate;
+			return {
+				sources: z.array(SourceSchema).parse(res),
+				validationDetails: {
+					collectionTimestamp,
+					collectorNodeID,
+					contentSignature,
+					calculationMethod,
+					validationDate
+				}
+			};
+		} else if (isDEX) {
+			const contents = DEXValidationFileSchema.parse(validationFile.content);
+			const collectedBaseDataPoints = contents.additionalType[1].about.valueReference[0] || [];
+			const collectedQuoteDataPoints = contents.additionalType[1].about.valueReference[1] || [];
+			const res = sources.map((source, i) => ({
+				...source,
+				baseAssetValue: collectedBaseDataPoints[i],
+				quoteAssetValue: collectedQuoteDataPoints[i]
+			}));
+			const collectionTimestamp = contents.additionalType[0].recordedIn.hasPart[0].text;
+			const collectorNodeID = contents.isBasedOn.identifier;
+			const contentSignature = contents.additionalType[0].recordedIn.description.sha256;
+			const calculationMethod = contents.additionalType[1].description;
+			const validationDate = contents.additionalType[0].startDate;
+			return {
+				sources: z.array(SourceSchema).parse(res),
+				validationDetails: {
+					collectionTimestamp,
+					collectorNodeID,
+					contentSignature,
+					calculationMethod,
+					validationDate
+				}
+			};
+		} else {
+			throw new Error('Unknown source type');
+		}
+	} catch (e) {
+		console.error('error', JSON.stringify(e, null, 2));
+		return { sources: [], validationDetails: null };
+	}
 }
 
 async function getSelectedFact(
