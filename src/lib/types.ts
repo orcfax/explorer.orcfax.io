@@ -6,6 +6,7 @@ export type Environment = z.infer<typeof EnvironmentSchema>;
 export type DBFactStatement = z.infer<typeof DBFactStatementSchema>;
 export type DBFeed = z.infer<typeof DBFeedSchema>;
 export type Feed = z.infer<typeof FeedSchema>;
+export type Source = z.infer<typeof SourceSchema>;
 
 export const AssetSchema = z.object({
 	ticker: z.string(),
@@ -276,10 +277,21 @@ export interface ArchiveExplorerResponse {
 	files: ArchivedFile[] | null;
 }
 
+export interface ArchiveDetails {
+	sources: Source[];
+	collectionTimestamp: string;
+	collectorNodeID: string;
+	contentSignature: string;
+	calculationMethod: string;
+	validationDate: string;
+	sourceType: string;
+}
+
 export interface Archive {
 	fact: DBFactStatement;
 	directoryTree: DirectoryNode[] | null;
 	files: ArchivedFile[] | null;
+	details: ArchiveDetails | null;
 }
 
 export interface DirectoryNode {
@@ -307,3 +319,131 @@ export interface FactSourceMessage {
 		text: string | { request_url: string; response?: string | object };
 	};
 }
+
+export const SourceSchema = z.object({
+	id: z.string(),
+	name: z.string(),
+	description: z.string(),
+	type: z.enum(['CEX API', 'DEX LP']),
+	website: z.string(),
+	image_path: z.string(),
+	background_color: z.string(),
+	// For CEX sources, assetPairValue is used. For DEX sources base and quote will be used.
+	baseAssetValue: z.number().optional(),
+	quoteAssetValue: z.number().optional(),
+	assetPairValue: z.number().optional()
+});
+
+export const CollectionEventSchema = z.object({
+	'@type': z.literal('Event'),
+	description: z.string(),
+	startDate: z.string(),
+	recordedIn: z.object({
+		'@type': z.literal('CreativeWork'),
+		description: z.object({
+			'@type': z.literal('TextObject'),
+			comment: z.string(),
+			sha256: z.string()
+		}),
+		hasPart: z.tuple([
+			z.object({
+				'@type': z.literal('CreativeWork'),
+				description: z.literal('collecting timestamp'),
+				text: z.string()
+			}),
+			z.object({
+				'@type': z.literal('CreativeWork'),
+				description: z.string().startsWith('data points for'),
+				text: z.array(z.string())
+			}),
+			z.object({
+				'@type': z.literal('CreativeWork'),
+				description: z.literal('node identifier (uuid)'),
+				text: z.string()
+			})
+		])
+	})
+});
+
+export const ValidationFileSchema = z.object({
+	'@context': z.literal('https://schema.org'),
+	type: z.literal('MediaObject'),
+	identifier: z.string(),
+	isBasedOn: z.object({
+		'@type': z.literal('MediaObject'),
+		name: z.string(),
+		identifier: z.string()
+	}),
+	contributor: z.object({
+		'@type': z.literal('Organization'),
+		name: z.string(),
+		locationCreated: z.object({
+			address: z.object({
+				'@type': z.literal('PostalAddress'),
+				addressLocality: z.string(),
+				addressRegion: z.string(),
+				geo: z.string()
+			})
+		})
+	}),
+	additionalType: z.tuple([CollectionEventSchema, z.unknown()])
+});
+export type ValidationFile = z.infer<typeof ValidationFileSchema>;
+
+export const DEXValidationFileSchema = ValidationFileSchema.extend({
+	additionalType: z.tuple([
+		CollectionEventSchema,
+		z.object({
+			'@type': z.literal('Event'),
+			description: z.string().startsWith('average price is determined by dividing total volume of'),
+			startDate: z.string(),
+			about: z.object({
+				'@type': z.literal('Observation'),
+				measurementMethod: z.tuple([
+					z.string().startsWith('volume/liquidity average sum(valueReference[1])')
+				]),
+				value: z.coerce.number(),
+				valueReference: z.array(
+					z
+						.string()
+						.transform((str) => JSON.parse(str))
+						.pipe(z.array(z.number()))
+				)
+			})
+		})
+	])
+});
+
+export type DEXValidationFile = z.infer<typeof DEXValidationFileSchema>;
+
+export const CEXValidationFileSchema = ValidationFileSchema.extend({
+	additionalType: z.tuple([
+		CollectionEventSchema,
+		z.object({
+			'@type': z.literal('Event'),
+			description: z.literal('selection of median value from collected node data'),
+			startDate: z.string(),
+			about: z.object({
+				'@type': z.literal('StatisticalVariable'),
+				measurementMethod: z.literal(
+					'median calculation of a minimum of three data sources from the selected collector node'
+				),
+				measurementTechnique: z.array(
+					z.object({
+						'@type': z.literal('PropertyValue'),
+						name: z.string(),
+						value: z.string()
+					})
+				),
+				variableMeasured: z.object({
+					'@type': z.literal('Observation'),
+					measurementMethod: z.literal('median value'),
+					value: z.coerce.number(),
+					valueReference: z.array(z.coerce.number())
+				})
+			})
+		})
+	])
+});
+
+export type CEXValidationFile = z.infer<typeof CEXValidationFileSchema>;

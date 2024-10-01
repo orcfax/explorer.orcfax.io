@@ -5,10 +5,11 @@
 	import { createTimeSinceStore } from '$lib/stores/time';
 	import type { DBFeedWithData, FactStatement, Feed } from '$lib/types';
 	import * as Tooltip from '$lib/components/ui/tooltip';
-	import { getHeartbeatFromInterval } from '$lib/client/helpers';
+	import { capitalize, getHeartbeatFromInterval } from '$lib/client/helpers';
 	import PriceDifferenceBadges from '$lib/components/PriceDifferenceBadges.svelte';
 	import FormattedCurrencyValue from '$lib/components/FormattedCurrencyValue.svelte';
 	import Skeleton from '$lib/components/ui/skeleton/skeleton.svelte';
+	import { Badge } from '$lib/components/ui/badge/index.js';
 
 	export let feed: Feed;
 	export let feeds: Promise<DBFeedWithData[]>;
@@ -24,7 +25,7 @@
 	class="flex items-start md:items-center w-full gap-4 md:gap-7 section-container border-[3px] rounded-b-none p-4"
 >
 	<div class="flex justify-between w-full">
-		<div class="flex items-center">
+		<div class="flex flex-col sm:flex-row md:items-center">
 			<div class="flex flex-col space-y-2">
 				<div class="flex items-center h-full space-x-2 -ml-1 sm:ml-0">
 					<p class="text-sm flex space-x-1">
@@ -48,21 +49,58 @@
 					<p class="text-red-500">{error.message}</p>
 				{/await}
 			</div>
-			<div class="hidden md:flex mt-6 ml-4">
-				<div class="flex flex-col">
-					<h3 class="font-bold">Type:</h3>
-					<p class="text-sm">{feed.type_description}</p>
+			<div class="flex flex-col md:flex-row mt-3 sm:mt-6 sm:ml-4">
+				<div class="hidden md:flex flex-col space-y-1">
+					<h3 class="hidden md:block font-bold">Type:</h3>
+					<Badge variant="outline" class="flex w-fit">
+						<p class="text-card-foreground text-opacity-70">
+							<span class="inline xl:hidden">{feed.type}</span>
+							<span class="hidden xl:inline">{feed.type_description}</span>
+						</p>
+					</Badge>
 				</div>
-				<Separator.Root class="mx-4 w-[1px] bg-border" orientation="vertical" decorative />
-				<div class="flex flex-col">
-					<h3 class="font-bold">Schedule:</h3>
-					<p class="text-sm">
-						{#if feed.status === 'active'}
-							{`Every ${heartbeat} or ${deviationPercentage} change`}
-						{:else}
-							{`No scheduled publications`}
-						{/if}
-					</p>
+				<Separator.Root
+					class="hidden md:block mx-4 w-[1px] bg-border"
+					orientation="vertical"
+					decorative
+				/>
+				<div class="flex flex-col space-y-1">
+					<h3 class="hidden sm:block font-bold">Schedule:</h3>
+					<Badge variant="outline" class="flex w-fit">
+						<p class="text-card-foreground text-opacity-70">
+							{#if feed.status === 'active'}
+								{`${heartbeat} or ${deviationPercentage} change`}
+							{:else}
+								{`No scheduled publications`}
+							{/if}
+						</p>
+					</Badge>
+				</div>
+				<Separator.Root
+					class="hidden lg:block mx-4 w-[1px] bg-border"
+					orientation="vertical"
+					decorative
+				/>
+				<div class="hidden lg:flex flex-col space-y-1">
+					<h3 class="hidden md:block font-bold">Source:</h3>
+					<Badge variant="outline" class="flex w-fit">
+						<p class="text-card-foreground text-opacity-70">
+							{feed.source_type}
+						</p>
+					</Badge>
+				</div>
+				<Separator.Root
+					class="hidden lg:block mx-4 w-[1px] bg-border"
+					orientation="vertical"
+					decorative
+				/>
+				<div class="hidden lg:flex flex-col space-y-1">
+					<h3 class="hidden md:block font-bold">Funding:</h3>
+					<Badge variant="outline" class="flex w-fit">
+						<p class="text-card-foreground text-opacity-70">
+							{capitalize(feed.funding_type)}
+						</p>
+					</Badge>
 				</div>
 			</div>
 		</div>

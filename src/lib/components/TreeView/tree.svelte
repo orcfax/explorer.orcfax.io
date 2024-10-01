@@ -1,5 +1,5 @@
 <script context="module" lang="ts">
-	import { ArrowLeft, Folder, FolderOpen } from 'lucide-svelte';
+	import { ArrowRightFromLine, Folder, FolderOpen } from 'lucide-svelte';
 
 	type Icon = 'folder';
 
@@ -12,21 +12,37 @@
 	export const icons = {
 		folder: Folder,
 		folderOpen: FolderOpen,
-		highlight: ArrowLeft
+		highlight: ArrowRightFromLine
 	};
 </script>
 
 <script lang="ts">
 	import { melt, type TreeView } from '@melt-ui/svelte';
-	import { getContext } from 'svelte';
+	import { afterUpdate, getContext } from 'svelte';
+	import { selectedItemStore } from '$lib/stores/archive';
 
 	export let treeItems: TreeItem[];
 	export let level = 1;
 
 	const {
 		elements: { item, group },
-		helpers: { isExpanded }
+		helpers: { isExpanded },
+		states: { selectedItem }
 	} = getContext<TreeView>('tree');
+
+	const refs: HTMLElement[] = [];
+	let wasDefaultSet = false;
+
+	// Set the first item as selected by default.
+	afterUpdate(() => {
+		if (wasDefaultSet) return;
+
+		const firstFile = refs.find((ref) => ref.getAttribute('data-id') === `bag-info.txt-0`);
+		if (firstFile) {
+			selectedItem.set(firstFile);
+		}
+		wasDefaultSet = true;
+	});
 </script>
 
 {#each treeItems as { title, children, icon }, i}
@@ -35,13 +51,14 @@
 
 	<li class={level !== 1 ? 'pl-4' : ''}>
 		<button
-			class="flex items-center gap-1 rounded-md p-1 focus:bg-secondary"
+			class="flex items-center gap-1 rounded-md p-1 px-2 focus:ring-2 focus:ring-ring focus:outline-none"
+			class:bg-input={$selectedItemStore && itemId.includes($selectedItemStore)}
 			use:melt={$item({
 				id: itemId,
 				hasChildren
 			})}
+			bind:this={refs[i]}
 		>
-			<!-- Add icon. -->
 			{#if icon === 'folder' && hasChildren}
 				<svelte:component
 					this={icons[$isExpanded(itemId) ? 'folderOpen' : 'folder']}
@@ -49,12 +66,11 @@
 				/>
 			{/if}
 
-			<span class="select-none overflow-ellipsis whitespace-nowrap">{title}</span>
-
-			<!-- Selected icon. -->
-			<!-- {#if $isSelected(itemId)}
-				<svelte:component this={icons['highlight']} class="h-4 w-4" />
+			<!-- {#if $selectedItemStore && itemId.includes($selectedItemStore)}
+				<svelte:component this={icons['highlight']} class="h-5 w-5 stroke-primary" />
 			{/if} -->
+
+			<span class="select-none overflow-ellipsis whitespace-nowrap">{title}</span>
 		</button>
 
 		{#if children}

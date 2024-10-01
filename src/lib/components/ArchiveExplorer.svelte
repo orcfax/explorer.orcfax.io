@@ -41,9 +41,7 @@
 		<div
 			class="flex flex-col justify-center items-center text-center sm:text-start w-full rounded-lg bg-card text-card-foreground border"
 		>
-			<p class="pt-12 px-12 w-fit font-extrabold">
-				This Fact Statement has not been archived on Arweave yet.
-			</p>
+			<h4 class="text-lg pt-12 px-12 w-fit font-extrabold">Archive Unavailable</h4>
 			<p class="pb-12 px-12 w-fit">Please check back or refresh in a few minutes.</p>
 		</div>
 	{/if}

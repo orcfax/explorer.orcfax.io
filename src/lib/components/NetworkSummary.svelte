@@ -60,12 +60,9 @@
 							<DataSourceIcon />
 						</Card.Header>
 						<Card.Content>
-							<div class="text-2xl font-bold">10</div>
-							<!-- <a href="/sources" class="text-xs text-muted-foreground underline mt-1">
-									View sources →
-								</a> -->
-							<p class="text-xs mt-1">5 DEX Smart Contracts</p>
-							<p class="text-xs">5 CEX APIs</p>
+							<div class="text-2xl font-bold">14</div>
+							<p class="text-xs mt-1">6 DEX LPs</p>
+							<p class="text-xs">8 CEX APIs</p>
 						</Card.Content>
 					</Card.Root>
 				</li>

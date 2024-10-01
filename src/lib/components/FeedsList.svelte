@@ -1,21 +1,27 @@
 <script lang="ts">
+	import type { Feed } from '$lib/types';
 	import FeedCard from './FeedCard.svelte';
 	import * as Select from '$lib/components/ui/select';
 	import Input from '$lib/components/ui/input/input.svelte';
 	// import Skeleton from '$lib/components/ui/skeleton/skeleton.svelte';
-	import type { Feed } from '$lib/types';
 
 	export let feeds: Feed[];
 
 	let query = '';
 	const fuzzySearch = (query: string) => new RegExp(query.replace(/[-/\s]/g, '.*'), 'i');
 
-	$: sortFilter = { value: 'updated', label: 'Last Updated' };
+	$: sortBy = { value: 'updated', label: 'Last Updated' };
+	$: sourceType = { value: 'all', label: 'All' };
 
 	$: filteredFeeds = (
-		feeds.filter((feed) => fuzzySearch(query).test(feed.feed_id.replace(/[-/\s]/g, ''))) || []
+		feeds.filter((feed) => {
+			const matchesQuery = fuzzySearch(query).test(feed.feed_id.replace(/[-/\s]/g, ''));
+			const matchesSourceType =
+				sourceType.value === 'all' || feed.source_type === sourceType.value.toUpperCase();
+			return matchesQuery && matchesSourceType;
+		}) || []
 	).sort((a, b) => {
-		if (sortFilter.value === 'updated') {
+		if (sortBy.value === 'updated') {
 			return (
 				new Date(b.latestFact.validation_date).getTime() -
 				new Date(a.latestFact.validation_date).getTime()
@@ -42,15 +48,33 @@
 				{`Showing ${filteredFeeds.length} of ${feeds.length}`}
 			</span>
 		</div>
-		<Select.Root bind:selected={sortFilter}>
-			<Select.Trigger class="w-[180px]">
-				<Select.Value placeholder="Sort By" />
-			</Select.Trigger>
-			<Select.Content>
-				<Select.Item value="updated">Last Updated</Select.Item>
-				<Select.Item value="alpha">Alphabetical</Select.Item>
-			</Select.Content>
-		</Select.Root>
+
+		<div class="flex flex-col -mt-4">
+			<h3 class="text-muted-foreground text-xs mb-1">Sort By:</h3>
+			<Select.Root bind:selected={sortBy}>
+				<Select.Trigger class="w-[150px]">
+					<Select.Value placeholder="Sort By" />
+				</Select.Trigger>
+				<Select.Content>
+					<Select.Item value="updated">Last Updated</Select.Item>
+					<Select.Item value="alpha">Alphabetical</Select.Item>
+				</Select.Content>
+			</Select.Root>
+		</div>
+
+		<div class="flex flex-col -mt-4">
+			<h3 class="text-muted-foreground text-xs mb-1">Source Type:</h3>
+			<Select.Root bind:selected={sourceType}>
+				<Select.Trigger class="w-[120px]">
+					<Select.Value placeholder="Source Type" />
+				</Select.Trigger>
+				<Select.Content>
+					<Select.Item value="all">All</Select.Item>
+					<Select.Item value="cex">CEX APIs</Select.Item>
+					<Select.Item value="dex">DEX LPs</Select.Item>
+				</Select.Content>
+			</Select.Root>
+		</div>
 	</div>
 
 	{#if filteredFeeds.length > 0}

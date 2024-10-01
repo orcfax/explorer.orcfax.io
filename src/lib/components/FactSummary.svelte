@@ -16,7 +16,7 @@
 <svelte:window bind:innerWidth bind:innerHeight />
 
 <section class="flex flex-col">
-	<div class="p-6 section-container bg-card text-card-foreground">
+	<div class="p-6 section-container bg-card text-card-foreground border-primary/20 border-2">
 		<header class="flex flex-col">
 			<h4 class="text-lg self-center font-semibold">The price of</h4>
 			<h4 class="self-center font-extrabold text-primary">
@@ -30,7 +30,7 @@
 			<div class="divider my-2" />
 		</header>
 
-		<div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-1 p-2 pt-0 pb-2 gap-3">
+		<div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-1 p-2 pt-0 pb-2 gap-3">
 			<FactCardField name="Feed" value={feed.name} accessory={feed.type_description} />
 
 			<div class="flex">
@@ -47,7 +47,7 @@
 				value={fact.fact_urn}
 				allowCopyToClipboard
 				ellipsisAndHover
-				{maxFieldLength}
+				maxFieldLength={18}
 			/>
 			<FactCardField
 				name="Validation Date"
@@ -55,6 +55,6 @@
 				accessory=""
 			/>
 		</div>
-		<BlockchainBadges {fact} offsetTooltip={innerWidth < 780} class="mt-2 -mb-4 -ml-6" />
+		<BlockchainBadges {fact} class="mt-2 -mb-4 -ml-6" />
 	</div>
 </section>

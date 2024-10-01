@@ -17,6 +17,11 @@
 	import ArchiveExplorer from '$lib/components/ArchiveExplorer.svelte';
 	import { ArrowLeft } from 'lucide-svelte';
 	import FeedChart from '../../components/FeedChart.svelte';
+	import CollectionDetails from '$lib/components/CollectionDetails.svelte';
+	import CalculationDetails from '$lib/components/CalculationDetails.svelte';
+	import ValidationDetails from '$lib/components/ValidationDetails.svelte';
+	import FactStatementDetailsAccordion from '$lib/components/FactStatementDetailsAccordion.svelte';
+	import Skeleton from '$lib/components/ui/skeleton/skeleton.svelte';
 
 	export let data;
 
@@ -25,6 +30,7 @@
 
 	$: feed = formatFeedForDisplay(data.feed);
 	$: chartFacts = data.chartFacts;
+	$: archive = data.archive;
 
 	async function handleSelectedFactChange(newFactStatement: FactStatement) {
 		const params = new URLSearchParams($page.url.searchParams);
@@ -36,7 +42,9 @@
 	}
 </script>
 
-<div class="flex flex-col justify-center items-center w-full px-4 md:px-10 space-y-14">
+<div
+	class="flex flex-col justify-center items-center w-full max-w-screen-xl mx-auto px-4 md:px-10 space-y-14"
+>
 	<div class="flex flex-col justify-center items-center w-full">
 		<a
 			href="/"
@@ -61,31 +69,40 @@
 		<h2 bind:this={factSummary} class="font-bold text-3xl pb-4 scroll-m-28">
 			Selected Fact <span class="hidden xs:inline">Statement</span>
 		</h2>
-		<div class="section-container p-7 space-y-10 flex flex-col items-center w-full">
+		<div class="section-container space-y-10 flex flex-col items-center w-full">
 			<div
-				class="flex flex-col w-full items-center space-y-8 lg:space-x-8 md:flex-row md:justify-around"
+				class="flex flex-col w-full items-start space-y-8 md:justify-around lg:space-x-8 lg:space-y-0 lg:flex-row lg:justify-evenly"
 			>
-				<FactSummary {feed} fact={selectedFact} />
-				<div class="flex flex-col space-y-8">
-					<PublicationDetails fact={selectedFact} />
-					<div class="hidden lg:block">
+				<div class="lg:sticky lg:top-28 self-center lg:self-start">
+					<FactSummary {feed} fact={selectedFact} />
+				</div>
+				<div class="hidden md:flex md:flex-col md:space-y-4">
+					<h4 class="font-bold text-2xl">Fact Statement Details</h4>
+					<div class="space-y-8 flex flex-col self-center border rounded-lg p-8">
+						<div
+							class="flex flex-col md:items-center space-y-8 xl:flex-row xl:space-x-8 xl:space-y-0 xl:justify-evenly"
+						>
+							<CollectionDetails {archive} />
+							<div
+								class="flex flex-col space-y-8 md:flex-row md:space-x-8 md:space-y-0 xl:flex-col xl:space-x-0 xl:space-y-8 xl:self-start"
+							>
+								<CalculationDetails {archive} />
+								<ValidationDetails {archive} />
+							</div>
+						</div>
+
+						<PublicationDetails fact={selectedFact} />
 						<ArchiveDetails fact={selectedFact} />
 					</div>
 				</div>
-			</div>
-			<div class="block lg:hidden">
-				<ArchiveDetails fact={selectedFact} />
+
+				<div class="flex w-full md:hidden">
+					<FactStatementDetailsAccordion {archive} fact={selectedFact} />
+				</div>
 			</div>
 
 			{#await data.archive}
-				<div
-					class="flex flex-col justify-center items-center text-center w-full rounded-lg bg-card text-card-foreground border"
-				>
-					<p class="pt-12 px-12 w-fit font-extrabold">
-						This Fact Statement has not been archived on Arweave yet.
-					</p>
-					<p class="pb-12 px-12 w-fit">Please check back or refresh in a few minutes.</p>
-				</div>
+				<Skeleton class="h-[80rem] w-full" />
 			{:then archive}
 				<ArchiveExplorer {archive} fact={selectedFact} />
 			{:catch}

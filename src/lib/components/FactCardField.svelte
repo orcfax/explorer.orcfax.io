@@ -11,6 +11,7 @@
 	export let ellipsisAndHover = false;
 	export let midllipsisAndHover = false;
 	export let accessoryLink: { text: string; link: string } | null = null;
+	export let showWithHTML = false;
 
 	$: showWithTooltip =
 		(ellipsisAndHover || midllipsisAndHover) && value.toString().length >= maxFieldLength;
@@ -33,11 +34,23 @@
 						</p>
 					</Tooltip.Trigger>
 					<Tooltip.Content side={'top'}>
-						<p>{value}</p>
+						<p>
+							{#if showWithHTML}
+								{@html value}
+							{:else}
+								{value}
+							{/if}
+						</p>
 					</Tooltip.Content>
 				</Tooltip.Root>
 			{:else}
-				<p class="text-start">{value}</p>
+				<p class="text-start">
+					{#if showWithHTML}
+						{@html value}
+					{:else}
+						{value}
+					{/if}
+				</p>
 			{/if}
 			{#if allowCopyToClipboard}
 				<CopyToClipboard {value} />
