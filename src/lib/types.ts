@@ -277,20 +277,21 @@ export interface ArchiveExplorerResponse {
 	files: ArchivedFile[] | null;
 }
 
-export interface ValidationDetails {
+export interface ArchiveDetails {
+	sources: Source[];
 	collectionTimestamp: string;
 	collectorNodeID: string;
 	contentSignature: string;
 	calculationMethod: string;
 	validationDate: string;
+	sourceType: string;
 }
 
 export interface Archive {
 	fact: DBFactStatement;
 	directoryTree: DirectoryNode[] | null;
 	files: ArchivedFile[] | null;
-	sources: Source[] | null;
-	validationDetails: ValidationDetails | null;
+	details: ArchiveDetails | null;
 }
 
 export interface DirectoryNode {
@@ -387,6 +388,7 @@ export const ValidationFileSchema = z.object({
 	}),
 	additionalType: z.tuple([CollectionEventSchema, z.unknown()])
 });
+export type ValidationFile = z.infer<typeof ValidationFileSchema>;
 
 export const DEXValidationFileSchema = ValidationFileSchema.extend({
 	additionalType: z.tuple([
@@ -411,6 +413,8 @@ export const DEXValidationFileSchema = ValidationFileSchema.extend({
 		})
 	])
 });
+
+export type DEXValidationFile = z.infer<typeof DEXValidationFileSchema>;
 
 export const CEXValidationFileSchema = ValidationFileSchema.extend({
 	additionalType: z.tuple([
@@ -441,3 +445,5 @@ export const CEXValidationFileSchema = ValidationFileSchema.extend({
 		})
 	])
 });
+
+export type CEXValidationFile = z.infer<typeof CEXValidationFileSchema>;

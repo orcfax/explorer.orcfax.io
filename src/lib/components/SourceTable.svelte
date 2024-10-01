@@ -6,7 +6,7 @@
 	import { createTable, Render, Subscribe } from 'svelte-headless-table';
 	import { addGroupBy } from 'svelte-headless-table/plugins';
 	import FactCardField from './FactCardField.svelte';
-	import { formatValue } from '$lib/client/helpers';
+	import { formatSumValue } from '$lib/client/helpers';
 
 	export let sources: Source[];
 	export let showWithValues = false;
@@ -173,11 +173,9 @@
 								<span class="text-sm font-semibold">
 									<FactCardField
 										name=""
-										value={formatValue(
+										value={formatSumValue(
 											sources.reduce((acc, source) => acc + (source.baseAssetValue || 0), 0)
 										)}
-										{maxFieldLength}
-										ellipsisAndHover={innerWidth < 400}
 									/>
 								</span>
 							</div>
@@ -187,11 +185,9 @@
 								<span class="text-sm font-semibold">
 									<FactCardField
 										name=""
-										value={formatValue(
+										value={formatSumValue(
 											sources.reduce((acc, source) => acc + (source.quoteAssetValue || 0), 0)
 										)}
-										{maxFieldLength}
-										ellipsisAndHover={innerWidth < 400}
 									/>
 								</span>
 							</div>

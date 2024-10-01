@@ -1,31 +1,32 @@
 <script lang="ts">
 	import type { Archive } from '$lib/types';
 	import FactCardField from './FactCardField.svelte';
+	import Skeleton from '$lib/components/ui/skeleton/skeleton.svelte';
 
 	export let archive: Promise<Archive>;
 </script>
 
-{#await archive then archive}
-	{#if archive.sources}
-		<section class="w-fit md:w-full flex flex-col">
-			<h3 class="font-bold text-2xl pb-4">Validation Details</h3>
-			<div class="p-6 section-container bg-card text-card-foreground">
-				<div class="grid grid-cols-1 gap-4">
-					{#if archive.sources && archive.sources.length > 0}
-						<FactCardField
-							name="Content Signature"
-							value={archive.validationDetails?.contentSignature ?? '-'}
-							ellipsisAndHover
-						/>
-						<FactCardField
-							name="Validation Date"
-							value={archive.validationDetails?.validationDate ?? '-'}
-						/>
-					{:else}
-						<p>Source data unavailable</p>
-					{/if}
+<section class="w-fit xl:w-full flex flex-col">
+	<h3 class="hidden md:inline font-bold text-xl pb-4">Validation</h3>
+	{#await archive}
+		<Skeleton class="h-[10rem] w-[15rem]" />
+	{:then archive}
+		<div class="p-6 section-container bg-card text-card-foreground">
+			{#if archive.details}
+				<div class="grid grid-cols-1 xs:grid-cols-2 md:grid-cols-1 xl:grid-cols-1 gap-4">
+					<FactCardField
+						name="Content Signature"
+						value={archive.details.contentSignature}
+						ellipsisAndHover
+					/>
+					<FactCardField name="Validation Date" value={archive.details.validationDate} />
 				</div>
-			</div>
-		</section>
-	{/if}
-{/await}
+			{:else}
+				<div class="flex flex-col">
+					<h4 class="font-bold text-lg">Data Unavailable</h4>
+					<p>Please check back later.</p>
+				</div>
+			{/if}
+		</div>
+	{/await}
+</section>

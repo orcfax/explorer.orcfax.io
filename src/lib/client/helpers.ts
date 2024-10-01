@@ -455,3 +455,10 @@ export function getNetworkUrl(url: string, networkName: string): string {
 
 	return newUrl.toString();
 }
+
+export function formatSumValue(num: number): string {
+	return num.toLocaleString('en-US', {
+		minimumFractionDigits: 2,
+		maximumFractionDigits: 2
+	});
+}

@@ -3,7 +3,16 @@ import { promisify } from 'util';
 import * as tar from 'tar-stream';
 import { pipeline } from 'stream';
 import { Readable } from 'stream';
-import type { Archive, ArchivedFile, DirectoryNode, FactSourceMessage } from '$lib/types';
+import type {
+	Archive,
+	ArchiveDetails,
+	ArchivedFile,
+	CEXValidationFile,
+	DEXValidationFile,
+	DBFeed,
+	DirectoryNode,
+	FactSourceMessage
+} from '$lib/types';
 import { getFactByURN, getFeeds, getSources } from '$lib/server/db';
 import {
 	CEXValidationFileSchema,
@@ -18,40 +27,56 @@ import { error, type ServerLoad } from '@sveltejs/kit';
 import { z } from 'zod';
 
 export const load: ServerLoad = async ({ parent, params }) => {
-	const { feed, network } = await parent();
-	const factURN = `urn:orcfax:${params.fact_id}`;
-	const selectedFact = await getSelectedFact(network, factURN, feed);
+	try {
+		const { feed, network } = await parent();
+		const factURN = `urn:orcfax:${params.fact_id}`;
+		const selectedFact = await getSelectedFact(network, factURN, feed);
 
-	return {
-		feed,
-		selectedFact,
-		feeds: getFeeds(network),
-		archive: getArchive(network, selectedFact)
-	};
+		return {
+			feed,
+			selectedFact,
+			// Lazy-load / stream the rest of the data
+			feeds: getFeeds(network),
+			archive: getArchive(network, selectedFact, feed.source_type)
+		};
+	} catch (e) {
+		console.error(JSON.stringify(e, null, 2));
+		return error(500, 'An error occurred');
+	}
 };
 
-async function getArchive(network: Network, fact: DBFactStatement): Promise<Archive> {
+async function getArchive(
+	network: Network,
+	fact: DBFactStatement,
+	sourceType: DBFeed['source_type']
+): Promise<Archive> {
 	try {
 		if (!fact.storage_urn)
 			return {
 				fact,
 				directoryTree: null,
 				files: null,
-				sources: null,
-				validationDetails: null
+				details: null
 			};
 
-		const archivedBagResponse = await fetch(
-			`https://arweave.net/tx/${fact.storage_urn.slice(12)}/data.txt`,
-			{
-				headers: {
-					'Content-Type': 'application/gzip'
+		const fetchArchivedBag = async () => {
+			const response = await fetch(
+				`https://arweave.net/tx/${fact.storage_urn.slice(12)}/data.txt`,
+				{
+					headers: {
+						'Content-Type': 'application/gzip'
+					}
 				}
-			}
-		);
+			);
 
-		if (!archivedBagResponse.body || !archivedBagResponse.ok)
+			return response;
+		};
+
+		const archivedBagResponse = await fetchArchivedBag();
+
+		if (!archivedBagResponse.body || !archivedBagResponse.ok) {
 			error(404, 'Unable to retrieve fact statement archival package');
+		}
 
 		const contentType = archivedBagResponse.headers.get('content-type');
 		if (!contentType || (!contentType.includes('x-tar') && !contentType.includes('gzip'))) {
@@ -63,19 +88,27 @@ async function getArchive(network: Network, fact: DBFactStatement): Promise<Arch
 
 		const directoryTree = await buildFileExplorer(archivedBagTarball);
 		const files = await getArchivedFilesFromTarball(archivedBagTarball);
-		const { sources, validationDetails } = await getDetailsFromArchiveFiles(network, files);
+		const details = await getDetailsFromArchive(network, files, sourceType);
 
-		return { fact, directoryTree, files, sources, validationDetails };
+		return { fact, directoryTree, files, details };
 	} catch (e) {
-		return error(404, 'No Fact Statement found with that ID');
+		console.error('Something went wrong fetching the archive: ', JSON.stringify(e, null, 2));
+		return {
+			fact,
+			directoryTree: null,
+			files: null,
+			details: null
+		};
 	}
 }
 
-async function getDetailsFromArchiveFiles(
+async function getDetailsFromArchive(
 	network: Network,
-	files: ArchivedFile[]
-): Promise<Pick<Archive, 'sources' | 'validationDetails'>> {
+	files: ArchivedFile[],
+	sourceType: DBFeed['source_type']
+): Promise<ArchiveDetails | null> {
 	try {
+		// Get message file names for source matching
 		const allSources = await getSources(network);
 		const allFileNames = files.map((file) => file.fileName);
 		const messageFileNames = allFileNames
@@ -83,7 +116,7 @@ async function getDetailsFromArchiveFiles(
 			.map((name) => name.toLowerCase());
 
 		// Map file names to sources with exact name matching
-		const sources = messageFileNames.map((name) => {
+		let sources = messageFileNames.map((name) => {
 			const words = name.split(/[^a-zA-Z0-9]+/);
 			const source = allSources.find((source) => {
 				return words.includes(source.name.toLowerCase());
@@ -93,71 +126,52 @@ async function getDetailsFromArchiveFiles(
 			return source;
 		});
 
+		// Get validation file
+		let validationFileContents: CEXValidationFile | DEXValidationFile;
 		const validationFile = files.find((file) => file.fileName.includes('validation-'));
-		if (!validationFile) {
-			console.log('Validation file not found in archive');
-			throw new Error('Validation file not found in archive');
-		}
+		if (!validationFile) throw new Error('Validation file not found in archive');
 
-		const isCEX = sources.length > 0 && sources[0].type === 'CEX API';
-		const isDEX = sources.length > 0 && sources[0].type === 'DEX LP';
-
-		if (isCEX) {
-			console.log('test');
-			const contents = CEXValidationFileSchema.parse(validationFile.content);
-			console.log('test 2');
+		// Parse validation file contents
+		if (sourceType === 'CEX') {
+			validationFileContents = CEXValidationFileSchema.parse(validationFile.content);
 			const collectedDataPoints =
-				contents.additionalType[1].about.variableMeasured.valueReference || [];
-			console.log('test 3');
-			const res = sources.map((source, i) => ({
+				validationFileContents.additionalType[1].about.variableMeasured.valueReference || [];
+			sources = sources.map((source, i) => ({
 				...source,
 				assetPairValue: collectedDataPoints[i]
 			}));
-			const collectionTimestamp = contents.additionalType[0].recordedIn.hasPart[0].text;
-			const collectorNodeID = contents.isBasedOn.identifier;
-			const contentSignature = contents.additionalType[0].recordedIn.description.sha256;
-			const calculationMethod = contents.additionalType[1].description;
-			const validationDate = contents.additionalType[0].startDate;
-			return {
-				sources: z.array(SourceSchema).parse(res),
-				validationDetails: {
-					collectionTimestamp,
-					collectorNodeID,
-					contentSignature,
-					calculationMethod,
-					validationDate
-				}
-			};
-		} else if (isDEX) {
-			const contents = DEXValidationFileSchema.parse(validationFile.content);
-			const collectedBaseDataPoints = contents.additionalType[1].about.valueReference[0] || [];
-			const collectedQuoteDataPoints = contents.additionalType[1].about.valueReference[1] || [];
-			const res = sources.map((source, i) => ({
+		} else if (sourceType === 'DEX') {
+			validationFileContents = DEXValidationFileSchema.parse(validationFile.content);
+			const collectedBaseDataPoints =
+				validationFileContents.additionalType[1].about.valueReference[0] || [];
+			const collectedQuoteDataPoints =
+				validationFileContents.additionalType[1].about.valueReference[1] || [];
+			sources = sources.map((source, i) => ({
 				...source,
 				baseAssetValue: collectedBaseDataPoints[i],
 				quoteAssetValue: collectedQuoteDataPoints[i]
 			}));
-			const collectionTimestamp = contents.additionalType[0].recordedIn.hasPart[0].text;
-			const collectorNodeID = contents.isBasedOn.identifier;
-			const contentSignature = contents.additionalType[0].recordedIn.description.sha256;
-			const calculationMethod = contents.additionalType[1].description;
-			const validationDate = contents.additionalType[0].startDate;
-			return {
-				sources: z.array(SourceSchema).parse(res),
-				validationDetails: {
-					collectionTimestamp,
-					collectorNodeID,
-					contentSignature,
-					calculationMethod,
-					validationDate
-				}
-			};
 		} else {
 			throw new Error('Unknown source type');
 		}
+		const collectionTimestamp = validationFileContents.additionalType[0].recordedIn.hasPart[0].text;
+		const collectorNodeID = validationFileContents.isBasedOn.identifier;
+		const contentSignature = validationFileContents.additionalType[0].recordedIn.description.sha256;
+		const calculationMethod = validationFileContents.additionalType[1].description;
+		const validationDate = validationFileContents.additionalType[0].startDate;
+
+		return {
+			sources: z.array(SourceSchema).parse(sources),
+			collectionTimestamp,
+			collectorNodeID,
+			contentSignature,
+			calculationMethod,
+			validationDate,
+			sourceType
+		};
 	} catch (e) {
 		console.error('error', JSON.stringify(e, null, 2));
-		return { sources: [], validationDetails: null };
+		return null;
 	}
 }
 

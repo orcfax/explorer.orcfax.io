@@ -43,7 +43,7 @@
 					accessory={$timeSincePublished}
 				/>
 			</div>
-			<BlockchainBadges {fact} offsetTooltip={isFirstInList} class="mt-2 -ml-4 -mb-2" />
+			<BlockchainBadges {fact} class="mt-2 -ml-4 -mb-2" />
 			<div class="tooltip absolute bottom-2 right-2" data-tip="View Full Fact Statement">
 				<OpenFolder fillColor={'fill-gray-500'} />
 			</div>
