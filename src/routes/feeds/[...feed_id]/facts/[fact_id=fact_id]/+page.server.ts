@@ -59,20 +59,10 @@ async function getArchive(
 				details: null
 			};
 
-		const fetchArchivedBag = async () => {
-			const response = await fetch(
-				`https://arweave.net/tx/${fact.storage_urn.slice(12)}/data.txt`,
-				{
-					headers: {
-						'Content-Type': 'application/gzip'
-					}
-				}
-			);
-
-			return response;
-		};
-
-		const archivedBagResponse = await fetchArchivedBag();
+		const archivedBagResponse = await fetch(
+			`https://arweave.net/${fact.storage_urn.slice(12)}`,
+			{}
+		);
 
 		if (!archivedBagResponse.body || !archivedBagResponse.ok) {
 			error(404, 'Unable to retrieve fact statement archival package');
