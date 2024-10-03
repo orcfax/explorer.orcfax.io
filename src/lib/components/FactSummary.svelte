@@ -9,14 +9,14 @@
 
 	let innerWidth = 0;
 	let innerHeight = 0;
-
-	$: maxFieldLength = innerWidth < 780 ? 20 : 22;
 </script>
 
 <svelte:window bind:innerWidth bind:innerHeight />
 
 <section class="flex flex-col">
-	<div class="p-6 section-container bg-card text-card-foreground border-primary/20 border-2">
+	<div
+		class="p-6 section-container bg-card text-card-foreground border-primary/20 border-2 min-w-max"
+	>
 		<header class="flex flex-col">
 			<h4 class="text-lg self-center font-semibold">The price of</h4>
 			<h4 class="self-center font-extrabold text-primary">

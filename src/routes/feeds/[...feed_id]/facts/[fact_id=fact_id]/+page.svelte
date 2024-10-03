@@ -22,6 +22,7 @@
 	import ValidationDetails from '$lib/components/ValidationDetails.svelte';
 	import FactStatementDetailsAccordion from '$lib/components/FactStatementDetailsAccordion.svelte';
 	import Skeleton from '$lib/components/ui/skeleton/skeleton.svelte';
+	import { feedsListStore } from '$lib/stores/feedsList';
 
 	export let data;
 
@@ -59,7 +60,6 @@
 				if (feed) selectedFact = formatFactStatementForDisplay(feed.latestFact, feed);
 			}}
 			{feed}
-			feeds={data.feeds}
 			onLatestFactClick={handleSelectedFactChange}
 		/>
 		<FeedChart {feed} {selectedFact} {chartFacts} onChartPointClick={handleSelectedFactChange} />
@@ -71,9 +71,9 @@
 		</h2>
 		<div class="section-container space-y-10 flex flex-col items-center w-full">
 			<div
-				class="flex flex-col w-full items-start space-y-8 md:justify-around lg:space-x-8 lg:space-y-0 lg:flex-row lg:justify-evenly"
+				class="flex flex-col w-full items-start space-y-8 md:justify-around md:items-center lg:space-x-8 lg:space-y-0 lg:flex-row lg:justify-evenly"
 			>
-				<div class="lg:sticky lg:top-28 self-center lg:self-start">
+				<div class="lg:sticky lg:top-28 self-center lg:self-start -mt-6 xxxs:-mt-0">
 					<FactSummary {feed} fact={selectedFact} />
 				</div>
 				<div class="hidden md:flex md:flex-col md:space-y-4">

@@ -18,8 +18,6 @@
 	import { format, toZonedTime } from 'date-fns-tz';
 	import { mode } from 'mode-watcher';
 	import { formatCurrencyValue } from '$lib/client/helpers';
-	import FeedChartLoadingSkeleton from './FeedChartLoadingSkeleton.svelte';
-	import { writable, type Writable } from 'svelte/store';
 
 	export let facts: FactStatement[];
 	export let selectedFact: FactStatement;
@@ -28,8 +26,6 @@
 	export let isMobile: boolean;
 
 	let chart: ChartJS<'line', Point[]>;
-
-	const isLoading = writable(true);
 
 	let primaryColor = 'hsl(174 25% 51%)';
 	$: gridColor = $mode === 'dark' ? 'rgb(59, 59, 59)' : 'rgb(166, 166, 166)';
@@ -76,19 +72,10 @@
 		};
 	};
 
-	const getChartOptions = (
-		range: FeedRange,
-		isMobile: boolean,
-		isLoading: Writable<boolean>
-	): ChartOptions<'line'> => {
+	const getChartOptions = (range: FeedRange, isMobile: boolean): ChartOptions<'line'> => {
 		return {
 			parsing: false,
 			responsive: true,
-			animation: {
-				onComplete: () => {
-					isLoading.set(false);
-				}
-			},
 			scales: {
 				x: {
 					type: 'time',
@@ -177,7 +164,7 @@
 
 	$: data = getChartData(selectedFact, range, facts);
 
-	$: options = getChartOptions(range, isMobile, isLoading);
+	$: options = getChartOptions(range, isMobile);
 
 	function handleChartClick(event: CustomEvent<unknown>) {
 		if (event instanceof PointerEvent) {
@@ -199,9 +186,6 @@
 	);
 </script>
 
-<!-- {#if $isLoading}
-	<FeedChartLoadingSkeleton isOnlyChart />
-{:else} -->
 <Chart
 	type="line"
 	class="bg-card p-0 sm:p-6 rounded-lg border"
@@ -210,4 +194,3 @@
 	{data}
 	{options}
 />
-<!-- {/if} -->

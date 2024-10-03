@@ -10,9 +10,9 @@
 	import FormattedCurrencyValue from '$lib/components/FormattedCurrencyValue.svelte';
 	import Skeleton from '$lib/components/ui/skeleton/skeleton.svelte';
 	import { Badge } from '$lib/components/ui/badge/index.js';
+	import { feedsListStore } from '$lib/stores/feedsList';
 
 	export let feed: Feed;
-	export let feeds: Promise<DBFeedWithData[]>;
 	export let onLatestFactClick: (latestFact: FactStatement) => void;
 	export let onFeedSwitch: (feed: DBFeedWithData) => void;
 
@@ -41,12 +41,10 @@
 						</Tooltip.Content>
 					</Tooltip.Root>
 				</div>
-				{#await feeds}
+				{#await $feedsListStore}
 					<Skeleton class="h-[3.88rem] w-[11.44rem]" />
 				{:then feeds}
 					<FeedQuickSwitcher {onFeedSwitch} initialFeedID={feed.feed_id} {feeds} />
-				{:catch error}
-					<p class="text-red-500">{error.message}</p>
 				{/await}
 			</div>
 			<div class="flex flex-col md:flex-row mt-3 sm:mt-6 sm:ml-4">

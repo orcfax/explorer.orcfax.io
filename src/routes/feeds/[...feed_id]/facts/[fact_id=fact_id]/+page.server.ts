@@ -36,7 +36,6 @@ export const load: ServerLoad = async ({ parent, params }) => {
 			feed,
 			selectedFact,
 			// Lazy-load / stream the rest of the data
-			feeds: getFeeds(network),
 			archive: getArchive(network, selectedFact, feed.source_type)
 		};
 	} catch (e) {
