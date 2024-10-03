@@ -14,7 +14,9 @@
 	const isCEX = sources.length > 0 && sources[0].type === 'CEX API';
 	const isDEX = sources.length > 0 && sources[0].type === 'DEX LP';
 
-	let sourcesStore = writable<Source[]>(sources);
+	let sourcesStore = writable<Source[]>(
+		showWithValues ? sources : sources.sort((a, b) => a.name.localeCompare(b.name))
+	);
 
 	const highlightRow = (index: number, sources: Source[], isCEX: boolean) => {
 		const isOddSources = sources.length % 2 !== 0;
@@ -134,7 +136,7 @@
 											</div>
 										</Table.Cell>
 									{:else if cell.id === 'type'}
-										<Table.Cell {...attrs} class="hidden md:block">
+										<Table.Cell {...attrs} class="hidden md:table-cell">
 											<Render of={cell.render()} />
 										</Table.Cell>
 									{:else if cell.id === 'website'}
