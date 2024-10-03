@@ -1,6 +1,6 @@
 {
 	"name": "explorer.orcfax.io",
-	"version": "2024-09-20",
+	"version": "2024-10-02",
 	"private": true,
 	"scripts": {
 		"dev": "vite dev",

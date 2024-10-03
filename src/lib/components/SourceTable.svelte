@@ -99,7 +99,7 @@
 							{#each headerRow.cells as cell (cell.id)}
 								<Subscribe attrs={cell.attrs()} let:attrs props={cell.props()}>
 									{#if cell.id === 'type'}
-										<Table.Head {...attrs} class="hidden md:block">
+										<Table.Head {...attrs} class="hidden md:table-cell">
 											<Render of={cell.render()} />
 										</Table.Head>
 									{:else}
@@ -128,7 +128,7 @@
 										<Table.Cell {...attrs}>
 											<div class="flex gap-3 items-center">
 												<SourceBadge source={row.original} hideTooltip={!showWithValues} />
-												<div class="hidden md:block">
+												<div class={`${isDEX ? 'hidden md:block' : ''}`}>
 													<Render of={cell.render()} />
 												</div>
 											</div>

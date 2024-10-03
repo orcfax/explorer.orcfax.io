@@ -6,7 +6,6 @@
 
 <div
 	class={`flex flex-col justify-center items-center w-full relative ${isOnlyChart ? 'border-none' : 'border border-t-0 rounded-lg rounded-t-none'} p-2 md:p-6 pt-0 md:pt-0`}
-	`
 >
 	{#if !isOnlyChart}
 		<div class="flex justify-start items-center space-x-2 w-full">
