@@ -61,21 +61,23 @@
 </script>
 
 <div class="flex flex-col h-[50rem]">
-	<div class="flex flex-col gap-1 pt-4">
-		<div class="flex justify-between">
-			<h3 class="text-lg font-bold pl-4 pb-2">Files</h3>
+	<div class="flex flex-col">
+		<div class="flex justify-between items-center px-1 py-2 pr-2">
+			<h3 class="text-lg font-bold pl-4">Files</h3>
 			<Tooltip.Root openDelay={150}>
-				<Tooltip.Trigger>
+				<Tooltip.Trigger class="flex h-9 w-9">
 					<a
 						href={getArweaveUrl($networkStore.network, fact.storage_urn)}
 						class="cursor-pointer"
 						target="_blank"
 					>
-						<Download class="stroke-primary mx-2 -mt-2" />
+						<div class="rounded-full p-2 border border-card hover:bg-border/50 hover:border-border">
+							<Download class="stroke-primary h-5 w-5" />
+						</div>
 					</a>
 				</Tooltip.Trigger>
-				<Tooltip.Content>
-					<p>Download Fact Statement Archive from Arweave</p>
+				<Tooltip.Content sideOffset={10}>
+					<p>Download archive from Arweave</p>
 				</Tooltip.Content>
 			</Tooltip.Root>
 		</div>
