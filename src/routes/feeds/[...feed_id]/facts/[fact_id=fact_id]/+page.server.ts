@@ -11,20 +11,24 @@ import type {
 	DEXValidationFile,
 	DBFeed,
 	DirectoryNode,
-	FactSourceMessage
+	FactSourceMessage,
+	Asset,
+	XerberusRiskRating
 } from '$lib/types';
-import { getFactByURN, getFeeds, getSources } from '$lib/server/db';
+import { getFactByURN, getSources } from '$lib/server/db';
 import {
 	CEXValidationFileSchema,
 	DBFactStatementSchema,
 	DEXValidationFileSchema,
 	SourceSchema,
+	XerberusRiskRatingAPIResponseSchema,
 	type DBFactStatement,
 	type DBFeedWithData,
 	type Network
 } from '$lib/types';
 import { error, type ServerLoad } from '@sveltejs/kit';
 import { z } from 'zod';
+import { PRIVATE_XERBERUS_API_KEY, PRIVATE_XERBERUS_USER_EMAIL } from '$env/static/private';
 
 export const load: ServerLoad = async ({ parent, params }) => {
 	try {
@@ -36,7 +40,11 @@ export const load: ServerLoad = async ({ parent, params }) => {
 			feed,
 			selectedFact,
 			// Lazy-load / stream the rest of the data
-			archive: getArchive(network, selectedFact, feed.source_type)
+			archive: getArchive(selectedFact, feed.source_type),
+			riskRatings: {
+				base: feed.base_asset?.fingerprint ? getXerberusRiskRating(feed.base_asset) : null,
+				quote: feed.quote_asset?.fingerprint ? getXerberusRiskRating(feed.quote_asset) : null
+			}
 		};
 	} catch (e) {
 		console.error(JSON.stringify(e, null, 2));
@@ -44,8 +52,45 @@ export const load: ServerLoad = async ({ parent, params }) => {
 	}
 };
 
+async function getXerberusRiskRating(asset: Asset): Promise<XerberusRiskRating | null> {
+	const apiKey = PRIVATE_XERBERUS_API_KEY;
+	const userEmail = PRIVATE_XERBERUS_USER_EMAIL;
+	if (!apiKey || !userEmail) error(500, 'Missing Xerberus API key');
+
+	// Asset fingerprint is required to fetch data from Xerberus API
+	if (!asset.fingerprint) return null;
+
+	const endpoint = `https://api.xerberus.io/public/v1/risk/score/asset?fingerprint=${asset.fingerprint}`;
+	const res = await fetch(endpoint, {
+		headers: {
+			'x-api-key': apiKey,
+			'x-user-email': userEmail
+		}
+	});
+	if (!res.ok) error(500, 'Failed to fetch data from Xerberus API');
+	const xSignedBy = res.headers.get('X-SIGNED-BY');
+	const xSignature = res.headers.get('X-SIGNATURE');
+	if (!xSignedBy || !xSignature) error(500, 'Missing Xerberus API signature headers');
+	const data = await res.json();
+	const parsed = XerberusRiskRatingAPIResponseSchema.safeParse(data);
+	if (!parsed.success) {
+		console.error(
+			`Failed to parse Xerberus API response for ${asset.ticker}:`,
+			JSON.stringify(parsed.error, null, 2)
+		);
+		return null;
+	}
+	const response = parsed.data;
+
+	return {
+		response,
+		xSignedBy,
+		xSignature,
+		endpoint: endpoint
+	};
+}
+
 async function getArchive(
-	network: Network,
 	fact: DBFactStatement,
 	sourceType: DBFeed['source_type']
 ): Promise<Archive> {
@@ -77,7 +122,7 @@ async function getArchive(
 
 		const directoryTree = await buildFileExplorer(archivedBagTarball);
 		const files = await getArchivedFilesFromTarball(archivedBagTarball);
-		const details = await getDetailsFromArchive(network, files, sourceType);
+		const details = await getDetailsFromArchive(files, sourceType);
 
 		return { fact, directoryTree, files, details };
 	} catch (e) {
@@ -92,13 +137,12 @@ async function getArchive(
 }
 
 async function getDetailsFromArchive(
-	network: Network,
 	files: ArchivedFile[],
 	sourceType: DBFeed['source_type']
 ): Promise<ArchiveDetails | null> {
 	try {
 		// Get message file names for source matching
-		const allSources = await getSources(network);
+		const allSources = await getSources();
 		const allFileNames = files.map((file) => file.fileName);
 		const messageFileNames = allFileNames
 			.filter((name) => name.includes('message-'))

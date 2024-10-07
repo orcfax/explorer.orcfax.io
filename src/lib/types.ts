@@ -9,22 +9,23 @@ export type Feed = z.infer<typeof FeedSchema>;
 export type Source = z.infer<typeof SourceSchema>;
 
 export const AssetSchema = z.object({
+	id: z.string(),
 	ticker: z.string(),
-	name: z.string().optional(),
-	url: z.string().optional(),
-	image: z.string().optional(),
-	backgroundColor: z.string().optional()
+	name: z.string(),
+	type: z.enum(['Cryptocurrency', 'Fiat Currency']),
+	website: z.string(),
+	fingerprint: z.string().optional(),
+	image_path: z.string(),
+	background_color: z.string().optional()
 });
+export type Asset = z.infer<typeof AssetSchema>;
 
 export const NetworkSelectSchema = z.object({
 	value: z.string(),
 	label: z.string(),
 	color: z.string().optional()
 });
-
 export type NetworkSelect = z.infer<typeof NetworkSelectSchema>;
-
-export type Asset = z.infer<typeof AssetSchema>;
 
 export interface OrcfaxStats {
 	totalFacts: number;
@@ -63,15 +64,23 @@ export const DBFeedSchema = z.object({
 	funding_type: z.enum(['showcase', 'paid', 'subsidized', '']),
 	calculation_method: z.string(),
 	heartbeat_interval: z.number(),
-	deviation: z.number()
+	deviation: z.number(),
+	base_asset: z.string().optional(),
+	quote_asset: z.string().optional()
 });
+
+export const DBFeedWithAssetsSchema = DBFeedSchema.extend({
+	base_asset: AssetSchema.optional(),
+	quote_asset: AssetSchema.optional()
+});
+export type DBFeedWithAssets = z.infer<typeof DBFeedWithAssetsSchema>;
 
 export const DBFactStatementSchema = z.object({
 	id: z.string(),
 	network: z.string(),
 	policy: z.string(),
 	fact_urn: z.string(),
-	feed: z.union([z.string(), DBFeedSchema]), // Equal to either the id of the feed, or the feed itself if it was expanded
+	feed: z.string(),
 	value: z.coerce.number(),
 	value_inverse: z.coerce.number(),
 	validation_date: z.coerce.date(),
@@ -86,7 +95,12 @@ export const DBFactStatementSchema = z.object({
 	publication_cost: z.number()
 });
 
-export const FactStatementSchema = DBFactStatementSchema.extend({
+export const DBFactStatementWithFeedSchema = DBFactStatementSchema.extend({
+	feed: DBFeedWithAssetsSchema
+});
+export type DBFactStatementWithFeed = z.infer<typeof DBFactStatementWithFeedSchema>;
+
+export const FactStatementSchema = DBFactStatementWithFeedSchema.extend({
 	fact_id: z.string(), // Equal to the fact_urn but without the "urn:orcfax:" prefix
 	formatted_value: z.string(),
 	formatted_inverse_value: z.string(),
@@ -98,12 +112,10 @@ export const FactStatementSchema = DBFactStatementSchema.extend({
 	publication_time_formatted: z.string()
 });
 
-export const DBFeedWithDataSchema = DBFeedSchema.extend({
+export const DBFeedWithDataSchema = DBFeedWithAssetsSchema.extend({
 	latestFact: DBFactStatementSchema,
 	totalFacts: z.number(),
 	type_description: z.string(),
-	base_asset: AssetSchema,
-	quote_asset: AssetSchema,
 	oneDayAgo: z.number(),
 	threeDaysAgo: z.number(),
 	sevenDaysAgo: z.number()
@@ -183,11 +195,12 @@ export interface GetOrcfaxSummaryResponseDB {
 	totalFeeds: number;
 }
 
-export interface GetFactsPageResponseDB {
-	facts: DBFactStatement[];
-	totalPages: number;
-	totalFacts: number;
-}
+export const GetFactsPageResponseDBSchema = z.object({
+	facts: z.array(DBFactStatementWithFeedSchema),
+	totalPages: z.number(),
+	totalFacts: z.number()
+});
+export type GetFactsPageResponseDB = z.infer<typeof GetFactsPageResponseDBSchema>;
 
 export const FeedRangeSchema = z.enum(['1', '3', '7']);
 export type FeedRange = z.infer<typeof FeedRangeSchema>;
@@ -240,11 +253,7 @@ export const DBPolicySchema = PolicySchema.extend({
 export type DBPolicy = z.infer<typeof DBPolicySchema>;
 
 export const NetworkSchema = DBNetworkSchema.extend({
-	policies: z.array(PolicySchema),
-	database: z.object({
-		fact_statements: z.string(),
-		feeds: z.string()
-	})
+	policies: z.array(PolicySchema)
 });
 
 export type Network = z.infer<typeof NetworkSchema>;
@@ -447,3 +456,31 @@ export const CEXValidationFileSchema = ValidationFileSchema.extend({
 });
 
 export type CEXValidationFile = z.infer<typeof CEXValidationFileSchema>;
+
+// Xerberus Risk Ratings API
+const dataSchema = z.object({
+	asset_name: z.string(),
+	subject: z.string(),
+	fingerprint: z.string(),
+	risk_category: z.string(),
+	reference_date: z.string()
+});
+export const XerberusRiskRatingAPIResponseSchema = z.object({
+	status: z.string(),
+	data: dataSchema
+});
+export type XerberusRiskRatingAPIResponse = z.infer<typeof XerberusRiskRatingAPIResponseSchema>;
+export const XerberusRiskRating = z.object({
+	response: XerberusRiskRatingAPIResponseSchema,
+	xSignedBy: z.string(),
+	xSignature: z.string(),
+	endpoint: z.string()
+});
+export type XerberusRiskRating = z.infer<typeof XerberusRiskRating>;
+export const RiskRatingSchema = z.union([z.promise(XerberusRiskRating.nullable()), z.null()]);
+export type RiskRating = z.infer<typeof RiskRatingSchema>;
+export const RiskRatingsSchema = z.object({
+	base: RiskRatingSchema,
+	quote: RiskRatingSchema
+});
+export type RiskRatings = z.infer<typeof RiskRatingsSchema>;

@@ -12,8 +12,8 @@
 	import ChartRangeSelect from './ChartRangeSelect.svelte';
 	import { Badge } from '$lib/components/ui/badge/index.js';
 	import PriceLineChart from './PriceLineChart.svelte';
-	import { formatFactStatementsForDisplay } from '$lib/client/helpers';
 	import FeedChartLoadingSkeleton from './FeedChartLoadingSkeleton.svelte';
+	import { formatFactStatementForDisplay } from '$lib/client/helpers';
 
 	export let feed: Feed;
 	export let selectedFact: FactStatement;
@@ -22,7 +22,7 @@
 
 	let isLoading = false;
 
-	$: facts = formatFactStatementsForDisplay(chartFacts, feed);
+	$: facts = chartFacts.map((fact) => formatFactStatementForDisplay(fact, feed));
 
 	const range = writable<FeedRange>('1');
 	page.subscribe((value) => {
@@ -59,7 +59,8 @@
 			<ChartRangeSelect class="self-end my-4" value={$range} onChange={handleRangeSelect} />
 			<Badge variant="outline" class="flex">
 				<p class="text-card-foreground text-opacity-70">
-					Showing {facts.length} of {feed.totalFacts} <span class="inline xs:hidden">Facts</span>
+					<span class="hidden xxs:inline">Showing</span>
+					{facts.length} of {feed.totalFacts} <span class="inline xs:hidden">Facts</span>
 					<span class="hidden xs:inline">Fact Statements</span>
 				</p>
 			</Badge>

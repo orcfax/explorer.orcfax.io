@@ -7,7 +7,6 @@
 	import { createTimeSinceStore } from '$lib/stores/time';
 
 	export let fact: FactStatement;
-	export let isFirstInList = false;
 	$: timeSincePublished = createTimeSinceStore(fact.publication_date);
 </script>
 

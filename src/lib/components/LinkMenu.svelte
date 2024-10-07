@@ -2,6 +2,8 @@
 	import { getCleanStatusUrl } from '$lib/client/helpers';
 	import * as DropdownMenu from '$lib/components/ui/dropdown-menu';
 	import { EllipsisVertical } from 'lucide-svelte';
+	import ThemeToggle from './ThemeToggle.svelte';
+	import NetworkSelect from './NetworkSelect.svelte';
 </script>
 
 <DropdownMenu.Root>
@@ -37,6 +39,10 @@
 			<a href="https://x.com/orcfax" target="_blank" rel="noreferrer">
 				<DropdownMenu.Item>X</DropdownMenu.Item>
 			</a>
+		</DropdownMenu.Group>
+		<DropdownMenu.Group class="flex flex-col gap-4 p-2 sm:hidden">
+			<ThemeToggle class="flex xxxs:hidden" />
+			<NetworkSelect class="flex sm:hidden" />
 		</DropdownMenu.Group>
 	</DropdownMenu.Content>
 </DropdownMenu.Root>

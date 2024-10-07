@@ -10,7 +10,6 @@
 	import { Button } from '$lib/components/ui/button';
 	import { goto } from '$app/navigation';
 	import FormattedCurrencyValue from './FormattedCurrencyValue.svelte';
-	import { error } from '@sveltejs/kit';
 	import { getFeedUrl, getFormattedDate, getFormattedTime } from '$lib/client/helpers';
 	import { networkStore } from '$lib/stores/network';
 	import FactCardField from './FactCardField.svelte';
@@ -48,11 +47,7 @@
 			? []
 			: [
 					table.column({
-						accessor: (fact) => {
-							if (typeof fact.feed === 'string')
-								error(400, 'Full feed required for table feed filter');
-							else return fact.feed.feed_id;
-						},
+						accessor: (fact) => fact.feed.feed_id,
 						header: 'Feed'
 					})
 				]),

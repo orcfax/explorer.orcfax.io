@@ -110,7 +110,7 @@
 			<span>Search</span>
 		{/if}
 	</div>
-	<div class="hidden text-sm xxs:flex sm:hidden text-muted-foreground">Tap to search</div>
+	<div class="hidden text-sm xs:flex sm:hidden text-muted-foreground">Tap to search</div>
 </button>
 
 <Command.Dialog bind:open={isOpen} loop>

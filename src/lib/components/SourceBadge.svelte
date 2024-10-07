@@ -5,7 +5,7 @@
 	import type { Source } from '$lib/types';
 
 	export let source: Source;
-	export let hideTooltip: boolean = false;
+	export let hideTooltip = false;
 
 	export let size: 'sm' | 'md' | 'lg' = 'lg';
 

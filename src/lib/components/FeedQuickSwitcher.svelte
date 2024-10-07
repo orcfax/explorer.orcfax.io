@@ -21,11 +21,11 @@
 	let open = false;
 	$: value = initialFeedID;
 
-	$: feedOptions = feeds.map((f) => ({
-		label: f.name,
-		value: f.feed_id,
-		baseAsset: f.base_asset,
-		quoteAsset: f.quote_asset
+	$: feedOptions = feeds.map(({ name, feed_id, base_asset, quote_asset }) => ({
+		label: name,
+		value: feed_id,
+		base_asset,
+		quote_asset
 	}));
 
 	$: selectedFeed = feedOptions.find((f) => f.value === value);
@@ -54,18 +54,17 @@
 			variant="outline"
 			role="combobox"
 			aria-expanded={open}
-			class="w-max h-fit p-3 -ml-2 xxxs:ml-0"
+			class="w-full xxxs:w-fit h-fit p-3"
 		>
 			{#if selectedFeed}
 				<FeedNameplate
 					feed={{
 						feed_id: selectedFeed.value,
 						name: selectedFeed.label,
-						base_asset: selectedFeed.baseAsset,
-						quote_asset: selectedFeed.quoteAsset
+						base_asset: selectedFeed.base_asset,
+						quote_asset: selectedFeed.quote_asset
 					}}
 					size="md"
-					hideNameOnMobile
 				/>
 			{:else}
 				<span class="text-muted-foreground">Switch feeds...</span>
@@ -101,8 +100,8 @@
 							feed={{
 								feed_id: option.value,
 								name: option.label,
-								base_asset: option.baseAsset,
-								quote_asset: option.quoteAsset
+								base_asset: option.base_asset,
+								quote_asset: option.quote_asset
 							}}
 							size="sm"
 						/>

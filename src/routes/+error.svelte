@@ -23,5 +23,5 @@
 			<!-- File a bug report? -->
 		</div>
 	</main>
-	<AppFooter />
+	<!-- <AppFooter /> -->
 </div>
