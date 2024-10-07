@@ -4,6 +4,8 @@
 	import Highlight, { LineNumbers } from 'svelte-highlight';
 	import { atomOneLight, atomOneDark } from 'svelte-highlight/styles';
 	import type { ArchivedFile } from '$lib/types';
+	import * as Tooltip from '$lib/components/ui/tooltip';
+	import CopyToClipboard from './CopyToClipboard.svelte';
 
 	export let file: ArchivedFile | null;
 </script>
@@ -15,10 +17,30 @@
 <div class="h-full rounded-lg">
 	{#if file}
 		<div class="flex flex-col h-[50rem]">
-			<div class="flex flex-col gap-1 px-4 pt-4 border-b">
-				<div class="flex justify-between w-full pb-3">
+			<div class="flex flex-col justify-between items-center px-4 py-2 border-b">
+				<div class="flex justify-between items-center w-full">
 					<h3 class="text-lg font-bold">{file.fileName}</h3>
-					<h4 class="text-primary font-bold">{file.extension}</h4>
+					<div class="flex justify-center items-center gap-2">
+						<Tooltip.Root openDelay={150}>
+							<Tooltip.Trigger>
+								<div
+									class="flex justify-center items-center rounded-full border border-card hover:bg-border/50 hover:border-border"
+								>
+									<CopyToClipboard
+										value={typeof file.content === 'string'
+											? file.content
+											: JSON.stringify(file.content, null, 2)}
+										class="-mt-0"
+									/>
+								</div>
+							</Tooltip.Trigger>
+							<Tooltip.Content side={'top'} sideOffset={6}>
+								<p>Copy current file</p>
+							</Tooltip.Content>
+						</Tooltip.Root>
+
+						<h4 class="text-primary font-bold">{file.extension}</h4>
+					</div>
 				</div>
 			</div>
 
