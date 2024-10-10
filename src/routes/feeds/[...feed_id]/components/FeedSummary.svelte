@@ -161,7 +161,7 @@
 										<AssetBadge asset={feed.quote_asset} size="md" />
 										<h5 class="mx-1 text-sm">{feed.quote_asset.ticker}</h5>
 										<div class="-mt-3">
-											<RiskRatingBadge riskRating={riskRatings.base} size="sm" />
+											<RiskRatingBadge riskRating={riskRatings.quote} size="sm" />
 										</div>
 									</div>
 								</div>
