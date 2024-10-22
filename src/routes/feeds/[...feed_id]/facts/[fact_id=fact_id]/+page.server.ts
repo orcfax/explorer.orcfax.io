@@ -28,7 +28,7 @@ import {
 } from '$lib/types';
 import { error, type ServerLoad } from '@sveltejs/kit';
 import { z } from 'zod';
-import { PRIVATE_XERBERUS_API_KEY, PRIVATE_XERBERUS_USER_EMAIL } from '$env/static/private';
+import { env } from '$env/static/private';
 
 export const load: ServerLoad = async ({ parent, params }) => {
 	try {
@@ -53,8 +53,8 @@ export const load: ServerLoad = async ({ parent, params }) => {
 };
 
 async function getXerberusRiskRating(asset: Asset): Promise<XerberusRiskRating | null> {
-	const apiKey = PRIVATE_XERBERUS_API_KEY;
-	const userEmail = PRIVATE_XERBERUS_USER_EMAIL;
+	const apiKey = env.PRIVATE_XERBERUS_API_KEY;
+	const userEmail = env.PRIVATE_XERBERUS_USER_EMAIL;
 	if (!apiKey || !userEmail) error(500, 'Missing Xerberus API key');
 
 	// Asset fingerprint is required to fetch data from Xerberus API
