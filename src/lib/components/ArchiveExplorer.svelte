@@ -29,7 +29,7 @@
 		>
 			<Resizable.Pane defaultSize={30}>
 				<div class="overflow-auto">
-					<TreeView directoryTree={archive.directoryTree} {fact} />
+					<TreeView {archive} {fact} />
 				</div>
 			</Resizable.Pane>
 			<Resizable.Handle withHandle />

@@ -70,7 +70,7 @@ export async function getFactsPage(
 	return { facts, totalPages, totalFacts: totalItems };
 }
 
-export async function getSources(network: Network): Promise<Source[]> {
+export async function getSources(): Promise<Source[]> {
 	// TODO: Hook up network to sources in db and filter
 	const sources = await db.collection('sources').getFullList();
 	return z.array(SourceSchema).parse(sources);

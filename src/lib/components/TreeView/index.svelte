@@ -6,13 +6,14 @@
 	import type { DirectoryNode } from '$lib/types';
 	import { writable } from 'svelte/store';
 	import { selectedItemStore } from '$lib/stores/archive';
+	import type { FactStatement, Archive } from '$lib/types';
 	import { getArweaveUrl, networkStore } from '$lib/stores/network';
-	import type { FactStatement } from '$lib/types';
-	import { Download } from 'lucide-svelte';
-	import * as Tooltip from '$lib/components/ui/tooltip';
+	import ArchiveDownloader from '$lib/components/ArchiveDownloader.svelte';
 
-	export let directoryTree: DirectoryNode[];
+	export let archive: Archive;
 	export let fact: FactStatement;
+
+	$: arweaveUrl = getArweaveUrl($networkStore.network, fact.storage_urn);
 
 	function convertNodesIntoTreeItems(nodes: DirectoryNode[]): TreeItem[] {
 		const treeItems: TreeItem[] = nodes.map((node) => {
@@ -30,7 +31,7 @@
 		return treeItems;
 	}
 
-	$: treeItems = convertNodesIntoTreeItems(directoryTree);
+	$: treeItems = convertNodesIntoTreeItems(archive.directoryTree);
 
 	let expanded = writable<string[]>([]);
 
@@ -64,22 +65,7 @@
 	<div class="flex flex-col">
 		<div class="flex justify-between items-center px-1 py-2 pr-2">
 			<h3 class="text-lg font-bold pl-4">Files</h3>
-			<Tooltip.Root openDelay={150}>
-				<Tooltip.Trigger class="flex h-9 w-9">
-					<a
-						href={getArweaveUrl($networkStore.network, fact.storage_urn)}
-						class="cursor-pointer"
-						target="_blank"
-					>
-						<div class="rounded-full p-2 border border-card hover:bg-border/50 hover:border-border">
-							<Download class="stroke-primary h-5 w-5" />
-						</div>
-					</a>
-				</Tooltip.Trigger>
-				<Tooltip.Content sideOffset={10}>
-					<p>Download archive from Arweave</p>
-				</Tooltip.Content>
-			</Tooltip.Root>
+			<ArchiveDownloader {arweaveUrl} {archive} />
 		</div>
 		<hr />
 	</div>
