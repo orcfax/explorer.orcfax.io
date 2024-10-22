@@ -28,7 +28,7 @@ import {
 } from '$lib/types';
 import { error, type ServerLoad } from '@sveltejs/kit';
 import { z } from 'zod';
-import { env } from '$env/static/private';
+import { env } from '$env/dynamic/private';
 
 export const load: ServerLoad = async ({ parent, params }) => {
 	try {
