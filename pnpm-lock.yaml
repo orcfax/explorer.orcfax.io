@@ -8,9 +8,6 @@ dependencies:
   '@tanstack/svelte-query':
     specifier: ^5.50.1
     version: 5.50.1(svelte@4.2.19)
-  bits-ui:
-    specifier: ^0.21.11
-    version: 0.21.11(svelte@4.2.19)
   chart.js:
     specifier: ^4.4.3
     version: 4.4.3
@@ -94,6 +91,9 @@ devDependencies:
   autoprefixer:
     specifier: ^10.4.19
     version: 10.4.19(postcss@8.4.39)
+  bits-ui:
+    specifier: ^0.21.11
+    version: 0.21.11(svelte@4.2.19)
   date-fns:
     specifier: ^3.6.0
     version: 3.6.0
@@ -539,7 +539,7 @@ packages:
       focus-trap: 7.5.4
       nanoid: 5.0.7
       svelte: 4.2.19
-    dev: false
+    dev: true
 
   /@melt-ui/svelte@0.83.0(svelte@4.2.19):
     resolution: {integrity: sha512-E7QT+8YSftz+Hdk1W0hNR3f+cnaF2COMWkStn+2u4vk0RO1I9mXRJl+bJD6uhYaH146oxEB+5elu/ABbv6rpsA==}
@@ -1213,7 +1213,7 @@ packages:
       '@melt-ui/svelte': 0.76.2(svelte@4.2.19)
       nanoid: 5.0.7
       svelte: 4.2.19
-    dev: false
+    dev: true
 
   /bits-ui@0.9.9(svelte@4.2.19):
     resolution: {integrity: sha512-LkdkyTtpXdkjBzPZJVJgpcre4fut6DONoprMfadHFo82HNUhph+02CxDjYEcZcThb5z4YjSxMlCYvQPZm+YtfQ==}

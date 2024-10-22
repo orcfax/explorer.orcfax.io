@@ -302,3 +302,22 @@ export function formatSumValue(num: number): string {
 		maximumFractionDigits: 2
 	});
 }
+
+export function getXerberusRiskDescription(risk: string): string {
+	const investmentGrade = ['AAA', 'AA', 'A'];
+	const speculativeGrade = ['BBB', 'BB', 'B'];
+	const highlySpeculativeGrade = ['CCC', 'CC', 'C'];
+	const junkGrade = ['D'];
+
+	if (investmentGrade.includes(risk)) {
+		return 'Investment Grade';
+	} else if (speculativeGrade.includes(risk)) {
+		return 'Speculative Grade';
+	} else if (highlySpeculativeGrade.includes(risk)) {
+		return 'Highly Speculative Grade';
+	} else if (junkGrade.includes(risk)) {
+		return 'Junk Grade';
+	} else {
+		return 'Unknown';
+	}
+}

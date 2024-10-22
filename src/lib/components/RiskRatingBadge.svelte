@@ -1,12 +1,23 @@
 <script lang="ts">
+	import { getXerberusRiskDescription } from '$lib/client/helpers';
+	import FactCardField from '$lib/components/FactCardField.svelte';
 	import * as Avatar from '$lib/components/ui/avatar';
-	import * as Tooltip from '$lib/components/ui/tooltip';
+	import * as HoverCard from '$lib/components/ui/hover-card';
 	import Skeleton from '$lib/components/ui/skeleton/skeleton.svelte';
 	import type { RiskRating } from '$lib/types';
+
+	type $$Props = {
+		riskRating: RiskRating;
+		size: 'sm' | 'md' | 'lg';
+		class?: string;
+	};
 
 	export let riskRating: RiskRating;
 
 	export let size: 'sm' | 'md' | 'lg' = 'lg';
+
+	let className: $$Props['class'] = undefined;
+	export { className as class };
 
 	const assetSizes = {
 		icon: {
@@ -35,19 +46,17 @@
 	$: fallbackTextSize = assetSizes.fallbackText[size];
 </script>
 
-{#if riskRating}
-	{#await riskRating}
-		<Skeleton class="rounded-full h-11 w-11" />
-	{:then riskRating}
-		{#if riskRating}
-			<Tooltip.Root openDelay={150}>
-				<Tooltip.Trigger asChild let:builder>
-					<a
+<div class={`${className}`}>
+	{#if riskRating}
+		{#await riskRating}
+			<Skeleton class={`rounded-full ${assetSize}`} />
+		{:then riskRating}
+			{#if riskRating}
+				<HoverCard.Root openDelay={150}>
+					<HoverCard.Trigger
 						href={`https://app.xerberus.io/cardano/stats?token=${riskRating.response.data.asset_name}`}
 						target="_blank"
 						class="cursor-pointer"
-						use:builder.action
-						{...builder}
 					>
 						<Avatar.Root class={`${assetSize}`}>
 							<Avatar.Image
@@ -63,14 +72,32 @@
 								</div>
 							</Avatar.Fallback>
 						</Avatar.Root>
-					</a>
-				</Tooltip.Trigger>
-				<Tooltip.Content>
-					<p>
-						{riskRating.response.data.asset_name}
-					</p>
-				</Tooltip.Content>
-			</Tooltip.Root>
-		{/if}
-	{/await}
-{/if}
+					</HoverCard.Trigger>
+					<HoverCard.Content>
+						<div class="space-y-4">
+							<FactCardField name="Name" value={riskRating.response.data.asset_name} />
+							<FactCardField name="Category" value={riskRating.response.data.risk_category} />
+							<FactCardField
+								name="Description"
+								value={getXerberusRiskDescription(riskRating.response.data.risk_category)}
+							/>
+							<FactCardField
+								name="Endpoint"
+								value={riskRating.endpoint}
+								allowCopyToClipboard
+								ellipsisAndHover
+							/>
+							<FactCardField name="Signed By" value={riskRating.xSignedBy} />
+							<FactCardField
+								name="Signature"
+								value={riskRating.xSignature}
+								allowCopyToClipboard
+								ellipsisAndHover
+							/>
+						</div>
+					</HoverCard.Content>
+				</HoverCard.Root>
+			{/if}
+		{/await}
+	{/if}
+</div>
