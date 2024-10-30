@@ -111,6 +111,15 @@ export const DBFeedWithDataSchema = DBFeedSchema.extend({
 
 export type DBFeedWithData = z.infer<typeof DBFeedWithDataSchema>;
 
+export const FeedPriceDataSchema = z.object({
+	latestFact: DBFactStatementSchema,
+	oneDayAgo: z.number(),
+	threeDaysAgo: z.number(),
+	sevenDaysAgo: z.number()
+});
+
+export type FeedPriceData = z.infer<typeof FeedPriceDataSchema>;
+
 export const FeedHistoricalValuesSchema = z.object({
 	feedID: z.string(),
 	oneDayAgo: z.number(),

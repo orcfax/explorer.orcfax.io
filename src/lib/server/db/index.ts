@@ -83,7 +83,7 @@ export async function getFeeds(network: Network): Promise<DBFeedWithData[]> {
 			.getFullList({ filter: `network = "${network.id}"` });
 		const dbFeeds = z.array(DBFeedSchema).parse(feedRecords);
 
-		const concurrencyLimit = 2;
+		const concurrencyLimit = 6;
 		const feeds: DBFeedWithData[] = [];
 
 		// Process feeds in batches of 2
@@ -126,37 +126,55 @@ export async function getFeeds(network: Network): Promise<DBFeedWithData[]> {
 export async function getFeedByID(
 	network: Network,
 	feedID: string
-): Promise<DBFeedWithData | null> {
+): Promise<Omit<
+	DBFeedWithData,
+	'latestFact' | 'totalFacts' | 'oneDayAgo' | 'threeDaysAgo' | 'sevenDaysAgo'
+> | null> {
 	try {
 		const feedRecord = await db
 			.collection('feeds')
 			.getFirstListItem(`network = "${network.id}" && feed_id~"${feedID}"`);
 		const dbFeed = DBFeedSchema.parse(feedRecord);
 
-		const [factRecord, historicalValues] = await Promise.all([
-			db.collection('facts').getList(1, 1, {
-				filter: `network = "${network.id}" && feed="${dbFeed.id}"`,
-				sort: '-validation_date'
-			}),
-			fetchHistoricalValues(network.id, dbFeed.id)
-		]);
+		// const [factRecord, historicalValues] = await Promise.all([
+		// 	db.collection('facts').getList(1, 1, {
+		// 		filter: `network = "${network.id}" && feed="${dbFeed.id}"`,
+		// 		sort: '-validation_date'
+		// 	}),
+		// 	fetchHistoricalValues(network.id, dbFeed.id)
+		// ]);
 
-		const latestFact = DBFactStatementSchema.parse(factRecord.items[0]);
-		const totalFacts = factRecord.totalItems;
+		// const latestFact = DBFactStatementSchema.parse(factRecord.items[0]);
+		// const totalFacts = factRecord.totalItems;
 
 		return {
 			...dbFeed,
-			latestFact,
+			// latestFact,
 			base_asset: getAssetFromFeedName(dbFeed.name, 'base'),
 			quote_asset: getAssetFromFeedName(dbFeed.name, 'quote'),
-			type_description: 'Current Exchange Rate',
-			totalFacts,
-			...historicalValues
+			type_description: 'Current Exchange Rate'
+			// totalFacts,
+			// ...historicalValues
 		};
 	} catch (error) {
 		console.error(`Error retrieving feed by ID: ${error}`);
 		return null;
 	}
+}
+
+export async function getFeedPriceData(network: Network, feedId: string) {
+	const [factRecord, historicalValues] = await Promise.all([
+		db.collection('facts').getList(1, 1, {
+			filter: `network = "${network.id}" && feed="${feedId}"`,
+			sort: '-validation_date'
+		}),
+		fetchHistoricalValues(network.id, feedId)
+	]);
+
+	const latestFact = DBFactStatementSchema.parse(factRecord.items[0]);
+	const totalFacts = factRecord.totalItems;
+
+	return { latestFact, totalFacts, historicalValues };
 }
 
 export async function fetchHistoricalValues(networkID: string, feedId: string) {
