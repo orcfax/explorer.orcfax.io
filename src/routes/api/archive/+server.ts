@@ -3,7 +3,7 @@ import fs from 'fs';
 import path from 'path';
 import JSZip from 'jszip';
 import tar from 'tar-stream';
-import { pipeline } from 'stream';
+import { pipeline, Readable } from 'stream';
 import { createGunzip } from 'zlib';
 import { type RequestHandler } from '@sveltejs/kit';
 import { getArchiveFromURN } from '$lib/server/db/archive';
@@ -21,19 +21,20 @@ export const GET: RequestHandler = async ({ url }) => {
 		const zip = new JSZip();
 		const archive = await getArchiveFromURN(storageUrn, sourceType);
 
-		if (!response.ok || response.body === null) {
-			throw new Error(`Failed to download file: ${response.statusText}`);
-		}
+		if (!archive) return new Response(null, { status: 404, statusText: 'Archive not found' });
 
-		const extractFolderName = await extractTarGz(response.body, zip);
+		const extractFolderName = await extractTarGz(webStreamToNodeStream(archive.archiveZip), zip);
+		console.log('FOLDER NAME: ', extractFolderName);
 
 		const indexHtmlPath = path.join(process.cwd(), 'build', 'archive.html');
 		let indexHtml = fs.readFileSync(indexHtmlPath, 'utf-8');
 
-		const jsonData = {
-			/* JSON Archive Data from req body */
+		const archiveData = {
+			files: archive.files,
+			details: archive.details,
+			directoryTree: archive.directoryTree
 		};
-		indexHtml = injectJsonIntoHtml(indexHtml, jsonData);
+		indexHtml = injectJsonIntoHtml(indexHtml, archiveData);
 		zip.file('archive.html', indexHtml);
 
 		// Step 4: Generate the zip file
@@ -52,11 +53,25 @@ export const GET: RequestHandler = async ({ url }) => {
 	}
 };
 
+function webStreamToNodeStream(webStream: ReadableStream<Uint8Array>): Readable {
+	const reader = webStream.getReader();
+	return new Readable({
+		async read() {
+			const { done, value } = await reader.read();
+			if (done) {
+				this.push(null);
+			} else {
+				this.push(Buffer.from(value));
+			}
+		}
+	});
+}
+
 function injectJsonIntoHtml(htmlContent: string, jsonData: object) {
 	return htmlContent.replace('INJECT_JSON_HERE', JSON.stringify(jsonData));
 }
 
-async function extractTarGz(gzStream: ReadableStream<Uint8Array>, zip: JSZip) {
+async function extractTarGz(gzStream: Readable, zip: JSZip) {
 	return new Promise((resolve, reject) => {
 		const gunzip = createGunzip();
 		const extract = tar.extract();
@@ -72,7 +87,7 @@ async function extractTarGz(gzStream: ReadableStream<Uint8Array>, zip: JSZip) {
 			}
 
 			// Read the file content
-			const chunks = [];
+			const chunks: Buffer[] = [];
 			stream.on('data', (chunk) => chunks.push(chunk));
 			stream.on('end', () => {
 				const fileContent = Buffer.concat(chunks);

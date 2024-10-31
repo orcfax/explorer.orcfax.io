@@ -11,7 +11,8 @@ import type {
 	DEXValidationFile,
 	DBFeed,
 	DirectoryNode,
-	FactSourceMessage
+	FactSourceMessage,
+	ArchiveDownload
 } from '$lib/types';
 import { getFactByURN, getSources } from '$lib/server/db';
 import {
@@ -74,8 +75,8 @@ export async function getArchive(
 
 export async function getArchiveFromURN(
 	storage_urn: string,
-	sourceType: DBFeed['source_type']
-): Promise<Omit<Archive, 'fact'>> {
+	sourceType: string
+): Promise<ArchiveDownload | null> {
 	try {
 		const archivedBagResponse = await fetch(`https://arweave.net/${storage_urn.slice(12)}`, {});
 
@@ -95,20 +96,21 @@ export async function getArchiveFromURN(
 		const files = await getArchivedFilesFromTarball(archivedBagTarball);
 		const details = await getDetailsFromArchive(files, sourceType);
 
-		return { directoryTree, files, details };
+		return { directoryTree, files, details, archiveZip: archivedBagResponse.body };
 	} catch (e) {
 		console.error('Something went wrong fetching the archive: ', JSON.stringify(e, null, 2));
 		return {
 			directoryTree: null,
 			files: null,
-			details: null
+			details: null,
+			archiveZip: null
 		};
 	}
 }
 
 async function getDetailsFromArchive(
 	files: ArchivedFile[],
-	sourceType: DBFeed['source_type']
+	sourceType: string
 ): Promise<ArchiveDetails | null> {
 	try {
 		// Get message file names for source matching

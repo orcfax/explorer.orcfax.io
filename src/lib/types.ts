@@ -294,6 +294,13 @@ export interface Archive {
 	details: ArchiveDetails | null;
 }
 
+export interface ArchiveDownload {
+	directoryTree: DirectoryNode[];
+	files: ArchivedFile[];
+	details: ArchiveDetails;
+	archiveZip: ReadableStream<Uint8Array>;
+}
+
 export interface DirectoryNode {
 	type: 'file' | 'folder';
 	name: string;

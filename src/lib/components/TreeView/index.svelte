@@ -5,10 +5,11 @@
 	import Tree from './tree.svelte';
 	import type { DirectoryNode } from '$lib/types';
 	import { writable } from 'svelte/store';
-	import { selectedItemStore } from '$lib/stores/archive';
 	import type { FactStatement, Archive } from '$lib/types';
 	import { getArweaveUrl, networkStore } from '$lib/stores/network';
 	import ArchiveDownloader from '$lib/components/ArchiveDownloader.svelte';
+	import { updateSelectedItem } from '$lib/stores/archive';
+	import { page } from '$app/stores';
 
 	export let archive: Archive;
 	export let fact: FactStatement;
@@ -52,11 +53,13 @@
 	} = ctx;
 
 	selectedItem.subscribe((value) => {
-		if (!value) selectedItemStore.set(null);
+		if (!value) updateSelectedItem($page.url, 0);
 		// If the item is a folder, do not select it
 		else if (value.hasAttribute('aria-expanded')) return;
 		else {
-			selectedItemStore.set(value.getAttribute('data-id'));
+			console.log(value.getAttribute('data-id'));
+			// updateSelectedItem($page.url, parseInt(value.getAttribute('data-id').split('-')[1]));
+			// selectedItemStore.set(value.getAttribute('data-id'));
 		}
 	});
 </script>
@@ -65,7 +68,7 @@
 	<div class="flex flex-col">
 		<div class="flex justify-between items-center px-1 py-2 pr-2">
 			<h3 class="text-lg font-bold pl-4">Files</h3>
-			<ArchiveDownloader {arweaveUrl} {archive} />
+			<ArchiveDownloader {archive} />
 		</div>
 		<hr />
 	</div>

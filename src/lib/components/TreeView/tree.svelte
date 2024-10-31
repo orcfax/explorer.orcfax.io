@@ -53,7 +53,7 @@
 	<li class={level !== 1 ? 'pl-4' : ''}>
 		<button
 			class="flex items-center gap-1 rounded-md p-1 px-2 focus:ring-2 focus:ring-ring focus:outline-none"
-			class:bg-input={$selectedItemStore && itemId.includes($selectedItemStore)}
+			class:bg-input={i === $selectedItemStore}
 			use:melt={$item({
 				id: itemId,
 				hasChildren

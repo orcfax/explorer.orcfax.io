@@ -2,20 +2,26 @@
 	import TreeView from './TreeView/index.svelte';
 	import * as Resizable from '$lib/components/ui/resizable';
 	import FileViewer from './FileViewer.svelte';
-	import { selectedItemStore } from '$lib/stores/archive';
+	import { selectedItemStore, updateSelectedItem } from '$lib/stores/archive';
 	import type { FactStatement, Archive } from '$lib/types';
+	import { page } from '$app/stores';
 
 	export let archive: Archive;
 	export let fact: FactStatement;
 
-	$: selectedFile = archive.files ? archive.files[0] : null;
+	const initialSelectedIndex = parseInt($page.url.searchParams.get('archive') ?? '0');
+	$: selectedFile = archive.files ? archive.files[initialSelectedIndex] : null;
+
+	$: console.log(JSON.stringify(archive, null, 2));
 
 	selectedItemStore.subscribe((value) => {
 		if (value) {
-			const file = archive.files?.find((file) =>
-				file.fileName.includes(value.substring(0, value.length - 2))
-			);
-			if (file) selectedFile = file;
+			const file = archive.files?.[value];
+			if (file) {
+				selectedFile = file;
+				const index = archive.files?.indexOf(file);
+				updateSelectedItem($page.url, index);
+			}
 		}
 	});
 </script>
