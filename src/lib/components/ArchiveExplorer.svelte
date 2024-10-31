@@ -5,16 +5,16 @@
 	import { selectedItemStore } from '$lib/stores/archive';
 	import type { FactStatement, Archive } from '$lib/types';
 
-	export let archive: Archive;
-	export let fact: FactStatement;
+	export let archive: Archive | null;
+	export let fact: FactStatement | null;
 
-	$: selectedFile = archive.files ? archive.files[0] : null;
+	$: selectedFile = archive && archive.files ? archive.files[0] : null;
 
 	selectedItemStore.subscribe((value) => {
 		if (value) {
-			const file = archive.files?.find((file) =>
-				file.fileName.includes(value.substring(0, value.length - 2))
-			);
+			const file =
+				archive &&
+				archive.files?.find((file) => file.fileName.includes(value.substring(0, value.length - 2)));
 			if (file) selectedFile = file;
 		}
 	});
@@ -22,7 +22,7 @@
 
 <div class="w-full">
 	<h3 class="font-bold text-2xl pb-4">Archive Explorer</h3>
-	{#if archive.directoryTree && archive.files}
+	{#if archive && archive.directoryTree && archive.files}
 		<Resizable.PaneGroup
 			class="border-2 rounded-lg h-80 bg-card text-card-foreground"
 			direction="horizontal"

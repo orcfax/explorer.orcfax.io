@@ -12,9 +12,9 @@
 	let className: string | undefined | null;
 
 	$: priceDifferences = {
-		'1D': calculatePriceDifference(feed.latestFact.value, feed.oneDayAgo),
-		'3D': calculatePriceDifference(feed.latestFact.value, feed.threeDaysAgo),
-		'7D': calculatePriceDifference(feed.latestFact.value, feed.sevenDaysAgo)
+		'1D': feed.latestFact ? calculatePriceDifference(feed.latestFact.value, feed.oneDayAgo) : 0,
+		'3D': feed.latestFact ? calculatePriceDifference(feed.latestFact.value, feed.threeDaysAgo) : 0,
+		'7D': feed.latestFact ? calculatePriceDifference(feed.latestFact.value, feed.sevenDaysAgo) : 0
 	};
 
 	function getIcon(difference: number) {

@@ -3,7 +3,7 @@
 	import type { FactStatement } from '$lib/types';
 	import FactCardField from '$lib/components/FactCardField.svelte';
 
-	export let fact: FactStatement;
+	export let fact: FactStatement | null;
 
 	let innerWidth = 0;
 	let innerHeight = 0;
@@ -16,7 +16,7 @@
 <section class="w-fit md:w-full flex flex-col self-start">
 	<h3 class="hidden md:inline font-bold text-xl pb-4">Archival</h3>
 	<div class="p-6 section-container bg-card text-card-foreground">
-		{#if fact.storage_urn}
+		{#if fact && fact.storage_urn}
 			<div class="grid grid-cols-1 xs:grid-cols-2 xl:grid-cols-3 gap-4">
 				<FactCardField
 					name="Arweave Tx ID"

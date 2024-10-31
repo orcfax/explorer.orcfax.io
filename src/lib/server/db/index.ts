@@ -70,7 +70,7 @@ export async function getFactsPage(
 	return { facts, totalPages, totalFacts: totalItems };
 }
 
-export async function getSources(network: Network): Promise<Source[]> {
+export async function getSources(): Promise<Source[]> {
 	// TODO: Hook up network to sources in db and filter
 	const sources = await db.collection('sources').getFullList();
 	return z.array(SourceSchema).parse(sources);
@@ -83,7 +83,7 @@ export async function getFeeds(network: Network): Promise<DBFeedWithData[]> {
 			.getFullList({ filter: `network = "${network.id}"` });
 		const dbFeeds = z.array(DBFeedSchema).parse(feedRecords);
 
-		const concurrencyLimit = 2;
+		const concurrencyLimit = 4;
 		const feeds: DBFeedWithData[] = [];
 
 		// Process feeds in batches of 2
@@ -98,7 +98,10 @@ export async function getFeeds(network: Network): Promise<DBFeedWithData[]> {
 					fetchHistoricalValues(network.id, dbFeed.id)
 				]);
 
-				const latestFact = DBFactStatementSchema.parse(factRecord.items[0]);
+				const latestFact =
+					factRecord && factRecord.items[0]
+						? DBFactStatementSchema.parse(factRecord.items[0])
+						: null;
 				const totalFacts = factRecord.totalItems;
 
 				return {
@@ -128,9 +131,10 @@ export async function getFeedByID(
 	feedID: string
 ): Promise<DBFeedWithData | null> {
 	try {
+		const feedIDParsed = feedID.replace(/\/facts\/undefined$/, '');
 		const feedRecord = await db
 			.collection('feeds')
-			.getFirstListItem(`network = "${network.id}" && feed_id~"${feedID}"`);
+			.getFirstListItem(`network = "${network.id}" && feed_id~"${feedIDParsed}"`);
 		const dbFeed = DBFeedSchema.parse(feedRecord);
 
 		const [factRecord, historicalValues] = await Promise.all([
@@ -141,7 +145,9 @@ export async function getFeedByID(
 			fetchHistoricalValues(network.id, dbFeed.id)
 		]);
 
-		const latestFact = DBFactStatementSchema.parse(factRecord.items[0]);
+		const latestFact = factRecord.items[0]
+			? DBFactStatementSchema.parse(factRecord.items[0])
+			: null;
 		const totalFacts = factRecord.totalItems;
 
 		return {

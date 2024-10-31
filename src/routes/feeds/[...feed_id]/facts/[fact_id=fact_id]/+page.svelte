@@ -26,19 +26,24 @@
 	export let data;
 
 	let factSummary: HTMLElement;
-	let selectedFact: FactStatement = formatFactStatementForDisplay(data.selectedFact, data.feed);
+	let selectedFact: FactStatement | null = data.selectedFact
+		? formatFactStatementForDisplay(data.selectedFact, data.feed)
+		: null;
 
 	$: feed = formatFeedForDisplay(data.feed);
 	$: chartFacts = data.chartFacts;
 	$: archive = data.archive;
 
-	async function handleSelectedFactChange(newFactStatement: FactStatement) {
+	async function handleSelectedFactChange(newFactStatement: FactStatement | null) {
 		const params = new URLSearchParams($page.url.searchParams);
 		selectedFact = newFactStatement;
 		factSummary.scrollIntoView({ behavior: 'smooth' });
-		await goto(`${getFeedUrl(feed, newFactStatement.fact_urn)}?${params.toString()}`, {
-			noScroll: true
-		});
+		await goto(
+			`${getFeedUrl(feed, newFactStatement ? newFactStatement.fact_urn : 'undefined')}?${params.toString()}`,
+			{
+				noScroll: true
+			}
+		);
 	}
 </script>
 
@@ -56,7 +61,10 @@
 		<h1 class="font-bold text-3xl pb-4 self-start">Feed Summary</h1>
 		<FeedSummary
 			onFeedSwitch={(feed) => {
-				if (feed) selectedFact = formatFactStatementForDisplay(feed.latestFact, feed);
+				if (feed)
+					selectedFact = feed.latestFact
+						? formatFactStatementForDisplay(feed.latestFact, feed)
+						: null;
 			}}
 			{feed}
 			onLatestFactClick={handleSelectedFactChange}
@@ -73,7 +81,15 @@
 				class="flex flex-col w-full items-start space-y-8 md:justify-around md:items-center lg:space-x-8 lg:space-y-0 lg:flex-row lg:justify-evenly"
 			>
 				<div class="lg:sticky lg:top-28 self-center lg:self-start -mt-6 xxxs:-mt-0">
-					<FactSummary {feed} fact={selectedFact} />
+					{#if selectedFact}
+						<FactSummary {feed} fact={selectedFact} />
+					{:else}
+						<div
+							class="flex flex-col justify-center items-center w-full rounded-lg bg-card text-card-foreground border"
+						>
+							<p class="p-12 w-fit font-extrabold">No Fact Statement selected.</p>
+						</div>
+					{/if}
 				</div>
 				<div class="hidden md:flex md:flex-col md:space-y-4">
 					<h4 class="font-bold text-2xl">Fact Statement Details</h4>
