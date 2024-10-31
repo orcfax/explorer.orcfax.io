@@ -13,7 +13,7 @@ import type {
 	DirectoryNode,
 	FactSourceMessage
 } from '$lib/types';
-import { getFactByURN, getFeeds, getSources } from '$lib/server/db';
+import { getFactByURN, getSources } from '$lib/server/db';
 import {
 	CEXValidationFileSchema,
 	DBFactStatementSchema,
@@ -36,7 +36,7 @@ export const load: ServerLoad = async ({ parent, params }) => {
 			feed,
 			selectedFact,
 			// Lazy-load / stream the rest of the data
-			archive: getArchive(network, selectedFact, feed.source_type)
+			archive: selectedFact ? getArchive(network, selectedFact, feed.source_type) : null
 		};
 	} catch (e) {
 		console.error(JSON.stringify(e, null, 2));
@@ -98,7 +98,7 @@ async function getDetailsFromArchive(
 ): Promise<ArchiveDetails | null> {
 	try {
 		// Get message file names for source matching
-		const allSources = await getSources(network);
+		const allSources = await getSources();
 		const allFileNames = files.map((file) => file.fileName);
 		const messageFileNames = allFileNames
 			.filter((name) => name.includes('message-'))
@@ -168,7 +168,9 @@ async function getSelectedFact(
 	network: Network,
 	factURN: string,
 	feed: DBFeedWithData
-): Promise<DBFactStatement> {
+): Promise<DBFactStatement | null> {
+	if (feed.latestFact === null) return null;
+
 	let selectedFact = feed.latestFact;
 	if (factURN !== feed.latestFact.fact_urn) {
 		const response = await getFactByURN(network, factURN);

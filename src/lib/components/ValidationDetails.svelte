@@ -3,7 +3,7 @@
 	import FactCardField from './FactCardField.svelte';
 	import Skeleton from '$lib/components/ui/skeleton/skeleton.svelte';
 
-	export let archive: Promise<Archive>;
+	export let archive: Promise<Archive> | null;
 </script>
 
 <section class="w-fit xl:w-full flex flex-col">
@@ -12,7 +12,7 @@
 		<Skeleton class="h-[10rem] w-[15rem]" />
 	{:then archive}
 		<div class="p-6 section-container bg-card text-card-foreground">
-			{#if archive.details}
+			{#if archive && archive.details}
 				<div class="grid grid-cols-1 xs:grid-cols-2 md:grid-cols-1 xl:grid-cols-1 gap-4">
 					<FactCardField
 						name="Content Signature"

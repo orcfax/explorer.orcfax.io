@@ -23,5 +23,4 @@
 			<!-- File a bug report? -->
 		</div>
 	</main>
-	<AppFooter />
 </div>

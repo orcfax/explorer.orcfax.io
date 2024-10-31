@@ -1,7 +1,7 @@
-name: "🚀 Feature Request"
-description: "I have a specific suggestion for the Orcfax Explorer"
-title: "Feature: "
-labels: ["feature-request"]
+name: '🚀 Feature Request'
+description: 'I have a specific suggestion for the Orcfax Explorer'
+title: 'Feature: '
+labels: ['feature-request']
 body:
   - type: markdown
     attributes:
@@ -21,19 +21,19 @@ body:
     attributes:
       label: What problem are you trying to solve?
       description: A concise description of what the problem is.
-      placeholder: "e.g. I want to …"
+      placeholder: 'e.g. I want to …'
     validations:
       required: true
 
   - type: textarea
     attributes:
-      label: "Describe the solution you’d like"
+      label: 'Describe the solution you’d like'
     validations:
       required: true
 
   - type: textarea
     attributes:
-      label: "Describe any alternatives you’ve considered"
+      label: 'Describe any alternatives you’ve considered'
       description: |
         Can the Orcfax Explorer already do this, but in a less convenient way?
         Can you do this using other explorers or tools?

@@ -11,14 +11,17 @@
 	import Skeleton from '$lib/components/ui/skeleton/skeleton.svelte';
 	import { Badge } from '$lib/components/ui/badge/index.js';
 	import { feedsListStore } from '$lib/stores/feedsList';
+	import { readable } from 'svelte/store';
 
 	export let feed: Feed;
-	export let onLatestFactClick: (latestFact: FactStatement) => void;
+	export let onLatestFactClick: (latestFact: FactStatement | null) => void;
 	export let onFeedSwitch: (feed: DBFeedWithData) => void;
 
 	$: deviationPercentage = feed.deviation + '%';
 	$: heartbeat = getHeartbeatFromInterval(feed.heartbeat_interval);
-	$: timeSinceLastUpdate = createTimeSinceStore(feed.latestFact.validation_date);
+	$: timeSinceLastUpdate = feed.latestFact
+		? createTimeSinceStore(feed.latestFact.validation_date)
+		: readable('N/A');
 </script>
 
 <section
@@ -115,10 +118,11 @@
 					class="text-base sm:text-xl whitespace-nowrap w-min font-bold"
 					on:click={() => onLatestFactClick(feed.latestFact)}
 				>
-					<FormattedCurrencyValue
-						value={feed.latestFact.value}
-						class="water-reflection-text water-reflection-underline"
-					/>
+					{#if feed.latestFact}
+						<FormattedCurrencyValue value={feed.latestFact.value} />
+					{:else}
+						<p>N/A</p>
+					{/if}
 				</button>
 
 				<Tooltip.Root openDelay={150}>
@@ -129,7 +133,9 @@
 					</Tooltip.Trigger>
 					<Tooltip.Content side="bottom">
 						<p>
-							{`${feed.latestFact.validation_date_formatted} ${feed.latestFact.validation_time_formatted}`}
+							{feed.latestFact
+								? `${feed.latestFact.validation_date_formatted} ${feed.latestFact.validation_time_formatted}`
+								: 'N/A'}
 						</p>
 					</Tooltip.Content>
 				</Tooltip.Root>

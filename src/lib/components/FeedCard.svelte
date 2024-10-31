@@ -10,9 +10,12 @@
 	import PriceDifferenceBadges from './PriceDifferenceBadges.svelte';
 	import FormattedCurrencyValue from './FormattedCurrencyValue.svelte';
 	import { getFeedUrl } from '$lib/client/helpers';
+	import { readable } from 'svelte/store';
 
 	export let feed: Feed;
-	$: timeSinceLastUpdate = createTimeSinceStore(feed.latestFact.validation_date);
+	$: timeSinceLastUpdate = feed.latestFact
+		? createTimeSinceStore(feed.latestFact.validation_date)
+		: readable('N/A');
 </script>
 
 <a href={getFeedUrl(feed)} class="w-max">
@@ -51,7 +54,11 @@
 					href={getFeedUrl(feed)}
 					class="text-lg whitespace-nowrap w-min font-semibold underline hover:text-primary"
 				>
-					<FormattedCurrencyValue value={feed.latestFact.value} />
+					{#if feed.latestFact}
+						<FormattedCurrencyValue value={feed.latestFact.value} />
+					{:else}
+						<p>N/A</p>
+					{/if}
 				</a>
 				<Tooltip.Root openDelay={150}>
 					<Tooltip.Trigger>
@@ -61,7 +68,9 @@
 					</Tooltip.Trigger>
 					<Tooltip.Content side="bottom">
 						<p>
-							{`${feed.latestFact.validation_date_formatted} ${feed.latestFact.validation_time_formatted}`}
+							{feed.latestFact
+								? `${feed.latestFact.validation_date_formatted} ${feed.latestFact.validation_time_formatted}`
+								: 'N/A'}
 						</p>
 					</Tooltip.Content>
 				</Tooltip.Root>

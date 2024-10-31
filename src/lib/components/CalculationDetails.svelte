@@ -5,7 +5,7 @@
 	import FactCardField from './FactCardField.svelte';
 	import Skeleton from '$lib/components/ui/skeleton/skeleton.svelte';
 
-	export let archive: Promise<Archive>;
+	export let archive: Promise<Archive> | null;
 
 	function getMedianAssetPairValue(sources: Source[]): number | null {
 		if (sources.length === 0) {
@@ -38,7 +38,7 @@
 		<Skeleton class="h-[26rem] w-[18rem]" />
 	{:then archive}
 		<div class="p-6 section-container bg-card text-card-foreground">
-			{#if archive.details}
+			{#if archive && archive.details}
 				{@const baseAssetValueSum = archive.details.sources.reduce(
 					(acc, source) => acc + (source.baseAssetValue || 0),
 					0
