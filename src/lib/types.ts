@@ -297,7 +297,7 @@ export interface Archive {
 export interface ArchiveDownload {
 	directoryTree: DirectoryNode[];
 	files: ArchivedFile[];
-	details: ArchiveDetails;
+	details: ArchiveDetails | null;
 	archiveZip: ReadableStream<Uint8Array>;
 }
 

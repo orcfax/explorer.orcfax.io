@@ -99,12 +99,7 @@ export async function getArchiveFromURN(
 		return { directoryTree, files, details, archiveZip: archivedBagResponse.body };
 	} catch (e) {
 		console.error('Something went wrong fetching the archive: ', JSON.stringify(e, null, 2));
-		return {
-			directoryTree: null,
-			files: null,
-			details: null,
-			archiveZip: null
-		};
+		return null;
 	}
 }
 
@@ -184,7 +179,9 @@ export async function getSelectedFact(
 	network: Network,
 	factURN: string,
 	feed: DBFeedWithData
-): Promise<DBFactStatement> {
+): Promise<DBFactStatement | null> {
+	if (feed.latestFact === null) return null;
+
 	let selectedFact = feed.latestFact;
 	if (factURN !== feed.latestFact.fact_urn) {
 		const response = await getFactByURN(network, factURN);
