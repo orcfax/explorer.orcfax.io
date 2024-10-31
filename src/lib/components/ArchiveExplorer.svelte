@@ -1,21 +1,17 @@
 <script lang="ts">
-	import TreeView from './TreeView/index.svelte';
+	import TreeView from '$lib/components/TreeView/index.svelte';
 	import * as Resizable from '$lib/components/ui/resizable';
 	import FileViewer from './FileViewer.svelte';
 	import { selectedItemStore, updateSelectedItem } from '$lib/stores/archive';
-	import type { FactStatement, Archive } from '$lib/types';
+	import type { Archive } from '$lib/types';
 	import { page } from '$app/stores';
 
-	export let archive: Archive;
-	export let fact: FactStatement;
+	export let archive: Archive | null;
 
-	const initialSelectedIndex = parseInt($page.url.searchParams.get('archive') ?? '0');
-	$: selectedFile = archive.files ? archive.files[initialSelectedIndex] : null;
-
-	$: console.log(JSON.stringify(archive, null, 2));
+	$: selectedFile = archive && archive.files ? archive.files[0] : null;
 
 	selectedItemStore.subscribe((value) => {
-		if (value) {
+		if (value && archive) {
 			const file = archive.files?.[value];
 			if (file) {
 				selectedFile = file;
@@ -28,14 +24,14 @@
 
 <div class="w-full">
 	<h3 class="font-bold text-2xl pb-4">Archive Explorer</h3>
-	{#if archive.directoryTree && archive.files}
+	{#if archive && archive.directoryTree && archive.files}
 		<Resizable.PaneGroup
 			class="border-2 rounded-lg h-80 bg-card text-card-foreground"
 			direction="horizontal"
 		>
 			<Resizable.Pane defaultSize={30}>
 				<div class="overflow-auto">
-					<TreeView {archive} {fact} />
+					<TreeView {archive} />
 				</div>
 			</Resizable.Pane>
 			<Resizable.Handle withHandle />

@@ -1,9 +1,8 @@
 <script lang="ts">
-	import type { DBFeedWithData, Feed } from '$lib/types';
+	import type { DBFeedWithData, FactStatement, Feed } from '$lib/types';
 	import FeedCard from './FeedCard.svelte';
 	import * as Select from '$lib/components/ui/select';
 	import Input from '$lib/components/ui/input/input.svelte';
-	import Skeleton from '$lib/components/ui/skeleton/skeleton.svelte';
 	import { formatFeedForDisplay } from '$lib/client/helpers';
 
 	export let feeds: DBFeedWithData[];
@@ -31,12 +30,12 @@
 				return matchesQuery && matchesSourceType;
 			}) || [];
 
+		const getValidationDate = (fact: FactStatement | null) =>
+			fact ? new Date(fact.validation_date).getTime() : new Date(0).getTime();
+
 		const sorted = filtered.sort((a, b) => {
 			if (sortBy.value === 'updated') {
-				return (
-					new Date(b.latestFact.validation_date).getTime() -
-					new Date(a.latestFact.validation_date).getTime()
-				);
+				return getValidationDate(b.latestFact) - getValidationDate(a.latestFact);
 			} else {
 				return a.feed_id.localeCompare(b.feed_id);
 			}

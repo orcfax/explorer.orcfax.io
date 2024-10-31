@@ -55,7 +55,7 @@ export function formatFactStatementForDisplay(
 export function formatFeedForDisplay(feed: DBFeedWithData): Feed {
 	return {
 		...feed,
-		latestFact: formatFactStatementForDisplay(feed.latestFact, feed)
+		latestFact: feed.latestFact ? formatFactStatementForDisplay(feed.latestFact, feed) : null
 	};
 }
 
@@ -186,9 +186,21 @@ export function getAssetFromFeedName(feedName: string, type: 'base' | 'quote'): 
 		},
 		{
 			ticker: 'WMT',
-			name: 'World Mobile Token',
+			name: 'World Mobile Token - WMT',
 			url: 'https://worldmobiletoken.com/',
 			image: '/assets/wmt.png'
+		},
+		{
+			ticker: 'WMTX',
+			name: 'World Mobile Token - WMTX',
+			url: 'https://worldmobiletoken.com/',
+			image: '/assets/wmtx.png'
+		},
+		{
+			ticker: 'CBLP',
+			name: 'Yamfore - CBLP',
+			url: 'https://www.yamfore.com',
+			image: '/assets/cblp.webp'
 		},
 		{
 			ticker: 'USDM',
@@ -393,14 +405,16 @@ export function getHeartbeatFromInterval(seconds: number): string {
 
 export function getFeedUrl(feed: DBFeedWithData | Feed | DBFeed, fact_urn?: string): string {
 	const feedPart = getFeedIDWithoutVersion(feed.feed_id);
-	const hasFactUrn = fact_urn !== undefined || 'latestFact' in feed;
+	const hasFactUrn = fact_urn !== undefined || ('latestFact' in feed && feed.latestFact);
 	const factPart = fact_urn
 		? fact_urn.slice(11)
-		: 'latestFact' in feed
+		: 'latestFact' in feed && feed.latestFact
 			? feed.latestFact.fact_urn.slice(11)
 			: null;
 
-	return hasFactUrn ? `/feeds/${feedPart}/facts/${factPart}` : `/feeds/${feedPart}/facts`;
+	const url = hasFactUrn ? `/feeds/${feedPart}/facts/${factPart}` : `/feeds/${feedPart}/facts`;
+
+	return url;
 }
 
 export function getFeedIDWithoutVersion(feed_id: string): string {

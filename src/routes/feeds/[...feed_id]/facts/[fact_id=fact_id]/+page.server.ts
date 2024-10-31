@@ -11,7 +11,7 @@ export const load: ServerLoad = async ({ parent, params }) => {
 			feed,
 			selectedFact,
 			// Lazy-load / stream the rest of the data
-			archive: getArchive(selectedFact, feed.source_type)
+			archive: selectedFact ? getArchive(selectedFact, feed.source_type) : null
 		};
 	} catch (e) {
 		console.error(JSON.stringify(e, null, 2));

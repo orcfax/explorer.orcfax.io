@@ -99,7 +99,7 @@ export const FactStatementSchema = DBFactStatementSchema.extend({
 });
 
 export const DBFeedWithDataSchema = DBFeedSchema.extend({
-	latestFact: DBFactStatementSchema,
+	latestFact: DBFactStatementSchema.nullable(),
 	totalFacts: z.number(),
 	type_description: z.string(),
 	base_asset: AssetSchema,
@@ -121,7 +121,7 @@ export const FeedHistoricalValuesSchema = z.object({
 export type FeedHistoricalValues = z.infer<typeof FeedHistoricalValuesSchema>;
 
 export const FeedSchema = DBFeedWithDataSchema.extend({
-	latestFact: FactStatementSchema
+	latestFact: FactStatementSchema.nullable()
 });
 
 export const FeedLayoutDataSchema = z.object({

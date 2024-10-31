@@ -5,16 +5,12 @@
 	import Tree from './tree.svelte';
 	import type { DirectoryNode } from '$lib/types';
 	import { writable } from 'svelte/store';
-	import type { FactStatement, Archive } from '$lib/types';
-	import { getArweaveUrl, networkStore } from '$lib/stores/network';
+	import type { Archive } from '$lib/types';
 	import ArchiveDownloader from '$lib/components/ArchiveDownloader.svelte';
 	import { updateSelectedItem } from '$lib/stores/archive';
 	import { page } from '$app/stores';
 
 	export let archive: Archive;
-	export let fact: FactStatement;
-
-	$: arweaveUrl = getArweaveUrl($networkStore.network, fact.storage_urn);
 
 	function convertNodesIntoTreeItems(nodes: DirectoryNode[]): TreeItem[] {
 		const treeItems: TreeItem[] = nodes.map((node) => {
@@ -32,7 +28,9 @@
 		return treeItems;
 	}
 
-	$: treeItems = convertNodesIntoTreeItems(archive.directoryTree);
+	$: treeItems = convertNodesIntoTreeItems(
+		archive && archive.directoryTree ? archive.directoryTree : []
+	);
 
 	let expanded = writable<string[]>([]);
 
@@ -68,7 +66,9 @@
 	<div class="flex flex-col">
 		<div class="flex justify-between items-center px-1 py-2 pr-2">
 			<h3 class="text-lg font-bold pl-4">Files</h3>
-			<ArchiveDownloader {archive} />
+			{#if archive}
+				<ArchiveDownloader {archive} />
+			{/if}
 		</div>
 		<hr />
 	</div>
