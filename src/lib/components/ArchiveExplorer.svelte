@@ -1,12 +1,26 @@
 <script lang="ts">
-	import TreeView from './TreeView/index.svelte';
+	import TreeView from '$lib/components/TreeView/index.svelte';
 	import * as Resizable from '$lib/components/ui/resizable';
 	import FileViewer from './FileViewer.svelte';
 	import { selectedItemStore } from '$lib/stores/archive';
-	import type { FactStatement, Archive } from '$lib/types';
+	import type { Archive } from '$lib/types';
+	// import { page } from '$app/stores';
 
 	export let archive: Archive | null;
-	export let fact: FactStatement | null;
+
+	// TODO: enable url store archive nav
+	// $: selectedFile = archive && archive.files ? archive.files[0] : null;
+
+	// selectedItemStore.subscribe((value) => {
+	// 	if (value && archive) {
+	// 		const file = archive.files?.[value];
+	// 		if (file) {
+	// 			selectedFile = file;
+	// 			const index = archive.files?.indexOf(file);
+	// 			updateSelectedItem($page.url, index);
+	// 		}
+	// 	}
+	// });
 
 	$: selectedFile = archive && archive.files ? archive.files[0] : null;
 
@@ -29,7 +43,7 @@
 		>
 			<Resizable.Pane defaultSize={30}>
 				<div class="overflow-auto">
-					<TreeView directoryTree={archive.directoryTree} {fact} />
+					<TreeView {archive} />
 				</div>
 			</Resizable.Pane>
 			<Resizable.Handle withHandle />

@@ -62,9 +62,7 @@
 									value={getMedianAssetPairValue(archive.details.sources) ?? 0}
 								/>
 							{:else}
-								<div
-									class="flex flex-col items-center bg-secondary/90 border p-3 rounded-lg space-y-3"
-								>
+								<div class="flex flex-col items-center bg-muted/50 border p-3 rounded-lg space-y-3">
 									<FactCardField
 										name="Middle Values"
 										value={`( ${archive.details.sources[midIndex - 1].assetPairValue} + ${archive.details.sources[midIndex].assetPairValue} )`}
@@ -79,9 +77,7 @@
 								</div>
 							{/if}
 						{:else if isDEX}
-							<div
-								class="flex flex-col items-center bg-secondary/90 border p-3 rounded-lg space-y-3"
-							>
+							<div class="flex flex-col items-center bg-muted/50 border p-3 rounded-lg space-y-3">
 								<FactCardField name="Quote Sum" value={formatSumValue(quoteAssetValueSum)} />
 								<Divide class="stroke-primary" />
 								<FactCardField name="Base Sum" value={formatSumValue(baseAssetValueSum)} />
