@@ -1,10 +1,10 @@
 import fs from 'fs';
-import path from 'path';
 import JSZip from 'jszip';
 import * as zlib from 'zlib';
 import tar from 'tar-stream';
 import { Readable } from 'stream';
 import { type RequestHandler } from '@sveltejs/kit';
+import archiveViewer from '$lib/archive-viewer.html?raw';
 import { getArchiveFromURN } from '$lib/server/db/archive';
 
 export const GET: RequestHandler = async ({ url }) => {
@@ -22,8 +22,7 @@ export const GET: RequestHandler = async ({ url }) => {
 
 		if (!archive) return new Response(null, { status: 404, statusText: 'Archive not found' });
 
-		const indexHtmlPath = path.join(process.cwd(), 'static', 'archive-viewer.html');
-		let indexHtml = fs.readFileSync(indexHtmlPath, 'utf-8');
+		let indexHtml = archiveViewer;
 
 		const archiveData = {
 			fact: archive.fact,
