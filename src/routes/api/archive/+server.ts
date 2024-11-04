@@ -1,4 +1,3 @@
-// src/routes/api/download/+server.js
 import fs from 'fs';
 import path from 'path';
 import JSZip from 'jszip';
@@ -58,33 +57,30 @@ function injectJsonIntoHtml(htmlContent: string, jsonData: object) {
 function createReadableStreamFromUint8Array(uint8Array: Uint8Array) {
 	return new ReadableStream({
 		start(controller) {
-			// Enqueue the Uint8Array into the stream
 			controller.enqueue(uint8Array);
-			// Close the stream once the data is pushed
 			controller.close();
 		}
 	});
 }
 
-// Function to decompress and extract the .gz file from a ReadableStream
 async function extractGzFileFromStream(
 	readableStream: ReadableStream<Uint8Array>
 ): Promise<Map<string, Buffer>> {
-	return new Promise(async (resolve, reject) => {
-		const extractedFiles = new Map<string, Buffer>();
-		const gunzip = zlib.createGunzip();
-		const extract = tar.extract();
+	const extractedFiles = new Map<string, Buffer>();
+	const gunzip = zlib.createGunzip();
+	const extract = tar.extract();
 
+	return new Promise((resolve, reject) => {
 		extract.on('entry', (header: { name: string }, stream: Readable, next: () => void) => {
-			const chunks: Buffer[] = [];
+			const chunks: Uint8Array[] = [];
 
 			stream.on('data', (chunk: Buffer) => {
-				chunks.push(chunk);
+				chunks.push(Uint8Array.from(chunk));
 			});
 
 			stream.on('end', () => {
 				extractedFiles.set(header.name, Buffer.concat(chunks));
-				next(); // Continue to the next entry
+				next();
 			});
 
 			stream.on('error', (error: Error) => reject(error));
@@ -93,16 +89,12 @@ async function extractGzFileFromStream(
 		extract.on('finish', () => resolve(extractedFiles));
 		extract.on('error', (error: Error) => reject(error));
 
-		try {
-			// Buffer the ReadableStream and convert it to a Node.js Readable stream
-			const bufferedData = await bufferReadableStream(readableStream);
-			const nodeStream = convertBufferedDataToNodeStream(bufferedData);
-
-			// Pipe the Node.js stream into gunzip and then into the tar extractor
-			nodeStream.pipe(gunzip).pipe(extract);
-		} catch (error) {
-			reject(error);
-		}
+		bufferReadableStream(readableStream)
+			.then((bufferedData) => {
+				const nodeStream = convertBufferedDataToNodeStream(bufferedData);
+				nodeStream.pipe(gunzip).pipe(extract);
+			})
+			.catch((error) => reject(error));
 	});
 }
 
@@ -110,36 +102,33 @@ async function bufferReadableStream(readableStream: ReadableStream<Uint8Array>):
 	const reader = readableStream.getReader();
 	const chunks: Uint8Array[] = [];
 
+	// eslint-disable-next-line no-constant-condition
 	while (true) {
 		const { value, done } = await reader.read();
 		if (done) break;
 		if (value) chunks.push(value);
 	}
 
-	// Concatenate all chunks into a single Buffer
-	return Buffer.concat(chunks.map((chunk) => Buffer.from(chunk)));
+	const bufferChunks: Buffer[] = chunks.map((chunk) => Buffer.from(chunk));
+	return Buffer.concat(bufferChunks as unknown as Uint8Array[]);
 }
 
 function convertBufferedDataToNodeStream(buffer: Buffer): Readable {
 	return Readable.from(buffer);
 }
 
-// Function to create a zip archive with the extracted files and archive.html
 async function createZipArchive(
 	extractedFiles: Map<string, Buffer>,
 	archiveHtmlFile: string
 ): Promise<Buffer> {
 	const zip = new JSZip();
 
-	// Add the extracted files to the zip archive
 	for (const [filePath, fileContent] of extractedFiles) {
 		zip.file(filePath, fileContent);
 	}
 
-	// Add the archive-viewer.html file to the zip archive
 	zip.file('archive-viewer.html', archiveHtmlFile);
 
-	// Generate the zip file and write it to the output path
 	const zipContent = await zip.generateAsync({ type: 'nodebuffer' });
 
 	return zipContent;
