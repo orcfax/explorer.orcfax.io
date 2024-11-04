@@ -2,22 +2,34 @@
 	import TreeView from '$lib/components/TreeView/index.svelte';
 	import * as Resizable from '$lib/components/ui/resizable';
 	import FileViewer from './FileViewer.svelte';
-	import { selectedItemStore, updateSelectedItem } from '$lib/stores/archive';
+	import { selectedItemStore } from '$lib/stores/archive';
 	import type { Archive } from '$lib/types';
-	import { page } from '$app/stores';
+	// import { page } from '$app/stores';
 
 	export let archive: Archive | null;
+
+	// TODO: enable url store archive nav
+	// $: selectedFile = archive && archive.files ? archive.files[0] : null;
+
+	// selectedItemStore.subscribe((value) => {
+	// 	if (value && archive) {
+	// 		const file = archive.files?.[value];
+	// 		if (file) {
+	// 			selectedFile = file;
+	// 			const index = archive.files?.indexOf(file);
+	// 			updateSelectedItem($page.url, index);
+	// 		}
+	// 	}
+	// });
 
 	$: selectedFile = archive && archive.files ? archive.files[0] : null;
 
 	selectedItemStore.subscribe((value) => {
-		if (value && archive) {
-			const file = archive.files?.[value];
-			if (file) {
-				selectedFile = file;
-				const index = archive.files?.indexOf(file);
-				updateSelectedItem($page.url, index);
-			}
+		if (value) {
+			const file =
+				archive &&
+				archive.files?.find((file) => file.fileName.includes(value.substring(0, value.length - 2)));
+			if (file) selectedFile = file;
 		}
 	});
 </script>

@@ -12,10 +12,12 @@ import type {
 	DBFeed,
 	DirectoryNode,
 	FactSourceMessage,
-	ArchiveDownload
+	ArchiveDownload,
+	FactStatementStub
 } from '$lib/types';
 import { getFactByURN, getSources } from '$lib/server/db';
 import {
+	BagInfoSchema,
 	CEXValidationFileSchema,
 	DBFactStatementSchema,
 	DEXValidationFileSchema,
@@ -95,12 +97,30 @@ export async function getArchiveFromURN(
 		const directoryTree = await buildFileExplorer(archivedBagTarball);
 		const files = await getArchivedFilesFromTarball(archivedBagTarball);
 		const details = await getDetailsFromArchive(files, sourceType);
+		const fact = getFactStatementFromArchive(files);
 
-		return { directoryTree, files, details, archiveZip: archivedBagResponse.body };
+		return { fact, directoryTree, files, details, archiveZip: archivedBagTarball };
 	} catch (e) {
 		console.error('Something went wrong fetching the archive: ', JSON.stringify(e, null, 2));
 		return null;
 	}
+}
+
+function getFactStatementFromArchive(files: ArchivedFile[]): FactStatementStub {
+	const bagInfoFile = files.find((file) => file.fileName.includes('bag-info.txt'));
+	if (!bagInfoFile || typeof bagInfoFile.content !== 'string')
+		throw new Error('Bag info file not found in archive');
+	const bagInfo = parseBagInfoTextFile(bagInfoFile.content);
+	return {
+		fact_urn: bagInfo['Fact-Datum-URN'],
+		feed_name: bagInfo['Feed-Name'],
+		feed_type: bagInfo['Feed-Type'],
+		value: bagInfo['Fact-Datum-Value'],
+		inverse_value: 0,
+		description: bagInfo['Fact-Description'],
+		inverse_description: '',
+		validation_date: bagInfo['Fact-Validation-Date']
+	};
 }
 
 async function getDetailsFromArchive(
@@ -170,7 +190,7 @@ async function getDetailsFromArchive(
 			sourceType
 		};
 	} catch (e) {
-		console.error('error', JSON.stringify(e, null, 2));
+		console.error('error', e);
 		return null;
 	}
 }
@@ -342,4 +362,28 @@ async function getArchivedFilesFromTarball(tarball: ArrayBuffer): Promise<Archiv
 	}
 
 	return files;
+}
+
+function parseBagInfoTextFile(text: string) {
+	// Convert text file contents into an object
+	const data: Record<string, string> = text.split('\n').reduce(
+		(acc, line) => {
+			const [key, ...valueParts] = line.split(': ');
+			if (key && valueParts.length > 0) {
+				acc[key] = valueParts.join(': ').trim();
+			}
+			return acc;
+		},
+		{} as Record<string, string>
+	);
+
+	// Validate and parse the data
+	const result = BagInfoSchema.safeParse(data);
+
+	if (!result.success) {
+		console.error('Validation errors:', result.error.format());
+		throw new Error('Invalid data in the text file');
+	}
+
+	return result.data;
 }

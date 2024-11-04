@@ -13,9 +13,9 @@
 
 <svelte:window bind:innerWidth bind:innerHeight />
 
-<section class="flex flex-col">
+<section class="flex flex-col bg-card">
 	<div
-		class="p-6 section-container bg-card text-card-foreground border-primary/20 border-2 min-w-max"
+		class="p-6 rounded-lg bg-muted dark:bg-muted/50 text-card-foreground border-primary/20 border-2 min-w-max"
 	>
 		<header class="flex flex-col">
 			<h4 class="text-lg self-center font-semibold">The price of</h4>

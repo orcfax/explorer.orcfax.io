@@ -27,7 +27,7 @@
 </script>
 
 <button
-	class={`group relative flex -mt-2 shrink-0 h-9 w-9 items-center justify-center isolate z-10 ${tooltipDirection} ${className}`}
+	class={`group relative flex shrink-0 h-9 w-9 items-center justify-center isolate z-10 ${tooltipDirection} ${className}`}
 	class:tooltip={showCopiedTooltip}
 	class:tooltip-open={showCopiedTooltip}
 	data-tip="Copied!"

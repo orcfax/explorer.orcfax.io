@@ -7,8 +7,9 @@
 	import { writable } from 'svelte/store';
 	import type { Archive } from '$lib/types';
 	import ArchiveDownloader from '$lib/components/ArchiveDownloader.svelte';
-	import { updateSelectedItem } from '$lib/stores/archive';
-	import { page } from '$app/stores';
+	// import { updateSelectedItem } from '$lib/stores/archive';
+	// import { page } from '$app/stores';
+	import { selectedItemStore } from '$lib/stores/archive';
 
 	export let archive: Archive;
 
@@ -51,15 +52,23 @@
 	} = ctx;
 
 	selectedItem.subscribe((value) => {
-		if (!value) updateSelectedItem($page.url, 0);
+		if (!value) selectedItemStore.set(null);
 		// If the item is a folder, do not select it
 		else if (value.hasAttribute('aria-expanded')) return;
 		else {
-			console.log(value.getAttribute('data-id'));
-			// updateSelectedItem($page.url, parseInt(value.getAttribute('data-id').split('-')[1]));
-			// selectedItemStore.set(value.getAttribute('data-id'));
+			selectedItemStore.set(value.getAttribute('data-id'));
 		}
 	});
+
+	// selectedItem.subscribe((value) => {
+	// 	if (!value) updateSelectedItem($page.url, 0);
+	// 	// If the item is a folder, do not select it
+	// 	else if (value.hasAttribute('aria-expanded')) return;
+	// 	else {
+	// 		// updateSelectedItem($page.url, parseInt(value.getAttribute('data-id').split('-')[1]));
+	// 		// selectedItemStore.set(value.getAttribute('data-id'));
+	// 	}
+	// });
 </script>
 
 <div class="flex flex-col h-[50rem]">

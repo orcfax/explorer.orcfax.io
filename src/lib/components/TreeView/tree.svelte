@@ -15,6 +15,10 @@
 		folderOpen: FolderOpen,
 		highlight: ArrowRightFromLine
 	};
+
+	// in button below:
+	// class="flex items-center gap-1 rounded-md p-1 px-2 focus:ring-2 focus:ring-ring focus:outline-none"
+	// class:bg-input={i === $selectedItemStore}
 </script>
 
 <script lang="ts">
@@ -53,7 +57,7 @@
 	<li class={level !== 1 ? 'pl-4' : ''}>
 		<button
 			class="flex items-center gap-1 rounded-md p-1 px-2 focus:ring-2 focus:ring-ring focus:outline-none"
-			class:bg-input={i === $selectedItemStore}
+			class:bg-input={$selectedItemStore && itemId.includes($selectedItemStore)}
 			use:melt={$item({
 				id: itemId,
 				hasChildren
