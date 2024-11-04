@@ -1,4 +1,3 @@
-import fs from 'fs';
 import JSZip from 'jszip';
 import * as zlib from 'zlib';
 import tar from 'tar-stream';
