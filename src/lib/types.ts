@@ -59,6 +59,7 @@ export const DBFeedSchema = z.object({
 	name: z.string(),
 	version: z.number(),
 	status: z.enum(['active', 'inactive']),
+	inactive_reason: z.string().optional(),
 	source_type: z.enum(['CEX', 'DEX', '']),
 	funding_type: z.enum(['showcase', 'paid', 'subsidized', '']),
 	calculation_method: z.string(),
