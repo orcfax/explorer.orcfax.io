@@ -17,30 +17,28 @@
 <div class="h-full rounded-lg">
 	{#if file}
 		<div class="flex flex-col h-[50rem]">
-			<div class="flex flex-col justify-between items-center px-4 py-2 border-b">
-				<div class="flex justify-between items-center w-full">
-					<h3 class="text-lg font-bold">{file.fileName}</h3>
-					<div class="flex justify-center items-center gap-2">
-						<Tooltip.Root openDelay={150}>
-							<Tooltip.Trigger>
-								<div
-									class="flex justify-center items-center rounded-full border border-card hover:bg-border/50 hover:border-border"
-								>
-									<CopyToClipboard
-										value={typeof file.content === 'string'
-											? file.content
-											: JSON.stringify(file.content, null, 2)}
-										class="-mt-0"
-									/>
-								</div>
-							</Tooltip.Trigger>
-							<Tooltip.Content side={'top'} sideOffset={6}>
-								<p>Copy current file</p>
-							</Tooltip.Content>
-						</Tooltip.Root>
+			<div class="flex justify-between items-center w-full px-4 py-2 border-b h-min">
+				<h3 class="text-lg font-bold">{file.fileName}</h3>
+				<div class="flex justify-center items-center gap-2">
+					<Tooltip.Root openDelay={150}>
+						<Tooltip.Trigger>
+							<div
+								class="flex justify-center items-center rounded-full border border-card hover:bg-border/50 hover:border-border h-min"
+							>
+								<CopyToClipboard
+									value={typeof file.content === 'string'
+										? file.content
+										: JSON.stringify(file.content, null, 2)}
+									class="-mt-0 h-min"
+								/>
+							</div>
+						</Tooltip.Trigger>
+						<Tooltip.Content side={'top'} sideOffset={6}>
+							<p>Copy current file</p>
+						</Tooltip.Content>
+					</Tooltip.Root>
 
-						<h4 class="text-primary font-bold">{file.extension}</h4>
-					</div>
+					<h4 class="font-bold">{file.extension}</h4>
 				</div>
 			</div>
 

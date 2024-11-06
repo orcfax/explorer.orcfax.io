@@ -42,14 +42,16 @@
 </script>
 
 <Tooltip.Root openDelay={150}>
-	<Tooltip.Trigger class="flex h-9 w-9">
-		<button class="cursor-pointer" on:click={() => handleDownload(archive)}>
-			<div class="rounded-full p-2 border border-card hover:bg-border/50 hover:border-border">
-				<Download class="stroke-primary h-5 w-5" />
-			</div>
+	<Tooltip.Trigger class="flex h-fit w-fit">
+		<button
+			class="flex items-center gap-[0.15rem] rounded-lg text-sm text-primary/90 font-medium p-2 py-[.38rem] border bg-muted/50 hover:bg-border/60 hover:text-primary cursor-pointer"
+			on:click={() => handleDownload(archive)}
+		>
+			<p class="px-1">Download</p>
+			<Download class="stroke-primary h-[1.1rem] w-[1.1rem]" />
 		</button>
 	</Tooltip.Trigger>
 	<Tooltip.Content sideOffset={10}>
-		<p>Download archive from Arweave</p>
+		<p>Download full archive</p>
 	</Tooltip.Content>
 </Tooltip.Root>

@@ -12,6 +12,7 @@
 	import { Badge } from '$lib/components/ui/badge/index.js';
 	import { feedsListStore } from '$lib/stores/feedsList';
 	import { readable } from 'svelte/store';
+	import { CircleHelp } from 'lucide-svelte';
 
 	export let feed: Feed;
 	export let onLatestFactClick: (latestFact: FactStatement | null) => void;
@@ -36,11 +37,22 @@
 						<span class="text-muted-foreground">{feed.feed_id}</span>
 					</p>
 					<Tooltip.Root openDelay={150}>
-						<Tooltip.Trigger class="self-end mb-1.5 xxxs:self-auto xxxs:mb-0">
+						<Tooltip.Trigger
+							class="flex items-center gap-2 self-end mb-1.5 xxxs:self-auto xxxs:mb-0"
+						>
 							<PingStatus color={feed.status === 'active' ? 'green' : 'red'} size="md" />
+							{#if feed.status === 'inactive' && feed.inactive_reason}
+								<CircleHelp
+									strokeWidth="2.5px"
+									class="stroke-primary fill-primary-foreground w-4"
+								/>
+							{/if}
 						</Tooltip.Trigger>
 						<Tooltip.Content>
-							<p>This feed is {feed.status}.</p>
+							<p>
+								{(feed.status === 'inactive' && feed.inactive_reason) ||
+									`This feed is ${feed.status}`}
+							</p>
 						</Tooltip.Content>
 					</Tooltip.Root>
 				</div>
@@ -72,7 +84,7 @@
 							{#if feed.status === 'active'}
 								{`${heartbeat} or ${deviationPercentage} change`}
 							{:else}
-								{`No scheduled publications`}
+								{`N/A`}
 							{/if}
 						</p>
 					</Badge>
@@ -115,7 +127,7 @@
 				<h3 class="font-bold">Latest Value:</h3>
 				<button
 					type="button"
-					class="text-base sm:text-xl whitespace-nowrap w-min font-bold"
+					class="text-base sm:text-xl whitespace-nowrap w-min font-bold water-reflection-text water-reflection-underline"
 					on:click={() => onLatestFactClick(feed.latestFact)}
 				>
 					{#if feed.latestFact}

@@ -4,6 +4,8 @@
 	import FileViewer from './FileViewer.svelte';
 	import { selectedItemStore } from '$lib/stores/archive';
 	import type { Archive } from '$lib/types';
+	import ArchiveDownloader from '$lib/components/ArchiveDownloader.svelte';
+
 	// import { page } from '$app/stores';
 
 	export let archive: Archive | null;
@@ -35,7 +37,13 @@
 </script>
 
 <div class="w-full">
-	<h3 class="font-bold text-2xl pb-4">Archive Explorer</h3>
+	<div class="flex gap-4">
+		<h3 class="font-bold text-2xl pb-4">Archive Explorer</h3>
+		{#if archive}
+			<ArchiveDownloader {archive} />
+		{/if}
+	</div>
+
 	{#if archive && archive.directoryTree && archive.files}
 		<Resizable.PaneGroup
 			class="border-2 rounded-lg h-80 bg-card text-card-foreground"

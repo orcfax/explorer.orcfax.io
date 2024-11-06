@@ -11,6 +11,7 @@
 	import FormattedCurrencyValue from './FormattedCurrencyValue.svelte';
 	import { getFeedUrl } from '$lib/client/helpers';
 	import { readable } from 'svelte/store';
+	import { CircleHelp } from 'lucide-svelte';
 
 	export let feed: Feed;
 	$: timeSinceLastUpdate = feed.latestFact
@@ -36,11 +37,20 @@
 						<span class="text-muted-foreground">{feed.feed_id}</span>
 					</p>
 					<Tooltip.Root openDelay={150}>
-						<Tooltip.Trigger>
+						<Tooltip.Trigger class="flex items-center gap-2">
 							<PingStatus color={feed.status === 'active' ? 'green' : 'red'} size="md" />
+							{#if feed.status === 'inactive' && feed.inactive_reason}
+								<CircleHelp
+									strokeWidth="2.5px"
+									class="stroke-primary fill-primary-foreground w-4"
+								/>
+							{/if}
 						</Tooltip.Trigger>
 						<Tooltip.Content>
-							<p>This feed is {feed.status}.</p>
+							<p>
+								{(feed.status === 'inactive' && feed.inactive_reason) ||
+									`This feed is ${feed.status}`}
+							</p>
 						</Tooltip.Content>
 					</Tooltip.Root>
 				</div>

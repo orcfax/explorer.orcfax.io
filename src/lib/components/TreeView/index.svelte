@@ -72,14 +72,8 @@
 </script>
 
 <div class="flex flex-col h-[50rem]">
-	<div class="flex flex-col">
-		<div class="flex justify-between items-center px-1 py-2 pr-2">
-			<h3 class="text-lg font-bold pl-4">Files</h3>
-			{#if archive}
-				<ArchiveDownloader {archive} />
-			{/if}
-		</div>
-		<hr />
+	<div class="flex justify-between items-center border-b px-1 py-2 pr-2 h-[52px]">
+		<h3 class="text-lg font-bold pl-4 pr-2">Files</h3>
 	</div>
 
 	<ul class="overflow-auto px-4 pb-2 pt-2 h-full" {...$tree}>
