@@ -24,7 +24,7 @@
 							<Nfc class="stroke-primary" size="30" />
 						</Card.Header>
 						<Card.Content>
-							<div class="text-2xl font-bold">{summary.totalFeeds}</div>
+							<div class="text-2xl font-bold">{summary.totalActiveFeeds}</div>
 							<a
 								href="https://orcfax.io#connect"
 								target="_blank"

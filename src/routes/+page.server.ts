@@ -6,5 +6,5 @@ export const load: PageServerLoad = async ({ parent }) => {
 
 	const summary = await getOrcfaxSummary(network);
 
-	return { summary, network, networks, sources: getSources(network) };
+	return { summary, network, networks, sources: getSources() };
 };

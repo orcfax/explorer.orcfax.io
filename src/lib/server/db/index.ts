@@ -30,7 +30,7 @@ export async function getOrcfaxSummary(network: Network): Promise<GetOrcfaxSumma
 	return {
 		totalFacts: await getAllFactsCount(network),
 		totalFacts24Hour: await getTodaysFactsCount(network),
-		totalFeeds: await getFeedsCount(network)
+		totalActiveFeeds: await getActiveFeedsCount(network)
 	};
 }
 
@@ -220,10 +220,10 @@ export async function getAllFeedsHistoricalValues(network: Network, feeds: DBFee
 	return historicalValues;
 }
 
-export async function getFeedsCount(network: Network): Promise<number> {
+export async function getActiveFeedsCount(network: Network): Promise<number> {
 	const { totalItems } = await db
 		.collection('feeds')
-		.getList(1, 1, { filter: `network = "${network.id}"` });
+		.getList(1, 1, { filter: `network = "${network.id}" && status = "active"` });
 	return totalItems;
 }
 

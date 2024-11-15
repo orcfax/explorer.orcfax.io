@@ -29,7 +29,7 @@ export type Asset = z.infer<typeof AssetSchema>;
 export interface OrcfaxStats {
 	totalFacts: number;
 	totalFacts24Hour: number;
-	totalFeeds: number;
+	totalActiveFeeds: number;
 }
 
 export const TagSchema = z.object({
@@ -181,7 +181,7 @@ export interface GetSelectedFactResponse {
 export interface GetOrcfaxSummaryResponseDB {
 	totalFacts: number;
 	totalFacts24Hour: number;
-	totalFeeds: number;
+	totalActiveFeeds: number;
 }
 
 export interface GetFactsPageResponseDB {
