@@ -16,7 +16,7 @@
 	import { formatFactStatementForDisplay } from '$lib/client/helpers';
 
 	export let feed: Feed;
-	export let selectedFact: FactStatement;
+	export let selectedFact: FactStatement | null;
 	export let chartFacts: DBFactStatement[];
 	export let onChartPointClick: (fact: FactStatement) => void;
 
@@ -50,7 +50,11 @@
 {#if isLoading}
 	<FeedChartLoadingSkeleton />
 {:else if facts.length < 1}
-	<div>Unable to display feed price chart...</div>
+	<div
+		class="flex flex-col justify-center items-center w-full relative border border-t-0 rounded-lg rounded-t-none p-2 md:p-6 pt-0 md:pt-0"
+	>
+		<p class="mt-4">Unable to display feed price chart...</p>
+	</div>
 {:else}
 	<div
 		class="flex flex-col justify-center items-center w-full relative border border-t-0 rounded-lg rounded-t-none p-2 md:p-6 pt-0 md:pt-0"
@@ -66,12 +70,14 @@
 			</Badge>
 		</div>
 
-		<PriceLineChart
-			{facts}
-			{selectedFact}
-			onPointClick={onChartPointClick}
-			range={$range}
-			{isMobile}
-		/>
+		{#if selectedFact}
+			<PriceLineChart
+				{facts}
+				{selectedFact}
+				onPointClick={onChartPointClick}
+				range={$range}
+				{isMobile}
+			/>
+		{/if}
 	</div>
 {/if}

@@ -5,14 +5,13 @@
 	import Tree from './tree.svelte';
 	import type { DirectoryNode } from '$lib/types';
 	import { writable } from 'svelte/store';
+	import type { Archive } from '$lib/types';
+	import ArchiveDownloader from '$lib/components/ArchiveDownloader.svelte';
+	// import { updateSelectedItem } from '$lib/stores/archive';
+	// import { page } from '$app/stores';
 	import { selectedItemStore } from '$lib/stores/archive';
-	import { getArweaveUrl, networkStore } from '$lib/stores/network';
-	import type { FactStatement } from '$lib/types';
-	import { Download } from 'lucide-svelte';
-	import * as Tooltip from '$lib/components/ui/tooltip';
 
-	export let directoryTree: DirectoryNode[];
-	export let fact: FactStatement;
+	export let archive: Archive;
 
 	function convertNodesIntoTreeItems(nodes: DirectoryNode[]): TreeItem[] {
 		const treeItems: TreeItem[] = nodes.map((node) => {
@@ -30,7 +29,9 @@
 		return treeItems;
 	}
 
-	$: treeItems = convertNodesIntoTreeItems(directoryTree);
+	$: treeItems = convertNodesIntoTreeItems(
+		archive && archive.directoryTree ? archive.directoryTree : []
+	);
 
 	let expanded = writable<string[]>([]);
 
@@ -58,28 +59,21 @@
 			selectedItemStore.set(value.getAttribute('data-id'));
 		}
 	});
+
+	// selectedItem.subscribe((value) => {
+	// 	if (!value) updateSelectedItem($page.url, 0);
+	// 	// If the item is a folder, do not select it
+	// 	else if (value.hasAttribute('aria-expanded')) return;
+	// 	else {
+	// 		// updateSelectedItem($page.url, parseInt(value.getAttribute('data-id').split('-')[1]));
+	// 		// selectedItemStore.set(value.getAttribute('data-id'));
+	// 	}
+	// });
 </script>
 
 <div class="flex flex-col h-[50rem]">
-	<div class="flex flex-col gap-1 pt-4">
-		<div class="flex justify-between">
-			<h3 class="text-lg font-bold pl-4 pb-2">Files</h3>
-			<Tooltip.Root openDelay={150}>
-				<Tooltip.Trigger>
-					<a
-						href={getArweaveUrl($networkStore.network, fact.storage_urn)}
-						class="cursor-pointer"
-						target="_blank"
-					>
-						<Download class="stroke-primary mx-2 -mt-2" />
-					</a>
-				</Tooltip.Trigger>
-				<Tooltip.Content>
-					<p>Download Fact Statement Archive from Arweave</p>
-				</Tooltip.Content>
-			</Tooltip.Root>
-		</div>
-		<hr />
+	<div class="flex justify-between items-center border-b px-1 py-2 pr-2 h-[52px]">
+		<h3 class="text-lg font-bold pl-4 pr-2">Files</h3>
 	</div>
 
 	<ul class="overflow-auto px-4 pb-2 pt-2 h-full" {...$tree}>

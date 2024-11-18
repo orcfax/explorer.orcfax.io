@@ -1,6 +1,5 @@
 <script>
 	import { page } from '$app/stores';
-	import AppFooter from '$lib/components/AppFooter.svelte';
 	import AppHeader from '$lib/components/AppHeader.svelte';
 
 	let heading = $page.status === 404 ? '404' : 'Error';
@@ -23,5 +22,4 @@
 			<!-- File a bug report? -->
 		</div>
 	</main>
-	<!-- <AppFooter /> -->
 </div>

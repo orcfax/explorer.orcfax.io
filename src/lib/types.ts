@@ -30,7 +30,7 @@ export type NetworkSelect = z.infer<typeof NetworkSelectSchema>;
 export interface OrcfaxStats {
 	totalFacts: number;
 	totalFacts24Hour: number;
-	totalFeeds: number;
+	totalActiveFeeds: number;
 }
 
 export const TagSchema = z.object({
@@ -60,6 +60,7 @@ export const DBFeedSchema = z.object({
 	name: z.string(),
 	version: z.number(),
 	status: z.enum(['active', 'inactive']),
+	inactive_reason: z.string().optional(),
 	source_type: z.enum(['CEX', 'DEX', '']),
 	funding_type: z.enum(['showcase', 'paid', 'subsidized', '']),
 	calculation_method: z.string(),
@@ -113,7 +114,7 @@ export const FactStatementSchema = DBFactStatementWithFeedSchema.extend({
 });
 
 export const DBFeedWithDataSchema = DBFeedWithAssetsSchema.extend({
-	latestFact: DBFactStatementSchema,
+	latestFact: DBFactStatementSchema.nullable(),
 	totalFacts: z.number(),
 	type_description: z.string(),
 	oneDayAgo: z.number(),
@@ -133,7 +134,7 @@ export const FeedHistoricalValuesSchema = z.object({
 export type FeedHistoricalValues = z.infer<typeof FeedHistoricalValuesSchema>;
 
 export const FeedSchema = DBFeedWithDataSchema.extend({
-	latestFact: FactStatementSchema
+	latestFact: FactStatementSchema.nullable()
 });
 
 export const FeedLayoutDataSchema = z.object({
@@ -192,7 +193,7 @@ export interface GetSelectedFactResponse {
 export interface GetOrcfaxSummaryResponseDB {
 	totalFacts: number;
 	totalFacts24Hour: number;
-	totalFeeds: number;
+	totalActiveFeeds: number;
 }
 
 export const GetFactsPageResponseDBSchema = z.object({
@@ -301,6 +302,25 @@ export interface Archive {
 	directoryTree: DirectoryNode[] | null;
 	files: ArchivedFile[] | null;
 	details: ArchiveDetails | null;
+}
+
+export interface FactStatementStub {
+	fact_urn: string;
+	feed_name: string;
+	feed_type: string;
+	value: number;
+	inverse_value: number;
+	description: string;
+	inverse_description: string;
+	validation_date: string;
+}
+
+export interface ArchiveDownload {
+	fact: FactStatementStub;
+	directoryTree: DirectoryNode[];
+	files: ArchivedFile[];
+	details: ArchiveDetails | null;
+	archiveZip: Uint8Array;
 }
 
 export interface DirectoryNode {
@@ -456,6 +476,36 @@ export const CEXValidationFileSchema = ValidationFileSchema.extend({
 });
 
 export type CEXValidationFile = z.infer<typeof CEXValidationFileSchema>;
+
+export const BagInfoSchema = z.object({
+	'Bag-Software-Agent': z.string(),
+	'Bagging-Date': z.string().refine((date) => !isNaN(Date.parse(date)), {
+		message: 'Invalid date format'
+	}),
+	'Epoch-Day': z.string().transform(Number),
+	'Epoch-Hour': z.string().transform(Number),
+	'Epoch-Month': z.string().transform(Number),
+	'Epoch-Week': z.string().transform(Number),
+	'Epoch-Year': z.string().transform(Number),
+	'Fact-Datum-Identifier': z.string().uuid(),
+	'Fact-Datum-URN': z.string(),
+	'Fact-Datum-Value': z.string().transform(Number),
+	'Fact-Description': z.string(),
+	'Fact-Validation-Date': z.string().refine((date) => !isNaN(Date.parse(date)), {
+		message: 'Invalid date format'
+	}),
+	'Feed-ID': z.string(),
+	'Feed-Name': z.string(),
+	'Feed-Type': z.string(),
+	'Package-Version': z.string().transform(Number),
+	'Packaging-Agent': z.string(),
+	'Payload-Oxum': z.string(),
+	'Source-Organization': z.string(),
+	'System-Identifier': z.string(),
+	'System-Name': z.string(),
+	'System-Version': z.string(),
+	'Unix-Time': z.string().transform(Number)
+});
 
 // Xerberus Risk Ratings API
 const dataSchema = z.object({

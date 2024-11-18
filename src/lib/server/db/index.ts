@@ -30,7 +30,7 @@ export async function getOrcfaxSummary(network: Network): Promise<GetOrcfaxSumma
 	return {
 		totalFacts: await getAllFactsCount(network),
 		totalFacts24Hour: await getTodaysFactsCount(network),
-		totalFeeds: await getFeedsCount(network)
+		totalActiveFeeds: await getActiveFeedsCount(network)
 	};
 }
 
@@ -83,6 +83,7 @@ export async function getFactsPage(
 }
 
 export async function getSources(): Promise<Source[]> {
+	// TODO: Hook up network to sources in db and filter
 	const sources = await db.collection('sources').getFullList();
 	return z.array(SourceSchema).parse(sources);
 }
@@ -101,7 +102,7 @@ export async function getFeeds(network: Network): Promise<DBFeedWithData[]> {
 		});
 		const parsedFeeds = z.array(DBFeedWithAssetsSchema).parse(dbFeeds);
 
-		const concurrencyLimit = 2;
+		const concurrencyLimit = 4;
 		const feeds: DBFeedWithData[] = [];
 
 		// Process feeds in batches of 2
@@ -116,7 +117,10 @@ export async function getFeeds(network: Network): Promise<DBFeedWithData[]> {
 					fetchHistoricalValues(network.id, dbFeed.id)
 				]);
 
-				const latestFact = DBFactStatementSchema.parse(factRecord.items[0]);
+				const latestFact =
+					factRecord && factRecord.items[0]
+						? DBFactStatementSchema.parse(factRecord.items[0])
+						: null;
 				const totalFacts = factRecord.totalItems;
 
 				return {
@@ -144,9 +148,10 @@ export async function getFeedByID(
 	feedID: string
 ): Promise<DBFeedWithData | null> {
 	try {
+		const feedIDParsed = feedID.replace(/\/facts\/undefined$/, '');
 		const feedResponse = await db
 			.collection('feeds')
-			.getFirstListItem(`network = "${network.id}" && feed_id~"${feedID}"`, {
+			.getFirstListItem(`network = "${network.id}" && feed_id~"${feedIDParsed}"`, {
 				expand: 'base_asset,quote_asset'
 			});
 
@@ -165,7 +170,9 @@ export async function getFeedByID(
 			fetchHistoricalValues(network.id, dbFeed.id)
 		]);
 
-		const latestFact = DBFactStatementSchema.parse(factRecord.items[0]);
+		const latestFact = factRecord.items[0]
+			? DBFactStatementSchema.parse(factRecord.items[0])
+			: null;
 		const totalFacts = factRecord.totalItems;
 
 		return {
@@ -236,10 +243,10 @@ export async function getAllFeedsHistoricalValues(network: Network, feeds: DBFee
 	return historicalValues;
 }
 
-export async function getFeedsCount(network: Network): Promise<number> {
+export async function getActiveFeedsCount(network: Network): Promise<number> {
 	const { totalItems } = await db
 		.collection('feeds')
-		.getList(1, 1, { filter: `network = "${network.id}"` });
+		.getList(1, 1, { filter: `network = "${network.id}" && status = "active"` });
 	return totalItems;
 }
 

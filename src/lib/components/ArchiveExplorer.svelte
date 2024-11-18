@@ -1,35 +1,57 @@
 <script lang="ts">
-	import TreeView from './TreeView/index.svelte';
+	import TreeView from '$lib/components/TreeView/index.svelte';
 	import * as Resizable from '$lib/components/ui/resizable';
 	import FileViewer from './FileViewer.svelte';
 	import { selectedItemStore } from '$lib/stores/archive';
-	import type { FactStatement, Archive } from '$lib/types';
+	import type { Archive } from '$lib/types';
+	import ArchiveDownloader from '$lib/components/ArchiveDownloader.svelte';
 
-	export let archive: Archive;
-	export let fact: FactStatement;
+	// import { page } from '$app/stores';
 
-	$: selectedFile = archive.files ? archive.files[0] : null;
+	export let archive: Archive | null;
+
+	// TODO: enable url store archive nav
+	// $: selectedFile = archive && archive.files ? archive.files[0] : null;
+
+	// selectedItemStore.subscribe((value) => {
+	// 	if (value && archive) {
+	// 		const file = archive.files?.[value];
+	// 		if (file) {
+	// 			selectedFile = file;
+	// 			const index = archive.files?.indexOf(file);
+	// 			updateSelectedItem($page.url, index);
+	// 		}
+	// 	}
+	// });
+
+	$: selectedFile = archive && archive.files ? archive.files[0] : null;
 
 	selectedItemStore.subscribe((value) => {
 		if (value) {
-			const file = archive.files?.find((file) =>
-				file.fileName.includes(value.substring(0, value.length - 2))
-			);
+			const file =
+				archive &&
+				archive.files?.find((file) => file.fileName.includes(value.substring(0, value.length - 2)));
 			if (file) selectedFile = file;
 		}
 	});
 </script>
 
 <div class="w-full">
-	<h3 class="font-bold text-2xl pb-4">Archive Explorer</h3>
-	{#if archive.directoryTree && archive.files}
+	<div class="flex gap-4">
+		<h3 class="font-bold text-2xl pb-4">Archive Explorer</h3>
+		{#if archive}
+			<ArchiveDownloader {archive} />
+		{/if}
+	</div>
+
+	{#if archive && archive.directoryTree && archive.files}
 		<Resizable.PaneGroup
 			class="border-2 rounded-lg h-80 bg-card text-card-foreground"
 			direction="horizontal"
 		>
 			<Resizable.Pane defaultSize={30}>
 				<div class="overflow-auto">
-					<TreeView directoryTree={archive.directoryTree} {fact} />
+					<TreeView {archive} />
 				</div>
 			</Resizable.Pane>
 			<Resizable.Handle withHandle />

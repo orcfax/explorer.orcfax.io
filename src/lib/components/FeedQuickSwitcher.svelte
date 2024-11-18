@@ -89,7 +89,7 @@
 							const currentFeed = feeds.find((f) => f.feed_id === currentValue);
 							if (!currentFeed) return;
 							await goto(
-								`${getFeedUrl(currentFeed, currentFeed.latestFact.fact_urn)}?${params.toString()}`
+								`${getFeedUrl(currentFeed, currentFeed.latestFact ? currentFeed.latestFact.fact_urn : 'undefined')}?${params.toString()}`
 							);
 							onFeedSwitch(currentFeed);
 							isSwitchingFeeds = false;

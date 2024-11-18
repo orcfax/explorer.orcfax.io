@@ -1,7 +1,7 @@
 <script context="module" lang="ts">
-	import { ArrowRightFromLine, Folder, FolderOpen } from 'lucide-svelte';
+	import { ArrowRightFromLine, Folder, File, FolderOpen } from 'lucide-svelte';
 
-	type Icon = 'folder';
+	type Icon = 'folder' | 'file';
 
 	export type TreeItem = {
 		title: string;
@@ -10,10 +10,15 @@
 	};
 
 	export const icons = {
+		file: File,
 		folder: Folder,
 		folderOpen: FolderOpen,
 		highlight: ArrowRightFromLine
 	};
+
+	// in button below:
+	// class="flex items-center gap-1 rounded-md p-1 px-2 focus:ring-2 focus:ring-ring focus:outline-none"
+	// class:bg-input={i === $selectedItemStore}
 </script>
 
 <script lang="ts">
@@ -64,11 +69,9 @@
 					this={icons[$isExpanded(itemId) ? 'folderOpen' : 'folder']}
 					class="h-4 w-4"
 				/>
+			{:else}
+				<svelte:component this={icons['file']} class="h-4 w-4 opacity-70" />
 			{/if}
-
-			<!-- {#if $selectedItemStore && itemId.includes($selectedItemStore)}
-				<svelte:component this={icons['highlight']} class="h-5 w-5 stroke-primary" />
-			{/if} -->
 
 			<span class="select-none overflow-ellipsis whitespace-nowrap">{title}</span>
 		</button>

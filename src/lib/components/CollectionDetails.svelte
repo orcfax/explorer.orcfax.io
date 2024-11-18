@@ -5,7 +5,7 @@
 	import SourceTable from './SourceTable.svelte';
 	import Skeleton from '$lib/components/ui/skeleton/skeleton.svelte';
 
-	export let archive: Promise<Archive>;
+	export let archive: Promise<Archive> | null;
 </script>
 
 <section class="w-fit md:w-full xl:w-fit flex flex-col xl:self-start">
@@ -14,7 +14,7 @@
 		<Skeleton class="h-[45rem] w-[25rem]" />
 	{:then archive}
 		<div class="p-6 space-y-6 section-container bg-card text-card-foreground">
-			{#if archive.details}
+			{#if archive && archive.details}
 				{@const isCEX = archive.details.sourceType === 'CEX'}
 				{@const sortedSources = archive.details.sources.sort(
 					(a, b) => (a.assetPairValue ?? 0) - (b.assetPairValue ?? 0)

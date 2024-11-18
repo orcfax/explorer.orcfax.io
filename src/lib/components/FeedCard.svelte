@@ -10,9 +10,13 @@
 	import PriceDifferenceBadges from './PriceDifferenceBadges.svelte';
 	import FormattedCurrencyValue from './FormattedCurrencyValue.svelte';
 	import { getFeedUrl } from '$lib/client/helpers';
+	import { readable } from 'svelte/store';
+	import { CircleHelp } from 'lucide-svelte';
 
 	export let feed: Feed;
-	$: timeSinceLastUpdate = createTimeSinceStore(feed.latestFact.validation_date);
+	$: timeSinceLastUpdate = feed.latestFact
+		? createTimeSinceStore(feed.latestFact.validation_date)
+		: readable('N/A');
 </script>
 
 <a href={getFeedUrl(feed)} class="w-max">
@@ -33,11 +37,20 @@
 						<span class="text-muted-foreground">{feed.feed_id}</span>
 					</p>
 					<Tooltip.Root openDelay={150}>
-						<Tooltip.Trigger>
+						<Tooltip.Trigger class="flex items-center gap-2">
 							<PingStatus color={feed.status === 'active' ? 'green' : 'red'} size="md" />
+							{#if feed.status === 'inactive' && feed.inactive_reason}
+								<CircleHelp
+									strokeWidth="2.5px"
+									class="stroke-primary fill-primary-foreground w-4"
+								/>
+							{/if}
 						</Tooltip.Trigger>
 						<Tooltip.Content>
-							<p>This feed is {feed.status}.</p>
+							<p>
+								{(feed.status === 'inactive' && feed.inactive_reason) ||
+									`This feed is ${feed.status}`}
+							</p>
 						</Tooltip.Content>
 					</Tooltip.Root>
 				</div>
@@ -51,7 +64,11 @@
 					href={getFeedUrl(feed)}
 					class="text-lg whitespace-nowrap w-min font-semibold underline hover:text-primary"
 				>
-					<FormattedCurrencyValue value={feed.latestFact.value} />
+					{#if feed.latestFact}
+						<FormattedCurrencyValue value={feed.latestFact.value} />
+					{:else}
+						<p>N/A</p>
+					{/if}
 				</a>
 				<Tooltip.Root openDelay={150}>
 					<Tooltip.Trigger>
@@ -61,7 +78,9 @@
 					</Tooltip.Trigger>
 					<Tooltip.Content side="bottom">
 						<p>
-							{`${feed.latestFact.validation_date_formatted} ${feed.latestFact.validation_time_formatted}`}
+							{feed.latestFact
+								? `${feed.latestFact.validation_date_formatted} ${feed.latestFact.validation_time_formatted}`
+								: 'N/A'}
 						</p>
 					</Tooltip.Content>
 				</Tooltip.Root>

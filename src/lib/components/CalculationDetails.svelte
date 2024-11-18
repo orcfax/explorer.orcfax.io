@@ -5,7 +5,7 @@
 	import FactCardField from './FactCardField.svelte';
 	import Skeleton from '$lib/components/ui/skeleton/skeleton.svelte';
 
-	export let archive: Promise<Archive>;
+	export let archive: Promise<Archive> | null;
 
 	function getMedianAssetPairValue(sources: Source[]): number | null {
 		if (sources.length === 0) {
@@ -38,7 +38,7 @@
 		<Skeleton class="h-[26rem] w-[18rem]" />
 	{:then archive}
 		<div class="p-6 section-container bg-card text-card-foreground">
-			{#if archive.details}
+			{#if archive && archive.details}
 				{@const baseAssetValueSum = archive.details.sources.reduce(
 					(acc, source) => acc + (source.baseAssetValue || 0),
 					0
@@ -62,9 +62,7 @@
 									value={getMedianAssetPairValue(archive.details.sources) ?? 0}
 								/>
 							{:else}
-								<div
-									class="flex flex-col items-center bg-secondary/90 border p-3 rounded-lg space-y-3"
-								>
+								<div class="flex flex-col items-center bg-muted/50 border p-3 rounded-lg space-y-3">
 									<FactCardField
 										name="Middle Values"
 										value={`( ${archive.details.sources[midIndex - 1].assetPairValue} + ${archive.details.sources[midIndex].assetPairValue} )`}
@@ -79,9 +77,7 @@
 								</div>
 							{/if}
 						{:else if isDEX}
-							<div
-								class="flex flex-col items-center bg-secondary/90 border p-3 rounded-lg space-y-3"
-							>
+							<div class="flex flex-col items-center bg-muted/50 border p-3 rounded-lg space-y-3">
 								<FactCardField name="Quote Sum" value={formatSumValue(quoteAssetValueSum)} />
 								<Divide class="stroke-primary" />
 								<FactCardField name="Base Sum" value={formatSumValue(baseAssetValueSum)} />
