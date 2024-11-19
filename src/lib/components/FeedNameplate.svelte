@@ -6,7 +6,6 @@
 
 	export let feed: Pick<DBFeedWithData, 'feed_id' | 'name' | 'base_asset' | 'quote_asset'>;
 	export let label: 'fullID' | 'name' | 'typeAndName' = 'name';
-	export let hideNameOnMobile = false;
 	let labelText = '';
 
 	if (!feed.base_asset || !feed.quote_asset)
@@ -42,13 +41,13 @@
 </script>
 
 {#if feed.base_asset && feed.quote_asset}
-	<div class="flex items-center space-x-2 relative">
+	<div class="flex min-[380px]:flex-row flex-col items-center space-x-2 relative">
 		<div class={`relative ${containerSize}`}>
 			<AssetBadge asset={feed.quote_asset} {size} class={`absolute right-0 top-0`} />
 			<AssetBadge asset={feed.base_asset} {size} class={`absolute ${overlap} top-0 z-10`} />
 		</div>
 
-		<span class={`${hideNameOnMobile ? 'hidden min-[360px]:inline' : 'ml-4 inline'}`}>
+		<span class={`ml-4 inline`}>
 			{labelText}
 		</span>
 	</div>

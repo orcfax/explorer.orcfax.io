@@ -127,6 +127,7 @@ export async function getFeeds(network: Network): Promise<DBFeedWithData[]> {
 					...dbFeed,
 					latestFact,
 					type_description: 'Current Exchange Rate',
+					type_description_short: 'CER',
 					totalFacts,
 					...historicalValues
 				};
@@ -179,6 +180,7 @@ export async function getFeedByID(
 			...dbFeed,
 			latestFact,
 			type_description: 'Current Exchange Rate',
+			type_description_short: 'CER',
 			totalFacts,
 			...historicalValues
 		};
@@ -358,6 +360,7 @@ export async function searchFeeds(
 			return {
 				...feed,
 				type_description: 'Current Exchange Rate',
+				type_description_short: 'CER',
 				totalFacts: 0 // Setting to 0 only for searching feeds
 			};
 		});

@@ -117,6 +117,7 @@ export const DBFeedWithDataSchema = DBFeedWithAssetsSchema.extend({
 	latestFact: DBFactStatementSchema.nullable(),
 	totalFacts: z.number(),
 	type_description: z.string(),
+	type_description_short: z.string(),
 	oneDayAgo: z.number(),
 	threeDaysAgo: z.number(),
 	sevenDaysAgo: z.number()

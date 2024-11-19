@@ -54,7 +54,7 @@
 			variant="outline"
 			role="combobox"
 			aria-expanded={open}
-			class="w-full xxxs:w-fit h-fit p-3"
+			class="w-min min-[370px]:w-full xxxs:w-fit h-fit p-3"
 		>
 			{#if selectedFeed}
 				<FeedNameplate
