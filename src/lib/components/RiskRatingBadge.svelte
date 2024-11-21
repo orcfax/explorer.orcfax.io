@@ -60,7 +60,9 @@
 						target="_blank"
 						class="cursor-pointer"
 					>
-						<Avatar.Root class={`${assetSize}`}>
+						<Avatar.Root
+							class={`${assetSize} bg-card-foreground p-px dark:bg-transparent dark:p-0`}
+						>
 							<Avatar.Image
 								src={`/xerberus-risk-ratings/${riskRating.response.data.risk_category}.svg`}
 								alt={`Logo of Xerberus Risk Rating ${riskRating.response.data.risk_category}`}
@@ -93,6 +95,7 @@
 												<Avatar.Image
 													src={`/xerberus-risk-ratings/${riskRating.response.data.risk_category}.svg`}
 													alt={`Logo of Xerberus Risk Rating ${riskRating.response.data.risk_category}`}
+													class="bg-card-foreground p-px dark:bg-transparent dark:p-0"
 												/>
 												<Avatar.Fallback class={`${fallbackTextSize} text-card-foreground`}>
 													<div class="relative flex items-center justify-center">
