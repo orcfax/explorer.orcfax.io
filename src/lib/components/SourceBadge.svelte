@@ -6,6 +6,7 @@
 
 	export let source: Source;
 	export let hideTooltip = false;
+	export let isPlainLogo = false;
 
 	export let size: 'sm' | 'md' | 'lg' = 'lg';
 
@@ -38,7 +39,7 @@
 
 {#if hideTooltip}
 	<Avatar.Root
-		class={`border ${assetSize}`}
+		class={`${isPlainLogo ? 'border-none' : 'border'} ${assetSize}`}
 		style={source.background_color ? `background-color: ${source.background_color}` : ''}
 	>
 		{#if source.image_path}
