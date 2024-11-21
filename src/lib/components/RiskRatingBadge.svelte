@@ -122,12 +122,13 @@
 												name: riskRating.xSignedBy,
 												description: 'Xerberus',
 												type: 'CEX API',
-												background_color: '#08201C',
 												image_path: '/sources/xerberus.png',
-												website: 'https://xerberus.io'
+												website: 'https://xerberus.io',
+												background_color: ''
 											}}
 											size="sm"
 											hideTooltip
+											isPlainLogo
 										/>
 									</div>
 								</div>
