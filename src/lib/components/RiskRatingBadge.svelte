@@ -77,7 +77,29 @@
 					<HoverCard.Content>
 						<div class="space-y-4">
 							<FactCardField name="Name" value={riskRating.response.data.asset_name} />
-							<FactCardField name="Category" value={riskRating.response.data.risk_category} />
+
+							<div class="flex">
+								<div class="flex flex-col">
+									<p class="font-bold">Category:</p>
+									<div class="flex gap-1">
+										<Avatar.Root class={`${assetSizes.icon['md']}`}>
+											<Avatar.Image
+												src={`/xerberus-risk-ratings/${riskRating.response.data.risk_category}.svg`}
+												alt={`Logo of Xerberus Risk Rating ${riskRating.response.data.risk_category}`}
+											/>
+											<Avatar.Fallback class={`${fallbackTextSize} text-card-foreground`}>
+												<div class="relative flex items-center justify-center">
+													<Skeleton class={assetSizes.icon['md']} />
+													<span class="absolute text-card-foreground">
+														{riskRating.response.data.risk_category}
+													</span>
+												</div>
+											</Avatar.Fallback>
+										</Avatar.Root>
+									</div>
+								</div>
+							</div>
+
 							<FactCardField
 								name="Description"
 								value={getXerberusRiskDescription(riskRating.response.data.risk_category)}
