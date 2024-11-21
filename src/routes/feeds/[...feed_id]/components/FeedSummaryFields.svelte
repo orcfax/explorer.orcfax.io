@@ -149,7 +149,7 @@
 							<div class="flex flex-col space-y-2">
 								<div class="flex items-center">
 									<AssetBadge asset={feed.base_asset} size="lg" />
-									<h5 class="mx-1 text-sm">{feed.base_asset.ticker}</h5>
+									<h5 class="mx-1 text-base font-medium">{feed.base_asset.ticker}</h5>
 									<div class="-mt-3">
 										<RiskRatingBadge riskRating={riskRatings.base} size="md" />
 									</div>
@@ -164,7 +164,7 @@
 							<div class="flex flex-col space-y-2">
 								<div class="flex items-center">
 									<AssetBadge asset={feed.quote_asset} size="lg" />
-									<h5 class="mx-1 text-sm">{feed.quote_asset.ticker}</h5>
+									<h5 class="mx-1 text-base font-medium">{feed.quote_asset.ticker}</h5>
 									<div class="-mt-3">
 										<RiskRatingBadge riskRating={riskRatings.quote} size="md" />
 									</div>

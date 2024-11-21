@@ -6,6 +6,7 @@
 	import * as HoverCard from '$lib/components/ui/hover-card';
 	import Skeleton from '$lib/components/ui/skeleton/skeleton.svelte';
 	import type { RiskRating } from '$lib/types';
+	import { Separator } from 'bits-ui';
 
 	type $$Props = {
 		riskRating: RiskRating;
@@ -55,7 +56,7 @@
 			{#if riskRating}
 				<HoverCard.Root openDelay={150}>
 					<HoverCard.Trigger
-						href={`https://app.xerberus.io/cardano/stats?token=${riskRating.response.data.asset_name}`}
+						href={`https://app.xerberus.io/risk/rating/cardano/${riskRating.response.data.asset_name}`}
 						target="_blank"
 						class="cursor-pointer"
 					>
@@ -74,72 +75,94 @@
 							</Avatar.Fallback>
 						</Avatar.Root>
 					</HoverCard.Trigger>
-					<HoverCard.Content>
+					<HoverCard.Content class="w-fit">
 						<div class="space-y-4">
-							<FactCardField name="Name" value={riskRating.response.data.asset_name} />
+							<div class="flex flex-col gap-2">
+								<div class="flex gap-4">
+									<div class="flex flex-col">
+										<p class="font-bold">Name:</p>
+										<div class="flex gap-1 h-full items-center">
+											<p>{riskRating.response.data.asset_name}</p>
+										</div>
+									</div>
 
-							<div class="flex">
-								<div class="flex flex-col">
-									<p class="font-bold">Category:</p>
-									<div class="flex gap-1">
-										<Avatar.Root class={`${assetSizes.icon['md']}`}>
-											<Avatar.Image
-												src={`/xerberus-risk-ratings/${riskRating.response.data.risk_category}.svg`}
-												alt={`Logo of Xerberus Risk Rating ${riskRating.response.data.risk_category}`}
-											/>
-											<Avatar.Fallback class={`${fallbackTextSize} text-card-foreground`}>
-												<div class="relative flex items-center justify-center">
-													<Skeleton class={assetSizes.icon['md']} />
-													<span class="absolute text-card-foreground">
-														{riskRating.response.data.risk_category}
-													</span>
-												</div>
-											</Avatar.Fallback>
-										</Avatar.Root>
+									<div class="flex flex-col">
+										<p class="font-bold">Category:</p>
+										<div class="flex gap-1">
+											<Avatar.Root class={`${assetSizes.icon['md']}`}>
+												<Avatar.Image
+													src={`/xerberus-risk-ratings/${riskRating.response.data.risk_category}.svg`}
+													alt={`Logo of Xerberus Risk Rating ${riskRating.response.data.risk_category}`}
+												/>
+												<Avatar.Fallback class={`${fallbackTextSize} text-card-foreground`}>
+													<div class="relative flex items-center justify-center">
+														<Skeleton class={assetSizes.icon['md']} />
+														<span class="absolute text-card-foreground">
+															{riskRating.response.data.risk_category}
+														</span>
+													</div>
+												</Avatar.Fallback>
+											</Avatar.Root>
+										</div>
+									</div>
+
+									<div class="flex flex-col">
+										<p class="font-bold">Description:</p>
+										<div class="flex gap-1 h-full items-center">
+											<p>{getXerberusRiskDescription(riskRating.response.data.risk_category)}</p>
+										</div>
 									</div>
 								</div>
+
+								<a
+									href={`https://app.xerberus.io/risk/rating/cardano/${riskRating.response.data.asset_name}`}
+									target="_blank"
+									class="cursor-pointer text-primary hover:underline"
+								>
+									View on Xerberus.io →
+								</a>
 							</div>
 
-							<FactCardField
-								name="Description"
-								value={getXerberusRiskDescription(riskRating.response.data.risk_category)}
-							/>
+							<Separator.Root class="h-[1px] bg-border" orientation="horizontal" decorative />
+
 							<FactCardField
 								name="Endpoint"
 								value={riskRating.endpoint}
 								allowCopyToClipboard
 								ellipsisAndHover
 							/>
-							<div class="flex">
-								<div class="flex flex-col">
-									<p class="font-bold">Signed By:</p>
-									<div class="flex gap-1">
-										<p>{riskRating.xSignedBy}</p>
-										<!-- Integrate this source into the db eventually -->
-										<SourceBadge
-											source={{
-												id: '1',
-												name: riskRating.xSignedBy,
-												description: 'Xerberus',
-												type: 'CEX API',
-												image_path: '/sources/xerberus.png',
-												website: 'https://xerberus.io',
-												background_color: ''
-											}}
-											size="sm"
-											hideTooltip
-											isPlainLogo
-										/>
+							<div class="flex gap-4">
+								<div class="flex">
+									<div class="flex flex-col">
+										<p class="font-bold">Signed By:</p>
+										<div class="flex gap-1 h-full items-center">
+											<p>{riskRating.xSignedBy}</p>
+											<!-- Integrate this source into the db eventually -->
+											<SourceBadge
+												source={{
+													id: '1',
+													name: riskRating.xSignedBy,
+													description: 'Xerberus',
+													type: 'CEX API',
+													image_path: '/sources/xerberus.png',
+													website: 'https://xerberus.io',
+													background_color: ''
+												}}
+												size="sm"
+												hideTooltip
+												isPlainLogo
+											/>
+										</div>
 									</div>
 								</div>
-							</div>
 
-							<FactCardField
-								name="Signature"
-								value={riskRating.xSignature}
-								allowCopyToClipboard
-								ellipsisAndHover
-							/>
+								<FactCardField
+									name="Signature"
+									value={riskRating.xSignature}
+									allowCopyToClipboard
+									ellipsisAndHover
+								/>
+							</div>
 						</div>
 					</HoverCard.Content>
 				</HoverCard.Root>
