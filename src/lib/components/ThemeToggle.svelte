@@ -4,11 +4,17 @@
 	import { resetMode, setMode } from 'mode-watcher';
 	import { Button } from '$lib/components/ui/button/index.js';
 	import * as DropdownMenu from '$lib/components/ui/dropdown-menu/index.js';
+
+	type $$Props = {
+		class?: string;
+	};
+	let className: $$Props['class'] = undefined;
+	export { className as class };
 </script>
 
 <DropdownMenu.Root>
 	<DropdownMenu.Trigger asChild let:builder>
-		<Button builders={[builder]} variant="outline" size="icon">
+		<Button builders={[builder]} variant="outline" size="icon" class={className}>
 			<Sun />
 			<Moon />
 			<span class="sr-only">Toggle theme</span>

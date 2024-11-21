@@ -34,7 +34,7 @@
 						</p>
 					</Tooltip.Trigger>
 					<Tooltip.Content side={'top'}>
-						<p>
+						<p class="max-w-72 break-words">
 							{#if showWithHTML}
 								{@html value}
 							{:else}

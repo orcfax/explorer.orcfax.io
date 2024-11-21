@@ -1,9 +1,10 @@
 import { format, toZonedTime } from 'date-fns-tz';
 import {
 	EnvironmentSchema,
-	type Asset,
 	type DBFactStatement,
+	type DBFactStatementWithFeed,
 	type DBFeed,
+	type DBFeedWithAssets,
 	type DBFeedWithData,
 	type FactStatement,
 	type Feed
@@ -12,43 +13,27 @@ import { DEFAULT_NETWORK_NAME, VALID_NETWORK_SUBDOMAINS } from '$lib/stores/netw
 import { env } from '$env/dynamic/public';
 import { error } from '@sveltejs/kit';
 
-export function formatFactStatementsForDisplay(
-	facts: DBFactStatement[],
-	feed?: DBFeed
-): (FactStatement & { feed: DBFeed })[] {
-	return facts.map((fact) => formatFactStatementForDisplay(fact, feed));
-}
-
 export function formatFactStatementForDisplay(
-	fact: DBFactStatement,
-	feed?: DBFeed
-): FactStatement & { feed: DBFeed } {
-	const feedData = typeof fact.feed === 'string' ? feed : fact.feed;
-	if (!feedData) {
-		throw new Error('Feed is required to format a fact statement for display');
-	}
-
-	// TODO create a class to handle different feed types and their conversion logic for values
+	fact: DBFactStatement | DBFactStatementWithFeed,
+	feed: DBFeedWithAssets
+): FactStatement {
 	const formatted_value = formatCurrencyValue(fact.value);
 	const formatted_inverse_value = formatCurrencyValue(fact.value_inverse);
-	const feedName = feedData.name;
-	const baseAsset = getAssetFromFeedName(feedName, 'base');
-	const quoteAsset = getAssetFromFeedName(feedName, 'quote');
 
 	return {
 		...fact,
 		fact_id: getFactIDFromUrn(fact.fact_urn),
 		formatted_value,
 		formatted_inverse_value,
-		description: `1 ${baseAsset.ticker} was ${formatted_value} ${quoteAsset.ticker}`,
-		inverse_description: `1 ${quoteAsset.ticker} was ${formatted_inverse_value} ${baseAsset.ticker}`,
+		description: `1 ${feed.base_asset?.ticker} was ${formatted_value} ${feed.quote_asset?.ticker}`,
+		inverse_description: `1 ${feed.quote_asset?.ticker} was ${formatted_inverse_value} ${feed.base_asset?.ticker}`,
 		validation_date: new Date(fact.validation_date),
 		validation_date_formatted: getFormattedDate(fact.validation_date),
 		validation_time_formatted: getFormattedTime(fact.validation_date),
 		publication_date: new Date(fact.publication_date),
 		publication_date_formatted: getFormattedDate(fact.publication_date),
 		publication_time_formatted: getFormattedTime(fact.publication_date),
-		feed: feedData
+		feed
 	};
 }
 
@@ -127,163 +112,6 @@ export function capitalize(str: string) {
 
 export function getFactIDFromUrn(urn: string) {
 	return urn.replace(/^urn:[^:]+:/, '');
-}
-
-export function getAssetFromFeedName(feedName: string, type: 'base' | 'quote'): Asset {
-	const assets: Asset[] = [
-		{ ticker: 'ADA', name: 'Cardano', url: 'https://cardano.org/', image: '/assets/ada.png' },
-		{
-			ticker: 'DJED',
-			name: 'Djed Stablecoin',
-			url: 'https://djed.xyz/',
-			image: '/assets/djed.png'
-		},
-		{ ticker: 'FACT', name: 'Orcfax', url: 'https://orcfax.io/', image: '/assets/fact.png' },
-		{
-			ticker: 'HUNT',
-			name: 'DexHunter',
-			url: 'https://www.dexhunter.io/',
-			image: '/assets/hunt.png'
-		},
-		{
-			ticker: 'iBTC',
-			name: 'Indigo - Bitcoin',
-			url: 'https://indigoprotocol.io/',
-			image: '/assets/ibtc.png'
-		},
-		{
-			ticker: 'iETH',
-			name: 'Indigo - Ethereum',
-			url: 'https://indigoprotocol.io/',
-			image: '/assets/ieth.png'
-		},
-		{
-			ticker: 'iUSD',
-			name: 'Indigo - U.S. Dollar',
-			url: 'https://indigoprotocol.io/',
-			image: '/assets/iusd.png'
-		},
-		{ ticker: 'LENFI', name: 'Lenfi', url: 'https://lenfi.io/', image: '/assets/lenfi.png' },
-		{ ticker: 'LQ', name: 'Liqwid', url: 'https://liqwid.finance/', image: '/assets/lq.png' },
-		{
-			ticker: 'NEWM',
-			name: 'NEWM',
-			url: 'https://newm.io/',
-			image: '/assets/newm.png',
-			backgroundColor: '#000000'
-		},
-		{
-			ticker: 'SHEN',
-			name: 'Shen Reservecoin',
-			url: 'https://djed.xyz/',
-			image: '/assets/shen.png'
-		},
-		{
-			ticker: 'USD',
-			name: 'U.S. Dollar',
-			url: 'https://www.usa.gov/currency',
-			image: '/assets/usd.png'
-		},
-		{
-			ticker: 'WMT',
-			name: 'World Mobile Token - WMT',
-			url: 'https://worldmobiletoken.com/',
-			image: '/assets/wmt.png'
-		},
-		{
-			ticker: 'WMTX',
-			name: 'World Mobile Token - WMTX',
-			url: 'https://worldmobiletoken.com/',
-			image: '/assets/wmtx.png'
-		},
-		{
-			ticker: 'CBLP',
-			name: 'Yamfore - CBLP',
-			url: 'https://www.yamfore.com',
-			image: '/assets/cblp.webp'
-		},
-		{
-			ticker: 'USDM',
-			name: 'Moneta Stablecoin',
-			url: 'https://moneta.global/',
-			image: '/assets/usdm.png',
-			backgroundColor: '#1A56FF'
-		},
-		{
-			ticker: 'SNEK',
-			name: 'Snek Memecoin',
-			url: 'https://www.snek.com/',
-			image: '/assets/snek.png'
-		},
-		{
-			ticker: 'MIN',
-			name: 'Minswap',
-			url: 'https://minswap.org/',
-			image: '/assets/min.webp'
-		},
-		{
-			ticker: 'EUR',
-			name: 'E.U. Euro',
-			url: 'https://www.ecb.europa.eu/euro/',
-			image: '/assets/eur.png'
-		},
-		{
-			ticker: 'CERRA',
-			name: 'Cerra',
-			url: 'https://cerra.io/',
-			image: '/assets/cerra.webp'
-		},
-		{
-			ticker: 'AGIX',
-			name: 'Singularity Net',
-			url: 'https://singularitynet.io/',
-			image: '/assets/agix.png'
-		},
-		{
-			ticker: 'BTN',
-			name: 'Butane',
-			url: 'https://butane.dev/',
-			image: '/assets/btn.png',
-			backgroundColor: '#070216'
-		},
-		{
-			ticker: 'BTC',
-			name: 'Bitcoin',
-			url: 'https://bitcoin.org/en/',
-			image: '/assets/btc.png'
-		},
-		{
-			ticker: 'INDY',
-			name: 'Indigo',
-			url: 'https://indigoprotocol.io/',
-			image: '/assets/indy.png'
-		},
-		{
-			ticker: 'BOOK',
-			name: 'Book',
-			url: 'https://book.io/',
-			image: '/assets/book.png',
-			backgroundColor: '#E6E6E6'
-		},
-		{
-			ticker: 'COPI',
-			name: 'Cornicopias',
-			url: 'https://cornucopias.io/',
-			image: '/assets/copi.png',
-			backgroundColor: '#050607'
-		},
-		{
-			ticker: 'HOSKY',
-			name: 'Hosky',
-			url: 'https://hosky.io',
-			image: '/assets/hosky.png',
-			backgroundColor: '#216DD2'
-		}
-	];
-
-	const ticker = feedName.split('-')[type === 'base' ? 0 : 1];
-
-	return assets.find((asset) => asset.ticker === ticker) || { ticker };
 }
 
 export function getFormattedDate(date: Date) {
@@ -475,4 +303,23 @@ export function formatSumValue(num: number): string {
 		minimumFractionDigits: 2,
 		maximumFractionDigits: 2
 	});
+}
+
+export function getXerberusRiskDescription(risk: string): string {
+	const investmentGrade = ['AAA', 'AA', 'A'];
+	const speculativeGrade = ['BBB', 'BB', 'B'];
+	const highlySpeculativeGrade = ['CCC', 'CC', 'C'];
+	const junkGrade = ['D'];
+
+	if (investmentGrade.includes(risk)) {
+		return 'Investment Grade';
+	} else if (speculativeGrade.includes(risk)) {
+		return 'Speculative Grade';
+	} else if (highlySpeculativeGrade.includes(risk)) {
+		return 'Highly Speculative Grade';
+	} else if (junkGrade.includes(risk)) {
+		return 'Junk Grade';
+	} else {
+		return 'Unknown';
+	}
 }

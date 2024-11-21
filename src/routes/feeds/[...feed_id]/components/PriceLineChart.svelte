@@ -32,6 +32,11 @@
 	$: labelColor = $mode === 'dark' ? 'rgb(227, 227, 222)' : 'rgb(38, 38, 38)';
 	$: pointColor = 'hsl(174 25% 40%)';
 
+	let innerWidth = 0;
+	let innerHeight = 0;
+
+	$: omitLabels = innerWidth < 400;
+
 	const getChartData = (fact: FactStatement, range: FeedRange, facts: FactStatement[]) => {
 		return {
 			datasets: [
@@ -72,7 +77,11 @@
 		};
 	};
 
-	const getChartOptions = (range: FeedRange, isMobile: boolean): ChartOptions<'line'> => {
+	const getChartOptions = (
+		range: FeedRange,
+		isMobile: boolean,
+		omitLabels: boolean
+	): ChartOptions<'line'> => {
 		return {
 			parsing: false,
 			responsive: true,
@@ -83,7 +92,7 @@
 						unit: range === '1' ? 'hour' : 'day'
 					},
 					title: {
-						display: true,
+						display: !omitLabels,
 						text: 'Validation Date',
 						color: labelColor,
 						font: {
@@ -93,6 +102,7 @@
 						padding: { top: isMobile ? 10 : 20, bottom: isMobile ? 10 : 0 }
 					},
 					ticks: {
+						display: !omitLabels,
 						color: labelColor
 					},
 					adapters: {
@@ -108,7 +118,7 @@
 				y: {
 					position: 'right',
 					title: {
-						display: true,
+						display: !omitLabels,
 						text: 'Value',
 						color: labelColor,
 						font: {
@@ -118,6 +128,7 @@
 						padding: { top: 10, bottom: 10 }
 					},
 					ticks: {
+						display: !omitLabels,
 						color: labelColor,
 						callback(tickValue) {
 							const num = Number(tickValue);
@@ -164,7 +175,7 @@
 
 	$: data = getChartData(selectedFact, range, facts);
 
-	$: options = getChartOptions(range, isMobile);
+	$: options = getChartOptions(range, isMobile, omitLabels);
 
 	function handleChartClick(event: CustomEvent<unknown>) {
 		if (event instanceof PointerEvent) {
@@ -185,6 +196,8 @@
 		LinearScale
 	);
 </script>
+
+<svelte:window bind:innerWidth bind:innerHeight />
 
 <Chart
 	type="line"

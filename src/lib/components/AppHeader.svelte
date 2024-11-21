@@ -24,8 +24,8 @@
 		</a>
 		<div class="flex h-full space-x-4 mr-4">
 			<CommandSearch />
-			<NetworkSelect />
-			<ThemeToggle />
+			<NetworkSelect class="hidden sm:flex" />
+			<ThemeToggle class="hidden xxxs:flex" />
 			<LinkMenu />
 		</div>
 	</div>

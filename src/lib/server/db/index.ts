@@ -5,22 +5,22 @@ import {
 	type DBFactStatement,
 	type GetFactsPageResponseDB,
 	DBFactStatementSchema,
-	DBFeedSchema,
 	type Feed,
-	type DBFeed,
-	type FeedLayoutData,
 	type DBFeedWithData,
-	PolicySchema,
-	NetworkSchema,
 	type Network,
 	type Source,
-	SourceSchema
+	SourceSchema,
+	NetworkSchema,
+	PolicySchema,
+	DBFeedWithAssetsSchema,
+	DBFactStatementWithFeedSchema,
+	type DBFactStatementWithFeed
 } from '$lib/types';
 import { format, sub } from 'date-fns';
 import { env } from '$env/dynamic/public';
-import PocketBase, { type RecordModel } from 'pocketbase';
-import { getAssetFromFeedName } from '$lib/client/helpers';
+import PocketBase from 'pocketbase';
 import { format as formatZonedTime, toZonedTime } from 'date-fns-tz';
+import { error } from '@sveltejs/kit';
 
 // Initialize Database
 const db = new PocketBase(env.PUBLIC_DB_HOST);
@@ -62,10 +62,22 @@ export async function getFactsPage(
 		.getList(page, FACTS_PAGE_LIMIT, {
 			sort: '-validation_date',
 			filter: `network = "${networkID}" ${feedID ? `&& feed.feed_id="${feedID}"` : ''}`,
-			expand: 'feed'
+			expand: 'feed.base_asset,feed.quote_asset'
 		});
 
-	const facts = validateAndParseFactStatements(items);
+	const facts = items.map((item) => {
+		if (!item.expand?.feed) error(500, 'Fact is missing feed');
+		const parsedFact = DBFactStatementWithFeedSchema.safeParse({
+			...item,
+			feed: {
+				...item.expand.feed,
+				base_asset: item.expand.base_asset,
+				quote_asset: item.expand.quote_asset
+			}
+		});
+		if (parsedFact.success) return parsedFact.data;
+		else error(500, `Invalid fact: ${parsedFact.error}`);
+	});
 
 	return { facts, totalPages, totalFacts: totalItems };
 }
@@ -80,15 +92,22 @@ export async function getFeeds(network: Network): Promise<DBFeedWithData[]> {
 	try {
 		const feedRecords = await db
 			.collection('feeds')
-			.getFullList({ filter: `network = "${network.id}"` });
-		const dbFeeds = z.array(DBFeedSchema).parse(feedRecords);
+			.getFullList({ filter: `network = "${network.id}"`, expand: 'base_asset,quote_asset' });
+		const dbFeeds = feedRecords.map((feed) => {
+			return {
+				...feed,
+				base_asset: feed.expand?.base_asset,
+				quote_asset: feed.expand?.quote_asset
+			};
+		});
+		const parsedFeeds = z.array(DBFeedWithAssetsSchema).parse(dbFeeds);
 
 		const concurrencyLimit = 4;
 		const feeds: DBFeedWithData[] = [];
 
 		// Process feeds in batches of 2
-		for (let i = 0; i < dbFeeds.length; i += concurrencyLimit) {
-			const batch = dbFeeds.slice(i, i + concurrencyLimit);
+		for (let i = 0; i < parsedFeeds.length; i += concurrencyLimit) {
+			const batch = parsedFeeds.slice(i, i + concurrencyLimit);
 			const batchPromises = batch.map(async (dbFeed) => {
 				const [factRecord, historicalValues] = await Promise.all([
 					db.collection('facts').getList(1, 1, {
@@ -107,9 +126,8 @@ export async function getFeeds(network: Network): Promise<DBFeedWithData[]> {
 				return {
 					...dbFeed,
 					latestFact,
-					base_asset: getAssetFromFeedName(dbFeed.name, 'base'),
-					quote_asset: getAssetFromFeedName(dbFeed.name, 'quote'),
 					type_description: 'Current Exchange Rate',
+					type_description_short: 'CER',
 					totalFacts,
 					...historicalValues
 				};
@@ -132,15 +150,23 @@ export async function getFeedByID(
 ): Promise<DBFeedWithData | null> {
 	try {
 		const feedIDParsed = feedID.replace(/\/facts\/undefined$/, '');
-		const feedRecord = await db
+		const feedResponse = await db
 			.collection('feeds')
-			.getFirstListItem(`network = "${network.id}" && feed_id~"${feedIDParsed}"`);
-		const dbFeed = DBFeedSchema.parse(feedRecord);
+			.getFirstListItem(`network = "${network.id}" && feed_id~"${feedIDParsed}"`, {
+				expand: 'base_asset,quote_asset'
+			});
+
+		const dbFeed = DBFeedWithAssetsSchema.parse({
+			...feedResponse,
+			base_asset: feedResponse.expand?.base_asset,
+			quote_asset: feedResponse.expand?.quote_asset
+		});
 
 		const [factRecord, historicalValues] = await Promise.all([
 			db.collection('facts').getList(1, 1, {
 				filter: `network = "${network.id}" && feed="${dbFeed.id}"`,
-				sort: '-validation_date'
+				sort: '-validation_date',
+				expand: 'base_asset,quote_asset'
 			}),
 			fetchHistoricalValues(network.id, dbFeed.id)
 		]);
@@ -153,9 +179,8 @@ export async function getFeedByID(
 		return {
 			...dbFeed,
 			latestFact,
-			base_asset: getAssetFromFeedName(dbFeed.name, 'base'),
-			quote_asset: getAssetFromFeedName(dbFeed.name, 'quote'),
 			type_description: 'Current Exchange Rate',
+			type_description_short: 'CER',
 			totalFacts,
 			...historicalValues
 		};
@@ -227,22 +252,6 @@ export async function getActiveFeedsCount(network: Network): Promise<number> {
 	return totalItems;
 }
 
-export function validateAndParseFactStatements(facts: RecordModel[]): DBFactStatement[] {
-	const factStatements = facts.map((fact) => validateAndParseFactStatement(fact));
-
-	return factStatements;
-}
-
-export function validateAndParseFactStatement(fact: RecordModel): DBFactStatement {
-	const parsedFact = DBFactStatementSchema.safeParse({
-		...fact,
-		feed: fact.expand?.feed ?? fact.feed
-	});
-	if (parsedFact.success) return parsedFact.data;
-	else throw new Error(`Invalid fact: ${parsedFact.error}`);
-	// TODO - better error handling
-}
-
 export async function doesFactExist(network: Network, factID?: string): Promise<boolean> {
 	if (!factID) return false;
 	const fact = await getFactByURN(network, factID);
@@ -252,47 +261,30 @@ export async function doesFactExist(network: Network, factID?: string): Promise<
 export async function getFactByURN(
 	network: Network,
 	factURN: string
-): Promise<DBFactStatement | null> {
+): Promise<DBFactStatementWithFeed | null> {
 	try {
 		const record = await db
 			.collection('facts')
-			.getFirstListItem(`fact_urn="${factURN}"`, { expand: 'feed' });
-		const fact = validateAndParseFactStatement(record);
-		return fact;
-	} catch (error) {
-		console.error(`Error retrieving fact by URN: ${error}`);
+			.getFirstListItem(`fact_urn="${factURN}" && network="${network.id}"`, {
+				expand: 'feed.quote_asset,feed.base_asset'
+			});
+
+		const parsed = DBFactStatementWithFeedSchema.safeParse({
+			...record,
+			feed: {
+				...record.expand?.feed,
+				base_asset: record.expand?.base_asset,
+				quote_asset: record.expand?.quote_asset
+			}
+		});
+		if (!parsed.success) throw new Error('Failed to parse fact statement with feed');
+
+		return parsed.data;
+	} catch (e) {
+		console.error(`Error retrieving fact by URN: ${e}`);
+		error(500, 'Error retrieving fact by URN');
 		return null;
 	}
-}
-
-export async function getFeedLayoutData(network: Network, feedID: string): Promise<FeedLayoutData> {
-	const feedRecord = await db
-		.collection('feeds')
-		.getFirstListItem(`network = "${network.id}" && feed_id ~ "${feedID}"`);
-	const feed = DBFeedSchema.parse(feedRecord);
-
-	const [factRecord, historicalValues] = await Promise.all([
-		db.collection('facts').getList(1, 1, {
-			filter: `network = "${network.id}" && feed='${feed.id}'`,
-			sort: '-validation_date'
-		}),
-		fetchHistoricalValues(network.id, feed.id)
-	]);
-
-	const latestFact = DBFactStatementSchema.parse(factRecord.items[0]);
-	const totalFacts = factRecord.totalItems;
-
-	return {
-		feed: {
-			...feed,
-			latestFact,
-			base_asset: getAssetFromFeedName(feed.name, 'base'),
-			quote_asset: getAssetFromFeedName(feed.name, 'quote'),
-			type_description: 'Current Exchange Rate',
-			totalFacts,
-			...historicalValues
-		}
-	};
 }
 
 export async function getFeedFactsByDateRange(
@@ -300,7 +292,7 @@ export async function getFeedFactsByDateRange(
 	feedID: string,
 	rangeOfDays: number,
 	startDate: Date
-): Promise<DBFactStatement[]> {
+): Promise<(DBFactStatement & { feed: string })[]> {
 	try {
 		const endDateFilter = format(
 			new Date(startDate.getTime() - (rangeOfDays - 1) * 24 * 60 * 60 * 1000),
@@ -309,11 +301,10 @@ export async function getFeedFactsByDateRange(
 
 		const { items } = await db.collection('facts').getList(1, 5000, {
 			sort: '-validation_date',
-			filter: `network = "${network.id}" && feed='${feedID}' && validation_date > '${endDateFilter} 00:00:00.000Z'`,
-			expand: 'feed'
+			filter: `network = "${network.id}" && feed='${feedID}' && validation_date > '${endDateFilter} 00:00:00.000Z'`
 		});
 
-		const parsedFacts = validateAndParseFactStatements(items);
+		const parsedFacts = z.array(DBFactStatementSchema).parse(items);
 
 		return parsedFacts;
 	} catch (error) {
@@ -351,17 +342,25 @@ export async function searchFeeds(
 	query: string
 ): Promise<Omit<Feed, 'latestFact' | 'oneDayAgo' | 'threeDaysAgo' | 'sevenDaysAgo'>[]> {
 	try {
-		const records = await db.collection('feeds').getList<DBFeed>(1, 50, {
-			filter: `network = "${networkID}" && feed_id ~ "${query}"`
+		const records = await db.collection('feeds').getList(1, 50, {
+			filter: `network = "${networkID}" && feed_id ~ "${query}"`,
+			expand: 'base_asset,quote_asset'
 		});
-		const parsedFeeds = z.array(DBFeedSchema).parse(records.items);
+		const parsedFeeds = z.array(DBFeedWithAssetsSchema).parse(
+			records.items.map((item) => {
+				return {
+					...item,
+					base_asset: item.expand?.base_asset,
+					quote_asset: item.expand?.quote_asset
+				};
+			})
+		);
 
 		return parsedFeeds.map((feed) => {
 			return {
 				...feed,
-				base_asset: getAssetFromFeedName(feed.name, 'base'),
-				quote_asset: getAssetFromFeedName(feed.name, 'quote'),
 				type_description: 'Current Exchange Rate',
+				type_description_short: 'CER',
 				totalFacts: 0 // Setting to 0 only for searching feeds
 			};
 		});
@@ -378,10 +377,6 @@ export async function getAllNetworks(): Promise<Network[]> {
 		});
 
 		const networks: Network[] = response.map((networkRecord) => {
-			const database = {
-				fact_statements: `${networkRecord.name.toLowerCase()}_fact_statements`,
-				feeds: `${networkRecord.name.toLowerCase()}_feeds`
-			};
 			const policies = networkRecord.expand?.policies_via_network
 				? z
 						.array(PolicySchema)
@@ -391,8 +386,7 @@ export async function getAllNetworks(): Promise<Network[]> {
 
 			return NetworkSchema.parse({
 				...networkRecord,
-				policies,
-				database
+				policies
 			});
 		});
 

@@ -29,7 +29,7 @@
 	<ModeWatcher />
 	<div class="flex flex-col w-full h-full min-h-full">
 		<AppHeader />
-		<div class="bg-background mb-14 mt-[120px] relative">
+		<div class="bg-background mb-14 mt-[100px] xxxs:mt-[120px] relative">
 			<slot />
 		</div>
 		<AppFooter />

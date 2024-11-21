@@ -33,6 +33,7 @@
 	$: feed = formatFeedForDisplay(data.feed);
 	$: chartFacts = data.chartFacts;
 	$: archive = data.archive;
+	$: riskRatings = data.riskRatings;
 
 	async function handleSelectedFactChange(newFactStatement: FactStatement | null) {
 		const params = new URLSearchParams($page.url.searchParams);
@@ -53,7 +54,7 @@
 	<div class="flex flex-col justify-center items-center w-full">
 		<a
 			href="/"
-			class="flex justify-center gap-2 self-start text-sm items-center -mt-2 mb-4 -ml-4 rounded-lg border text-muted-foreground bg-card hover:scale-[1.008] hover:text-card-foreground py-2 px-3"
+			class="flex justify-center gap-2 self-start text-sm items-center -mt-2 mb-4 rounded-lg border text-muted-foreground bg-card hover:scale-[1.008] hover:text-card-foreground py-2 px-3"
 		>
 			<ArrowLeft />
 			<span>Back to dashboard</span>
@@ -67,6 +68,7 @@
 						: null;
 			}}
 			{feed}
+			{riskRatings}
 			onLatestFactClick={handleSelectedFactChange}
 		/>
 		<FeedChart {feed} {selectedFact} {chartFacts} onChartPointClick={handleSelectedFactChange} />

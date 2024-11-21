@@ -6,6 +6,12 @@
 	import Loading from '$lib/components/Loading.svelte';
 	import { page } from '$app/stores';
 
+	type $$Props = {
+		class?: string;
+	};
+	let className: $$Props['class'] = undefined;
+	export { className as class };
+
 	$: selectedNetwork = getSelectedNetwork($networkStore.network.name);
 
 	let isSwitchingNetworks = false;
@@ -42,7 +48,7 @@
 	</div>
 {/if}
 
-<div class="hidden sm:flex">
+<div class={className}>
 	<Select.Root selected={selectedNetwork} onSelectedChange={switchNetwork}>
 		<Select.Trigger
 			class={`select select-bordered w-32 max-w-xs border-l-8 ${selectedNetwork.color}`}
