@@ -148,10 +148,10 @@
 							<h4 class="font-bold">Base Asset:</h4>
 							<div class="flex flex-col space-y-2">
 								<div class="flex items-center">
-									<AssetBadge asset={feed.base_asset} size="md" />
+									<AssetBadge asset={feed.base_asset} size="lg" />
 									<h5 class="mx-1 text-sm">{feed.base_asset.ticker}</h5>
 									<div class="-mt-3">
-										<RiskRatingBadge riskRating={riskRatings.base} size="sm" />
+										<RiskRatingBadge riskRating={riskRatings.base} size="md" />
 									</div>
 								</div>
 							</div>
@@ -163,10 +163,10 @@
 							<h4 class="font-bold">Quote Asset:</h4>
 							<div class="flex flex-col space-y-2">
 								<div class="flex items-center">
-									<AssetBadge asset={feed.quote_asset} size="md" />
+									<AssetBadge asset={feed.quote_asset} size="lg" />
 									<h5 class="mx-1 text-sm">{feed.quote_asset.ticker}</h5>
 									<div class="-mt-3">
-										<RiskRatingBadge riskRating={riskRatings.quote} size="sm" />
+										<RiskRatingBadge riskRating={riskRatings.quote} size="md" />
 									</div>
 								</div>
 							</div>
