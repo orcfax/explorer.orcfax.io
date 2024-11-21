@@ -1,6 +1,7 @@
 <script lang="ts">
 	import { getXerberusRiskDescription } from '$lib/client/helpers';
 	import FactCardField from '$lib/components/FactCardField.svelte';
+	import SourceBadge from '$lib/components/SourceBadge.svelte';
 	import * as Avatar from '$lib/components/ui/avatar';
 	import * as HoverCard from '$lib/components/ui/hover-card';
 	import Skeleton from '$lib/components/ui/skeleton/skeleton.svelte';
@@ -87,7 +88,29 @@
 								allowCopyToClipboard
 								ellipsisAndHover
 							/>
-							<FactCardField name="Signed By" value={riskRating.xSignedBy} />
+							<div class="flex">
+								<div class="flex flex-col">
+									<p class="font-bold">Signed By:</p>
+									<div class="flex gap-1">
+										<p>{riskRating.xSignedBy}</p>
+										<!-- Integrate this source into the db eventually -->
+										<SourceBadge
+											source={{
+												id: '1',
+												name: riskRating.xSignedBy,
+												description: 'Xerberus',
+												type: 'CEX API',
+												background_color: '#08201C',
+												image_path: '/sources/xerberus.png',
+												website: 'https://xerberus.io'
+											}}
+											size="sm"
+											hideTooltip
+										/>
+									</div>
+								</div>
+							</div>
+
 							<FactCardField
 								name="Signature"
 								value={riskRating.xSignature}
