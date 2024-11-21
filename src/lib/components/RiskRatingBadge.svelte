@@ -136,7 +136,6 @@
 									<div class="flex flex-col">
 										<p class="font-bold">Signed By:</p>
 										<div class="flex gap-1 h-full items-center">
-											<p>{riskRating.xSignedBy}</p>
 											<!-- Integrate this source into the db eventually -->
 											<SourceBadge
 												source={{
@@ -152,6 +151,7 @@
 												hideTooltip
 												isPlainLogo
 											/>
+											<p>{riskRating.xSignedBy}</p>
 										</div>
 									</div>
 								</div>
