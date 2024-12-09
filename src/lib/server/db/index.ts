@@ -260,14 +260,18 @@ export async function doesFactExist(network: Network, factID?: string): Promise<
 
 export async function getFactByURN(
 	network: Network,
-	factURN: string
-): Promise<DBFactStatementWithFeed | null> {
+	factURN: string,
+	filters = ''
+): Promise<DBFactStatementWithFeed> {
 	try {
 		const record = await db
 			.collection('facts')
-			.getFirstListItem(`fact_urn="${factURN}" && network="${network.id}"`, {
-				expand: 'feed.quote_asset,feed.base_asset'
-			});
+			.getFirstListItem(
+				`fact_urn="${factURN}" && network="${network.id}" ${filters ? `&& ${filters}` : ''}`,
+				{
+					expand: 'feed.quote_asset,feed.base_asset'
+				}
+			);
 
 		const parsed = DBFactStatementWithFeedSchema.safeParse({
 			...record,
@@ -283,7 +287,6 @@ export async function getFactByURN(
 	} catch (e) {
 		console.error(`Error retrieving fact by URN: ${e}`);
 		error(500, 'Error retrieving fact by URN');
-		return null;
 	}
 }
 
@@ -316,7 +319,7 @@ export async function getFeedFactsByDateRange(
 export async function searchFactStatements(
 	networkID: string,
 	query: string
-): Promise<DBFactStatement[]> {
+): Promise<DBFactStatementWithFeed[]> {
 	try {
 		const records = await db.collection('facts').getList(1, 50, {
 			filter: `network = "${networkID}" && (fact_urn ~ "${query}" || storage_urn ~ "${query}" || transaction_id ~ "${query}" || block_hash ~ "${query}")`,
@@ -325,10 +328,14 @@ export async function searchFactStatements(
 		const withExpandedFeeds = records.items.map((record) => {
 			return {
 				...record,
-				feed: record.expand?.feed ?? record.feed
+				feed: {
+					...(record.expand?.feed ?? record.feed),
+					base_asset: record.expand?.base_asset,
+					quote_asset: record.expand?.quote_asset
+				}
 			};
 		});
-		const parsedFacts = z.array(DBFactStatementSchema).parse(withExpandedFeeds);
+		const parsedFacts = z.array(DBFactStatementWithFeedSchema).parse(withExpandedFeeds);
 
 		return parsedFacts;
 	} catch (error) {
