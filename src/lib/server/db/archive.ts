@@ -13,13 +13,13 @@ import type {
 	DirectoryNode,
 	FactSourceMessage,
 	ArchiveDownload,
-	FactStatementStub
+	FactStatementStub,
+	DBFactStatementWithFeed
 } from '$lib/types';
 import { getFactByURN, getSources } from '$lib/server/db';
 import {
 	BagInfoSchema,
 	CEXValidationFileSchema,
-	DBFactStatementSchema,
 	DEXValidationFileSchema,
 	SourceSchema,
 	type DBFactStatement,
@@ -199,14 +199,13 @@ export async function getSelectedFact(
 	network: Network,
 	factURN: string,
 	feed: DBFeedWithData
-): Promise<DBFactStatement | null> {
+): Promise<DBFactStatementWithFeed | null> {
 	if (feed.latestFact === null) return null;
 
-	let selectedFact = feed.latestFact;
+	let selectedFact: DBFactStatementWithFeed = { ...feed.latestFact, feed };
 	if (factURN !== feed.latestFact.fact_urn) {
-		const response = await getFactByURN(network, factURN);
-		const parsed = DBFactStatementSchema.safeParse(response).data || feed.latestFact;
-		selectedFact = parsed;
+		const fact = await getFactByURN(network, factURN, `feed="${feed.id}"`);
+		selectedFact = fact;
 	}
 
 	return selectedFact;
