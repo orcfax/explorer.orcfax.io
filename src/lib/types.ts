@@ -6,7 +6,6 @@ export type Environment = z.infer<typeof EnvironmentSchema>;
 export type DBFactStatement = z.infer<typeof DBFactStatementSchema>;
 export type DBFeed = z.infer<typeof DBFeedSchema>;
 export type Feed = z.infer<typeof FeedSchema>;
-export type Source = z.infer<typeof SourceSchema>;
 
 export const AssetSchema = z.object({
 	id: z.string(),
@@ -31,6 +30,8 @@ export interface OrcfaxStats {
 	totalFacts: number;
 	totalFacts24Hour: number;
 	totalActiveFeeds: number;
+	sources: Source[];
+	nodes: Node[];
 }
 
 export const TagSchema = z.object({
@@ -76,6 +77,38 @@ export const DBFeedWithAssetsSchema = DBFeedSchema.extend({
 });
 export type DBFeedWithAssets = z.infer<typeof DBFeedWithAssetsSchema>;
 
+export const NodeSchema = z.object({
+	id: z.string(),
+	node_urn: z.string(),
+	network: z.string(),
+	status: z.enum(['active', 'inactive']),
+	type: z.enum(['federated', 'decentralized', 'itn']),
+	name: z.string(),
+	address_locality: z.string().optional(),
+	address_region: z.string().optional(),
+	geo_coordinates: z.string().optional()
+});
+
+export type Node = z.infer<typeof NodeSchema>;
+
+export const SourceSchema = z.object({
+	id: z.string(),
+	name: z.string(),
+	network: z.string(),
+	recipient: z.string(),
+	sender: z.string(),
+	type: z.enum(['CEX API', 'DEX LP']),
+	website: z.string(),
+	image_path: z.string(),
+	background_color: z.string(),
+	// For CEX sources, assetPairValue is used. For DEX sources base and quote will be used.
+	baseAssetValue: z.number().optional(),
+	quoteAssetValue: z.number().optional(),
+	assetPairValue: z.number().optional()
+});
+
+export type Source = z.infer<typeof SourceSchema>;
+
 export const DBFactStatementSchema = z.object({
 	id: z.string(),
 	network: z.string(),
@@ -93,7 +126,18 @@ export const DBFactStatementSchema = z.object({
 	address: z.string(),
 	slot: z.number(),
 	statement_hash: z.string(),
-	publication_cost: z.number()
+	publication_cost: z.number(),
+	participating_nodes: z.union([z.array(z.string()), z.array(NodeSchema)]),
+	storage_cost: z.number(),
+	sources: z.union([z.array(z.string()), z.array(SourceSchema)]),
+	content_signature: z.string(),
+	collection_date: z.coerce
+		.date()
+		.nullable()
+		.catch(() => {
+			return null;
+		}),
+	is_archive_indexed: z.boolean().nullable()
 });
 
 export const DBFactStatementWithFeedSchema = DBFactStatementSchema.extend({
@@ -195,6 +239,8 @@ export interface GetOrcfaxSummaryResponseDB {
 	totalFacts: number;
 	totalFacts24Hour: number;
 	totalActiveFeeds: number;
+	nodes: Node[];
+	sources: Source[];
 }
 
 export const GetFactsPageResponseDBSchema = z.object({
@@ -349,20 +395,6 @@ export interface FactSourceMessage {
 		text: string | { request_url: string; response?: string | object };
 	};
 }
-
-export const SourceSchema = z.object({
-	id: z.string(),
-	name: z.string(),
-	description: z.string(),
-	type: z.enum(['CEX API', 'DEX LP']),
-	website: z.string(),
-	image_path: z.string(),
-	background_color: z.string(),
-	// For CEX sources, assetPairValue is used. For DEX sources base and quote will be used.
-	baseAssetValue: z.number().optional(),
-	quoteAssetValue: z.number().optional(),
-	assetPairValue: z.number().optional()
-});
 
 export const CollectionEventSchema = z.object({
 	'@type': z.literal('Event'),
