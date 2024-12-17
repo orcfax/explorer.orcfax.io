@@ -28,7 +28,7 @@
 			</div>
 		</section>
 
-		{#await data.sources}
+		{#await data.summary.sources}
 			<Loading />
 		{:then sources}
 			<section id={`sources`} class="hidden sm:flex flex-col mt-14">

@@ -14,7 +14,9 @@ import {
 	PolicySchema,
 	DBFeedWithAssetsSchema,
 	DBFactStatementWithFeedSchema,
-	type DBFactStatementWithFeed
+	type DBFactStatementWithFeed,
+	NodeSchema,
+	type Node
 } from '$lib/types';
 import { format, sub } from 'date-fns';
 import { env } from '$env/dynamic/public';
@@ -30,7 +32,9 @@ export async function getOrcfaxSummary(network: Network): Promise<GetOrcfaxSumma
 	return {
 		totalFacts: await getAllFactsCount(network),
 		totalFacts24Hour: await getTodaysFactsCount(network),
-		totalActiveFeeds: await getActiveFeedsCount(network)
+		totalActiveFeeds: await getActiveFeedsCount(network),
+		nodes: await getAllNodes(network),
+		sources: await getAllSources(network)
 	};
 }
 
@@ -400,6 +404,54 @@ export async function getAllNetworks(): Promise<Network[]> {
 		return networks;
 	} catch (error) {
 		console.error(`Error retrieving network records: ${error}`);
+		return [];
+	}
+}
+
+export async function getAllNodes(network: Network): Promise<Node[]> {
+	try {
+		const response = await db.collection('nodes').getFullList({
+			filter: `network = "${network.id}"`
+		});
+
+		const nodes = z.array(NodeSchema).parse(response);
+
+		const nodeFactCounts = await Promise.all(
+			nodes.map(async (node) => {
+				const { totalItems } = await db.collection('facts').getList(1, 1, {
+					filter: `network = "${network.id}" && participating_nodes ~ "${node.id}"`
+				});
+				return totalItems;
+			})
+		);
+
+		return nodes;
+	} catch (error) {
+		console.error('Error retrieving node records', error);
+		return [];
+	}
+}
+
+export async function getAllSources(network: Network): Promise<Source[]> {
+	try {
+		const response = await db.collection('sources').getFullList({
+			filter: `network = "${network.id}"`
+		});
+
+		const sources = z.array(SourceSchema).parse(response);
+
+		const sourceFactCounts = await Promise.all(
+			sources.map(async (source) => {
+				const { totalItems } = await db.collection('facts').getList(1, 1, {
+					filter: `network = "${network.id}" && sources ~ "${source.id}"`
+				});
+				return totalItems;
+			})
+		);
+
+		return sources;
+	} catch (error) {
+		console.error('Error retrieving source records', error);
 		return [];
 	}
 }
