@@ -38,5 +38,16 @@
 				</div>
 			</section>
 		{/await}
+
+		{#await data.summary.nodes}
+			<Loading />
+		{:then nodes}
+			<section id={`nodes`} class="hidden sm:flex flex-col mt-14">
+				<h1 class="font-bold text-3xl pb-4">All Nodes</h1>
+				<div class="section-container p-7">
+					<!-- <SourceTable {sources} /> -->
+				</div>
+			</section>
+		{/await}
 	</div>
 </main>
