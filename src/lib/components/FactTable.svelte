@@ -13,6 +13,7 @@
 	import { getFeedUrl, getFormattedDate, getFormattedTime } from '$lib/client/helpers';
 	import { networkStore } from '$lib/stores/network';
 	import FactCardField from './FactCardField.svelte';
+	import FeedNameplate from '$lib/components/FeedNameplate.svelte';
 
 	export let feedFilter = '';
 	export let onTableRowClick: (fact: FactStatement) => void = () => {};
@@ -47,7 +48,7 @@
 			? []
 			: [
 					table.column({
-						accessor: (fact) => fact.feed.feed_id,
+						accessor: 'feed',
 						header: 'Feed'
 					})
 				]),
@@ -62,6 +63,10 @@
 		table.column({
 			accessor: 'validation_date',
 			header: 'Validation Date'
+		}),
+		table.column({
+			accessor: 'participating_nodes',
+			header: 'Collected By'
 		})
 	]);
 
@@ -131,9 +136,22 @@
 											<Table.Cell {...attrs}>
 												<FormattedCurrencyValue value={cell.value} />
 											</Table.Cell>
+										{:else if cell.id === 'feed'}
+											<Table.Cell {...attrs}>
+												<FeedNameplate feed={cell.value} size="md" />
+											</Table.Cell>
 										{:else if cell.id === 'validation_date'}
 											<Table.Cell {...attrs}>
 												{`${getFormattedDate(cell.value)} ${getFormattedTime(cell.value)}`}
+											</Table.Cell>
+										{:else if cell.id === 'participating_nodes'}
+											<Table.Cell {...attrs}>
+												<FactCardField
+													name=""
+													value={cell.value.length === 1 ? cell.value[0].node_urn : `N/A`}
+													allowCopyToClipboard
+													ellipsisAndHover
+												/>
 											</Table.Cell>
 										{:else}
 											<Table.Cell {...attrs}>

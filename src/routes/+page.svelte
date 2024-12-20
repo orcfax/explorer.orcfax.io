@@ -4,13 +4,27 @@
 	import FeedsListLoadingSkeleton from '$lib/components/FeedsListLoadingSkeleton.svelte';
 	import Loading from '$lib/components/Loading.svelte';
 	import NetworkSummary from '$lib/components/NetworkSummary.svelte';
+	import NetworkSummaryLoadingSkeleton from '$lib/components/NetworkSummaryLoadingSkeleton.svelte';
+	import NodesTable from '$lib/components/NodesTable.svelte';
 	import SourceTable from '$lib/components/SourceTable.svelte';
 
 	export let data;
 </script>
 
 <main class="flex flex-col items-center w-full px-10 min-h-full overflow-x-hidden">
-	<NetworkSummary summary={data.summary} />
+	{#await Promise.all( [data.totalFacts, data.totalFacts24Hour, data.totalActiveFeeds, data.nodes, data.sources] )}
+		<NetworkSummaryLoadingSkeleton />
+	{:then summary}
+		<NetworkSummary
+			summary={{
+				totalFacts: summary[0],
+				totalFacts24Hour: summary[1],
+				totalActiveFeeds: summary[2],
+				nodes: summary[3],
+				sources: summary[4]
+			}}
+		/>
+	{/await}
 	<div class="w-full max-w-max md:mt-6">
 		<section id={`oracleFeedsList`} class="flex flex-col items-center mt-14">
 			<h2 class="font-bold text-3xl pb-4 self-start">Oracle Feeds</h2>
@@ -28,24 +42,24 @@
 			</div>
 		</section>
 
-		{#await data.summary.sources}
+		{#await data.nodes}
+			<Loading />
+		{:then nodes}
+			<section id={`nodes`} class="hidden sm:flex flex-col mt-14">
+				<h1 class="font-bold text-3xl pb-4">All Nodes</h1>
+				<div class="section-container p-7">
+					<NodesTable {nodes} />
+				</div>
+			</section>
+		{/await}
+
+		{#await data.sources}
 			<Loading />
 		{:then sources}
 			<section id={`sources`} class="hidden sm:flex flex-col mt-14">
 				<h1 class="font-bold text-3xl pb-4">All Sources</h1>
 				<div class="section-container p-7">
 					<SourceTable {sources} />
-				</div>
-			</section>
-		{/await}
-
-		{#await data.summary.nodes}
-			<Loading />
-		{:then nodes}
-			<section id={`nodes`} class="hidden sm:flex flex-col mt-14">
-				<h1 class="font-bold text-3xl pb-4">All Nodes</h1>
-				<div class="section-container p-7">
-					<!-- <SourceTable {sources} /> -->
 				</div>
 			</section>
 		{/await}

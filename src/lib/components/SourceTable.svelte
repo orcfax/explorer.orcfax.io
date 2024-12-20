@@ -1,24 +1,26 @@
 <script lang="ts">
 	import { writable } from 'svelte/store';
-	import type { Source } from '$lib/types';
+	import type { SourceWithMetadata } from '$lib/types';
 	import SourceBadge from './SourceBadge.svelte';
 	import * as Table from '$lib/components/ui/table';
 	import { createTable, Render, Subscribe } from 'svelte-headless-table';
 	import { addGroupBy } from 'svelte-headless-table/plugins';
 	import FactCardField from './FactCardField.svelte';
-	import { formatSumValue } from '$lib/client/helpers';
+	import { formatNumber, formatSumValue } from '$lib/client/helpers';
+	import LatestFactColumn from '$lib/components/LatestFactColumn.svelte';
+	import FeedNameplate from '$lib/components/FeedNameplate.svelte';
 
-	export let sources: Source[];
+	export let sources: SourceWithMetadata[];
 	export let showWithValues = false;
 
 	const isCEX = sources.length > 0 && sources[0].type === 'CEX API';
 	const isDEX = sources.length > 0 && sources[0].type === 'DEX LP';
 
-	let sourcesStore = writable<Source[]>(
+	let sourcesStore = writable<SourceWithMetadata[]>(
 		showWithValues ? sources : sources.sort((a, b) => a.name.localeCompare(b.name))
 	);
 
-	const highlightRow = (index: number, sources: Source[], isCEX: boolean) => {
+	const highlightRow = (index: number, sources: SourceWithMetadata[], isCEX: boolean) => {
 		const isOddSources = sources.length % 2 !== 0;
 		const midIndex = Math.floor(sources.length / 2);
 
@@ -74,8 +76,12 @@
 			header: 'Type'
 		}),
 		table.column({
-			accessor: 'website',
-			header: 'Website'
+			accessor: 'totalFacts',
+			header: 'Facts Sourced'
+		}),
+		table.column({
+			accessor: 'latestFact',
+			header: 'Last Sourced'
 		})
 	];
 
@@ -129,9 +135,13 @@
 									{#if cell.id === 'name'}
 										<Table.Cell {...attrs}>
 											<div class="flex gap-3 items-center">
-												<SourceBadge source={row.original} hideTooltip={!showWithValues} />
+												<SourceBadge source={row.original} />
 												<div class={`${isDEX ? 'hidden md:block' : ''}`}>
-													<Render of={cell.render()} />
+													{cell.value === 'bitfinex_simple'
+														? 'Bitfinex'
+														: cell.value === 'kucoin_prices_simple'
+															? 'Kucoin'
+															: cell.value}
 												</div>
 											</div>
 										</Table.Cell>
@@ -139,9 +149,16 @@
 										<Table.Cell {...attrs} class="hidden md:table-cell">
 											<Render of={cell.render()} />
 										</Table.Cell>
-									{:else if cell.id === 'website'}
+									{:else if cell.id === 'totalFacts'}
 										<Table.Cell {...attrs}>
-											<Render of={cell.render()} />
+											<Render of={formatNumber(cell.render())} />
+										</Table.Cell>
+									{:else if cell.id === 'latestFact'}
+										<Table.Cell {...attrs}>
+											<div class="flex flex-col gap-2">
+												<FeedNameplate feed={cell.value.feed} size="sm" />
+												<LatestFactColumn latestFact={cell.value} />
+											</div>
 										</Table.Cell>
 									{:else if cell.id === 'baseAssetValue' || cell.id === 'quoteAssetValue'}
 										<Table.Cell {...attrs}>
