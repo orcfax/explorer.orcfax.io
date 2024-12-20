@@ -17,7 +17,7 @@ export const load: ServerLoad = async ({ parent, params }) => {
 			feed,
 			selectedFact,
 			// Lazy-load / stream the rest of the data
-			archive: selectedFact ? getArchive(selectedFact, feed.source_type) : null,
+			archive: selectedFact ? getArchive(network, selectedFact, feed.source_type) : null,
 			riskRatings: {
 				base: feed.base_asset?.fingerprint ? getXerberusRiskRating(feed.base_asset) : null,
 				quote: feed.quote_asset?.fingerprint ? getXerberusRiskRating(feed.quote_asset) : null

@@ -10,14 +10,15 @@ export const GET: RequestHandler = async ({ url }) => {
 	try {
 		const storageUrn = url.searchParams.get('storageUrn');
 		const sourceType = url.searchParams.get('sourceType');
+		const networkID = url.searchParams.get('networkID');
 
-		if (!storageUrn || !sourceType)
+		if (!storageUrn || !sourceType || !networkID)
 			return new Response(null, {
 				status: 400,
 				statusText: 'Missing parameters for archive download'
 			});
 
-		const archive = await getArchiveFromURN(storageUrn, sourceType);
+		const archive = await getArchiveFromURN(networkID, storageUrn, sourceType);
 
 		if (!archive) return new Response(null, { status: 404, statusText: 'Archive not found' });
 

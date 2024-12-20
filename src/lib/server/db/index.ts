@@ -1,20 +1,21 @@
 import 'dotenv/config';
 import { z } from 'zod';
 import {
-	type GetOrcfaxSummaryResponseDB,
 	type DBFactStatement,
 	type GetFactsPageResponseDB,
 	DBFactStatementSchema,
 	type Feed,
 	type DBFeedWithData,
 	type Network,
-	type Source,
 	SourceSchema,
 	NetworkSchema,
 	PolicySchema,
 	DBFeedWithAssetsSchema,
 	DBFactStatementWithFeedSchema,
-	type DBFactStatementWithFeed
+	type DBFactStatementWithFeed,
+	NodeSchema,
+	type NodeWithMetadata,
+	type SourceWithMetadata
 } from '$lib/types';
 import { format, sub } from 'date-fns';
 import { env } from '$env/dynamic/public';
@@ -25,14 +26,6 @@ import { error } from '@sveltejs/kit';
 // Initialize Database
 const db = new PocketBase(env.PUBLIC_DB_HOST);
 db.autoCancellation(false);
-
-export async function getOrcfaxSummary(network: Network): Promise<GetOrcfaxSummaryResponseDB> {
-	return {
-		totalFacts: await getAllFactsCount(network),
-		totalFacts24Hour: await getTodaysFactsCount(network),
-		totalActiveFeeds: await getActiveFeedsCount(network)
-	};
-}
 
 export async function getTodaysFactsCount(network: Network): Promise<number> {
 	const dateFilter = format(new Date(), 'yyyy-MM-dd');
@@ -62,7 +55,7 @@ export async function getFactsPage(
 		.getList(page, FACTS_PAGE_LIMIT, {
 			sort: '-validation_date',
 			filter: `network = "${networkID}" ${feedID ? `&& feed.feed_id="${feedID}"` : ''}`,
-			expand: 'feed.base_asset,feed.quote_asset'
+			expand: 'feed.base_asset,feed.quote_asset,participating_nodes'
 		});
 
 	const facts = items.map((item) => {
@@ -71,21 +64,16 @@ export async function getFactsPage(
 			...item,
 			feed: {
 				...item.expand.feed,
-				base_asset: item.expand.base_asset,
-				quote_asset: item.expand.quote_asset
-			}
+				base_asset: item.expand.feed.expand.base_asset,
+				quote_asset: item.expand.feed.expand.quote_asset
+			},
+			participating_nodes: item.expand?.participating_nodes
 		});
 		if (parsedFact.success) return parsedFact.data;
 		else error(500, `Invalid fact: ${parsedFact.error}`);
 	});
 
 	return { facts, totalPages, totalFacts: totalItems };
-}
-
-export async function getSources(): Promise<Source[]> {
-	// TODO: Hook up network to sources in db and filter
-	const sources = await db.collection('sources').getFullList();
-	return z.array(SourceSchema).parse(sources);
 }
 
 export async function getFeeds(network: Network): Promise<DBFeedWithData[]> {
@@ -402,4 +390,108 @@ export async function getAllNetworks(): Promise<Network[]> {
 		console.error(`Error retrieving network records: ${error}`);
 		return [];
 	}
+}
+
+export async function getAllNodes(network: Network): Promise<NodeWithMetadata[]> {
+	try {
+		const response = await db.collection('nodes').getFullList({
+			filter: `network = "${network.id}"`
+		});
+
+		const nodes = z.array(NodeSchema).parse(response);
+
+		const nodesWithMetadata = await Promise.all(
+			nodes.map(async (node) => {
+				const metadata = await getFactMetadataForNode(network.id, node.id);
+				return {
+					...node,
+					latestFact: metadata.latestFact,
+					totalFacts: metadata.totalItems
+				};
+			})
+		);
+
+		return nodesWithMetadata;
+	} catch (error) {
+		console.error('Error retrieving node records', error);
+		return [];
+	}
+}
+
+export async function getFactMetadataForNode(
+	networkID: string,
+	nodeID: string
+): Promise<{ totalItems: number; latestFact: DBFactStatement | null }> {
+	const { items, totalItems } = await db.collection('facts').getList(1, 1, {
+		filter: `network = "${networkID}" && participating_nodes ~ "${nodeID}"`,
+		expand: 'feed.base_asset,feed.quote_asset',
+		sort: '-validation_date'
+	});
+	const latestFact = DBFactStatementSchema.safeParse(items[0]);
+
+	return {
+		totalItems,
+		latestFact: latestFact.success
+			? {
+					...latestFact.data,
+					feed: {
+						...items[0].expand?.feed,
+						base_asset: items[0].expand?.feed.expand?.base_asset,
+						quote_asset: items[0].expand?.feed.expand?.quote_asset
+					}
+				}
+			: null
+	};
+}
+
+export async function getAllSources(networkID: string): Promise<SourceWithMetadata[]> {
+	try {
+		const response = await db.collection('sources').getFullList({
+			filter: `network = "${networkID}"`
+		});
+
+		const sources = z.array(SourceSchema).parse(response);
+
+		const sourcesWithMetadata = await Promise.all(
+			sources.map(async (source) => {
+				const metadata = await getFactMetadataForSource(networkID, source.id);
+				return {
+					...source,
+					latestFact: metadata.latestFact,
+					totalFacts: metadata.totalItems
+				};
+			})
+		);
+
+		return sourcesWithMetadata;
+	} catch (error) {
+		console.error('Error retrieving node records', error);
+		return [];
+	}
+}
+
+export async function getFactMetadataForSource(
+	networkID: string,
+	sourceID: string
+): Promise<{ totalItems: number; latestFact: DBFactStatement | null }> {
+	const { items, totalItems } = await db.collection('facts').getList(1, 1, {
+		filter: `network = "${networkID}" && sources ~ "${sourceID}"`,
+		expand: 'feed.base_asset,feed.quote_asset',
+		sort: '-validation_date'
+	});
+	const latestFact = DBFactStatementSchema.safeParse(items[0]);
+
+	return {
+		totalItems,
+		latestFact: latestFact.success
+			? {
+					...latestFact.data,
+					feed: {
+						...items[0].expand?.feed,
+						base_asset: items[0].expand?.feed.expand?.base_asset,
+						quote_asset: items[0].expand?.feed.expand?.quote_asset
+					}
+				}
+			: null
+	};
 }

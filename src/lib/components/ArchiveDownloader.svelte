@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { networkStore } from '$lib/stores/network';
 	import { Download } from 'lucide-svelte';
 	import type { Archive } from '$lib/types';
 	import * as Tooltip from '$lib/components/ui/tooltip';
@@ -10,7 +11,7 @@
 			if (!archive.details) return;
 
 			const response = await fetch(
-				`/api/archive?storageUrn=${encodeURIComponent(archive.fact.storage_urn)}&sourceType=${encodeURIComponent(archive.details.sourceType)}`
+				`/api/archive?storageUrn=${encodeURIComponent(archive.fact.storage_urn)}&sourceType=${encodeURIComponent(archive.details.sourceType)}&networkID=${encodeURIComponent($networkStore.network.id)}`
 			);
 			if (!response.ok) {
 				throw new Error('Network error');

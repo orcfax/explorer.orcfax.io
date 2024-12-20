@@ -16,7 +16,7 @@ import type {
 	FactStatementStub,
 	DBFactStatementWithFeed
 } from '$lib/types';
-import { getFactByURN, getSources } from '$lib/server/db';
+import { getFactByURN, getAllSources } from '$lib/server/db';
 import {
 	BagInfoSchema,
 	CEXValidationFileSchema,
@@ -30,6 +30,7 @@ import { error } from '@sveltejs/kit';
 import { z } from 'zod';
 
 export async function getArchive(
+	network: Network,
 	fact: DBFactStatement,
 	sourceType: DBFeed['source_type']
 ): Promise<Archive> {
@@ -61,7 +62,7 @@ export async function getArchive(
 
 		const directoryTree = await buildFileExplorer(archivedBagTarball);
 		const files = await getArchivedFilesFromTarball(archivedBagTarball);
-		const details = await getDetailsFromArchive(files, sourceType);
+		const details = await getDetailsFromArchive(network.id, files, sourceType);
 
 		return { fact, directoryTree, files, details };
 	} catch (e) {
@@ -76,6 +77,7 @@ export async function getArchive(
 }
 
 export async function getArchiveFromURN(
+	networkID: string,
 	storage_urn: string,
 	sourceType: string
 ): Promise<ArchiveDownload | null> {
@@ -96,7 +98,7 @@ export async function getArchiveFromURN(
 
 		const directoryTree = await buildFileExplorer(archivedBagTarball);
 		const files = await getArchivedFilesFromTarball(archivedBagTarball);
-		const details = await getDetailsFromArchive(files, sourceType);
+		const details = await getDetailsFromArchive(networkID, files, sourceType);
 		const fact = getFactStatementFromArchive(files);
 
 		return { fact, directoryTree, files, details, archiveZip: archivedBagTarball };
@@ -124,12 +126,13 @@ function getFactStatementFromArchive(files: ArchivedFile[]): FactStatementStub {
 }
 
 async function getDetailsFromArchive(
+	networkID: string,
 	files: ArchivedFile[],
 	sourceType: string
 ): Promise<ArchiveDetails | null> {
 	try {
 		// Get message file names for source matching
-		const allSources = await getSources();
+		const allSources = await getAllSources(networkID);
 		const allFileNames = files.map((file) => file.fileName);
 		const messageFileNames = allFileNames
 			.filter((name) => name.includes('message-'))
@@ -137,9 +140,10 @@ async function getDetailsFromArchive(
 
 		// Map file names to sources with exact name matching
 		let sources = messageFileNames.map((name) => {
-			const words = name.split(/[^a-zA-Z0-9]+/);
+			const match = name.match(/-([\w]+?)(?:\.tick_|-\d{4}-\d{2}-\d{2}T)/);
+			if (!match) throw new Error('Error retrieving source name from file name');
 			const source = allSources.find((source) => {
-				return words.includes(source.name.toLowerCase());
+				return match[1].toLowerCase() === source.name.toLowerCase();
 			});
 			// TODO: This isn't being caught properly
 			if (!source) throw new Error(`Source not found in db: ${name}`);

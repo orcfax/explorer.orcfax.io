@@ -4,6 +4,28 @@
 		<meta charset="utf-8" />
 		<link rel="icon" href="%sveltekit.assets%/favicon.ico" />
 		<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+		<script>
+			(function () {
+				// Default to light theme if no preference is found
+				let mode = 'light';
+				try {
+					// Retrieve user's mode preference from localStorage
+					mode = localStorage.getItem('mode-watcher-mode') || 'light';
+
+					// Handle 'system' option by checking the user's system preference
+					if (mode === 'system') {
+						const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+						mode = prefersDark ? 'dark' : 'light';
+					}
+				} catch (e) {
+					console.warn('LocalStorage is unavailable:', e);
+				}
+
+				// Set the background color based on the resolved mode
+				document.documentElement.style.backgroundColor = mode === 'dark' ? '#141414' : '#DCDBDC';
+			})();
+		</script>
+
 		%sveltekit.head%
 	</head>
 	<body data-sveltekit-preload-data="hover" class="h-full">
