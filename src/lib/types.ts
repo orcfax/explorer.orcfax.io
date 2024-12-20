@@ -31,7 +31,7 @@ export interface OrcfaxStats {
 	totalFacts24Hour: number;
 	totalActiveFeeds: number;
 	sources: Source[];
-	nodes: Node[];
+	nodes: NodeWithMetadata[];
 }
 
 export const TagSchema = z.object({
@@ -127,7 +127,7 @@ export const DBFactStatementSchema = z.object({
 	slot: z.number(),
 	statement_hash: z.string(),
 	publication_cost: z.number(),
-	participating_nodes: z.union([z.array(z.string()), z.array(NodeSchema)]),
+	participating_nodes: z.union([z.array(z.string()), z.array(NodeSchema)]).catch(() => []),
 	storage_cost: z.number(),
 	sources: z.union([z.array(z.string()), z.array(SourceSchema)]),
 	content_signature: z.string(),
@@ -144,6 +144,20 @@ export const DBFactStatementWithFeedSchema = DBFactStatementSchema.extend({
 	feed: DBFeedWithAssetsSchema
 });
 export type DBFactStatementWithFeed = z.infer<typeof DBFactStatementWithFeedSchema>;
+
+export const NodeWithMetadataSchema = NodeSchema.extend({
+	totalFacts: z.number(),
+	latestFact: DBFactStatementSchema.nullable()
+});
+
+export type NodeWithMetadata = z.infer<typeof NodeWithMetadataSchema>;
+
+export const SourceWithMetadataSchema = SourceSchema.extend({
+	totalFacts: z.number(),
+	latestFact: DBFactStatementSchema.nullable()
+});
+
+export type SourceWithMetadata = z.infer<typeof SourceWithMetadataSchema>;
 
 export const FactStatementSchema = DBFactStatementWithFeedSchema.extend({
 	fact_id: z.string(), // Equal to the fact_urn but without the "urn:orcfax:" prefix
