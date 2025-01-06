@@ -1,4 +1,6 @@
 <script lang="ts">
+	import { run } from 'svelte/legacy';
+
 	import Loading from '$lib/components/Loading.svelte';
 	import { browser } from '$app/environment';
 	import * as Command from '$lib/components/ui/command';
@@ -11,10 +13,10 @@
 	import { getFeedUrl } from '$lib/client/helpers';
 	import { networkStore } from '$lib/stores/network';
 
-	let isOpen = false;
-	let metaKey: '⌘' | 'Ctrl';
-	let query = '';
-	let isLoading = false;
+	let isOpen = $state(false);
+	let metaKey: '⌘' | 'Ctrl' = $state();
+	let query = $state('');
+	let isLoading = $state(false);
 	let debounceTimer: ReturnType<typeof setTimeout>;
 	let results = writable<{ factStatements: DBFactStatement[]; feeds: Feed[] }>({
 		factStatements: [],
@@ -89,12 +91,14 @@
 		}, 750);
 	};
 
-	$: debouncedSearch(query);
+	run(() => {
+		debouncedSearch(query);
+	});
 </script>
 
 <button
 	type="button"
-	on:click={() => (isOpen = true)}
+	onclick={() => (isOpen = true)}
 	class="flex h-10 w-fit space-x-1 rounded-md border border-input bg-background px-[10px] xxs:px-3 py-2 justify-center text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
 >
 	<Search width="20" height="20" />

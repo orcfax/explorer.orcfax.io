@@ -1,20 +1,20 @@
 <script lang="ts">
+	import { run } from 'svelte/legacy';
+
 	import { capitalize, getNetworkUrl } from '$lib/client/helpers';
 	import * as Select from '$lib/components/ui/select';
 	import { networkStore } from '$lib/stores/network';
 	import { NetworkSelectSchema, type NetworkSelect } from '$lib/types';
 	import Loading from '$lib/components/Loading.svelte';
-	import { page } from '$app/stores';
+	import { page } from '$app/state';
 
-	type $$Props = {
+	interface Props {
 		class?: string;
-	};
-	let className: $$Props['class'] = undefined;
-	export { className as class };
+	}
 
-	$: selectedNetwork = getSelectedNetwork($networkStore.network.name);
+	let { class: className = undefined }: Props = $props();
 
-	let isSwitchingNetworks = false;
+	let isSwitchingNetworks = $state(false);
 
 	function getSelectedNetwork(networkName: string): NetworkSelect {
 		return {
@@ -30,7 +30,7 @@
 		if (selection.success) {
 			selectedNetwork = getSelectedNetwork(selection.data.value);
 
-			const newUrl = getNetworkUrl($page.url.href, selection.data.value);
+			const newUrl = getNetworkUrl(page.url.href, selection.data.value);
 
 			// Nav to the new url
 			window.location.href = newUrl;
@@ -38,6 +38,10 @@
 			isSwitchingNetworks = false; //TODO this is not working
 		}
 	}
+	let selectedNetwork;
+	run(() => {
+		selectedNetwork = getSelectedNetwork($networkStore.network.name);
+	});
 </script>
 
 {#if isSwitchingNetworks}

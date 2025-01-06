@@ -1,10 +1,15 @@
 <script lang="ts">
-	export let label: string;
-	export let value: string | number;
+	interface Props {
+		label: string;
+		value: string | number;
+		extraInfo?: import('svelte').Snippet;
+	}
+
+	let { label, value, extraInfo }: Props = $props();
 </script>
 
 <div class="">
 	<p>{label}:</p>
 	<p>{value}</p>
-	<slot name="extraInfo" />
+	{@render extraInfo?.()}
 </div>

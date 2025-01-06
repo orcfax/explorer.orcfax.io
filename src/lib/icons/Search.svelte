@@ -1,7 +1,11 @@
-<script>
-	export let fillColor = 'fill-muted-foreground';
-	export let height = '30';
-	export let width = '30';
+<script lang="ts">
+	interface Props {
+		fillColor?: string;
+		height?: string;
+		width?: string;
+	}
+
+	let { fillColor = 'fill-muted-foreground', height = '30', width = '30' }: Props = $props();
 </script>
 
 <svg

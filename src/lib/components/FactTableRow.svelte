@@ -7,14 +7,18 @@
 	import { createTimeSinceStore } from '$lib/stores/time';
 	import { error } from '@sveltejs/kit';
 
-	export let fact: FactStatement & { feed: Feed };
+	interface Props {
+		fact: FactStatement & { feed: Feed };
+	}
+
+	let { fact }: Props = $props();
 
 	if (typeof fact.feed === 'string') error(400, 'Full feed required to display Fact Table Row');
 
-	$: timeSinceValidated = createTimeSinceStore(fact.validation_date);
+	let timeSinceValidated = $derived(createTimeSinceStore(fact.validation_date));
 </script>
 
-<tr class="cursor-pointer" on:click={() => goto(`/${fact.id}`)}>
+<tr class="cursor-pointer" onclick={() => goto(`/${fact.id}`)}>
 	<td class="whitespace-nowrap py-4 pl-4 pr-3 text-sm text-gray-700 font-semibold sm:pl-6">
 		<div class="flex items-center">
 			<p class="tooltip tooltip-right" data-tip={fact.id}>

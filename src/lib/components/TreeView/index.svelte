@@ -1,4 +1,6 @@
 <script lang="ts">
+	import { run } from 'svelte/legacy';
+
 	import { createTreeView } from '@melt-ui/svelte';
 	import { setContext } from 'svelte';
 	import type { TreeItem } from './tree.svelte';
@@ -8,10 +10,14 @@
 	import type { Archive } from '$lib/types';
 	import ArchiveDownloader from '$lib/components/ArchiveDownloader.svelte';
 	// import { updateSelectedItem } from '$lib/stores/archive';
-	// import { page } from '$app/stores';
+	// import { page } from '$app/state';
 	import { selectedItemStore } from '$lib/stores/archive';
 
-	export let archive: Archive;
+	interface Props {
+		archive: Archive;
+	}
+
+	let { archive }: Props = $props();
 
 	function convertNodesIntoTreeItems(nodes: DirectoryNode[]): TreeItem[] {
 		const treeItems: TreeItem[] = nodes.map((node) => {
@@ -29,17 +35,19 @@
 		return treeItems;
 	}
 
-	$: treeItems = convertNodesIntoTreeItems(
+	let treeItems = $derived(convertNodesIntoTreeItems(
 		archive && archive.directoryTree ? archive.directoryTree : []
-	);
+	));
 
 	let expanded = writable<string[]>([]);
 
 	// Expand both folders by default. Not sure how to do this in a more idomatic way.
-	$: expanded.set([
-		`${treeItems[0].title}-0`,
-		`${treeItems[0].children ? treeItems[0].children[2].title + '-2' : ''}`
-	]);
+	run(() => {
+		expanded.set([
+			`${treeItems[0].title}-0`,
+			`${treeItems[0].children ? treeItems[0].children[2].title + '-2' : ''}`
+		]);
+	});
 
 	const ctx = createTreeView({
 		expanded
@@ -61,11 +69,11 @@
 	});
 
 	// selectedItem.subscribe((value) => {
-	// 	if (!value) updateSelectedItem($page.url, 0);
+	// 	if (!value) updateSelectedItem(page.url, 0);
 	// 	// If the item is a folder, do not select it
 	// 	else if (value.hasAttribute('aria-expanded')) return;
 	// 	else {
-	// 		// updateSelectedItem($page.url, parseInt(value.getAttribute('data-id').split('-')[1]));
+	// 		// updateSelectedItem(page.url, parseInt(value.getAttribute('data-id').split('-')[1]));
 	// 		// selectedItemStore.set(value.getAttribute('data-id'));
 	// 	}
 	// });

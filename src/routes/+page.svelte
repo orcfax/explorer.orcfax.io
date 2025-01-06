@@ -8,7 +8,7 @@
 	import NodesTable from '$lib/components/NodesTable.svelte';
 	import SourceTable from '$lib/components/SourceTable.svelte';
 
-	export let data;
+	let { data } = $props();
 </script>
 
 <main class="flex flex-col items-center w-full px-10 min-h-full overflow-x-hidden">
@@ -38,7 +38,7 @@
 		<section id={`allFactsTable`} class="hidden sm:flex flex-col mt-14">
 			<h1 class="font-bold text-3xl pb-4">All Fact Statements</h1>
 			<div class="section-container p-7">
-				<FactTable />
+				<!-- <FactTable /> -->
 			</div>
 		</section>
 
@@ -48,7 +48,7 @@
 			<section id={`nodes`} class="hidden sm:flex flex-col mt-14">
 				<h1 class="font-bold text-3xl pb-4">All Nodes</h1>
 				<div class="section-container p-7">
-					<NodesTable {nodes} />
+					<!-- <NodesTable {nodes} /> -->
 				</div>
 			</section>
 		{/await}
@@ -59,7 +59,7 @@
 			<section id={`sources`} class="hidden sm:flex flex-col mt-14">
 				<h1 class="font-bold text-3xl pb-4">All Sources</h1>
 				<div class="section-container p-7">
-					<SourceTable {sources} />
+					<!-- <SourceTable {sources} /> -->
 				</div>
 			</section>
 		{/await}

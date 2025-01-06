@@ -8,13 +8,17 @@
 	import NodeIcon from '$lib/icons/NodeIcon.svelte';
 	import PingStatus from '$lib/components/PingStatus.svelte';
 
-	export let summary: OrcfaxStats;
+	interface Props {
+		summary: OrcfaxStats;
+	}
 
-	$: totalNodes = summary.nodes.length;
-	$: activeNodes = summary.nodes.filter((node) => node.status === 'active').length;
-	$: totalSources = summary.sources.length;
-	$: dexSources = summary.sources.filter((source) => source.type === 'DEX LP').length;
-	$: cexSources = summary.sources.filter((source) => source.type === 'CEX API').length;
+	let { summary }: Props = $props();
+
+	let totalNodes = $derived(summary.nodes.length);
+	let activeNodes = $derived(summary.nodes.filter((node) => node.status === 'active').length);
+	let totalSources = $derived(summary.sources.length);
+	let dexSources = $derived(summary.sources.filter((source) => source.type === 'DEX LP').length);
+	let cexSources = $derived(summary.sources.filter((source) => source.type === 'CEX API').length);
 </script>
 
 <section class="flex flex-col items-center">

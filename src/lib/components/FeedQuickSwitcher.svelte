@@ -1,4 +1,6 @@
 <script lang="ts">
+	import { run } from 'svelte/legacy';
+
 	import Check from 'lucide-svelte/icons/check';
 	import ChevronsUpDown from 'lucide-svelte/icons/chevrons-up-down';
 	import { tick } from 'svelte';
@@ -8,27 +10,34 @@
 	import { cn } from '$lib/utils.js';
 	import FeedNameplate from './FeedNameplate.svelte';
 	import { goto } from '$app/navigation';
-	import { page } from '$app/stores';
+	import { page } from '$app/state';
 	import type { DBFeedWithData } from '$lib/types';
 	import { getFeedUrl } from '$lib/client/helpers';
 	import Loading from '$lib/components/Loading.svelte';
 
-	export let initialFeedID = '';
-	export let feeds: DBFeedWithData[];
-	export let onFeedSwitch: (feed: DBFeedWithData) => void;
+	interface Props {
+		initialFeedID?: string;
+		feeds: DBFeedWithData[];
+		onFeedSwitch: (feed: DBFeedWithData) => void;
+	}
 
-	let isSwitchingFeeds = false;
-	let open = false;
-	$: value = initialFeedID;
+	let { initialFeedID = '', feeds, onFeedSwitch }: Props = $props();
 
-	$: feedOptions = feeds.map(({ name, feed_id, base_asset, quote_asset }) => ({
+	let isSwitchingFeeds = $state(false);
+	let open = $state(false);
+	let value;
+	run(() => {
+		value = initialFeedID;
+	});
+
+	let feedOptions = $derived(feeds.map(({ name, feed_id, base_asset, quote_asset }) => ({
 		label: name,
 		value: feed_id,
 		base_asset,
 		quote_asset
-	}));
+	})));
 
-	$: selectedFeed = feedOptions.find((f) => f.value === value);
+	let selectedFeed = $derived(feedOptions.find((f) => f.value === value));
 
 	// Refocus the trigger button when the user selects an item from the list
 	function closeAndFocusTrigger(triggerId: string) {
@@ -47,67 +56,71 @@
 	</div>
 {/if}
 
-<Popover.Root bind:open let:ids>
-	<Popover.Trigger asChild let:builder>
-		<Button
-			builders={[builder]}
-			variant="outline"
-			role="combobox"
-			aria-expanded={open}
-			class="w-min min-[370px]:w-full xxxs:w-fit h-fit p-3"
-		>
-			{#if selectedFeed}
-				<FeedNameplate
-					feed={{
-						feed_id: selectedFeed.value,
-						name: selectedFeed.label,
-						base_asset: selectedFeed.base_asset,
-						quote_asset: selectedFeed.quote_asset
-					}}
-					size="md"
-				/>
-			{:else}
-				<span class="text-muted-foreground">Switch feeds...</span>
-			{/if}
-
-			<ChevronsUpDown class="ml-2 h-4 w-4 md:h-4 md:w-4 shrink-0 opacity-50" />
-		</Button>
-	</Popover.Trigger>
-	<Popover.Content class="w-[200px] p-0 h-full max-h-72">
-		<Command.Root>
-			<Command.Input placeholder="Switch feeds..." />
-			<Command.Empty>No feed found.</Command.Empty>
-			<Command.Group class="overflow-scroll h-full">
-				{#each feedOptions as option}
-					<Command.Item
-						value={option.value}
-						onSelect={async (currentValue) => {
-							isSwitchingFeeds = true;
-							const params = new URLSearchParams($page.url.searchParams);
-							value = currentValue;
-							closeAndFocusTrigger(ids.trigger);
-							const currentFeed = feeds.find((f) => f.feed_id === currentValue);
-							if (!currentFeed) return;
-							await goto(
-								`${getFeedUrl(currentFeed, currentFeed.latestFact ? currentFeed.latestFact.fact_urn : 'undefined')}?${params.toString()}`
-							);
-							onFeedSwitch(currentFeed);
-							isSwitchingFeeds = false;
-						}}
-					>
-						<Check class={cn('mr-2 h-4 w-4', value !== option.value && 'text-transparent')} />
+<Popover.Root bind:open >
+	{#snippet children({ ids })}
+		<Popover.Trigger asChild >
+			{#snippet children({ builder })}
+				<Button
+					builders={[builder]}
+					variant="outline"
+					role="combobox"
+					aria-expanded={open}
+					class="w-min min-[370px]:w-full xxxs:w-fit h-fit p-3"
+				>
+					{#if selectedFeed}
 						<FeedNameplate
 							feed={{
-								feed_id: option.value,
-								name: option.label,
-								base_asset: option.base_asset,
-								quote_asset: option.quote_asset
+								feed_id: selectedFeed.value,
+								name: selectedFeed.label,
+								base_asset: selectedFeed.base_asset,
+								quote_asset: selectedFeed.quote_asset
 							}}
-							size="sm"
+							size="md"
 						/>
-					</Command.Item>
-				{/each}
-			</Command.Group>
-		</Command.Root>
-	</Popover.Content>
+					{:else}
+						<span class="text-muted-foreground">Switch feeds...</span>
+					{/if}
+
+					<ChevronsUpDown class="ml-2 h-4 w-4 md:h-4 md:w-4 shrink-0 opacity-50" />
+				</Button>
+						{/snippet}
+		</Popover.Trigger>
+		<Popover.Content class="w-[200px] p-0 h-full max-h-72">
+			<Command.Root>
+				<Command.Input placeholder="Switch feeds..." />
+				<Command.Empty>No feed found.</Command.Empty>
+				<Command.Group class="overflow-scroll h-full">
+					{#each feedOptions as option}
+						<Command.Item
+							value={option.value}
+							onSelect={async (currentValue) => {
+								isSwitchingFeeds = true;
+								const params = new URLSearchParams(page.url.searchParams);
+								value = currentValue;
+								closeAndFocusTrigger(ids.trigger);
+								const currentFeed = feeds.find((f) => f.feed_id === currentValue);
+								if (!currentFeed) return;
+								await goto(
+									`${getFeedUrl(currentFeed, currentFeed.latestFact ? currentFeed.latestFact.fact_urn : 'undefined')}?${params.toString()}`
+								);
+								onFeedSwitch(currentFeed);
+								isSwitchingFeeds = false;
+							}}
+						>
+							<Check class={cn('mr-2 h-4 w-4', value !== option.value && 'text-transparent')} />
+							<FeedNameplate
+								feed={{
+									feed_id: option.value,
+									name: option.label,
+									base_asset: option.base_asset,
+									quote_asset: option.quote_asset
+								}}
+								size="sm"
+							/>
+						</Command.Item>
+					{/each}
+				</Command.Group>
+			</Command.Root>
+		</Popover.Content>
+	{/snippet}
 </Popover.Root>

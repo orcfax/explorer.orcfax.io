@@ -5,11 +5,15 @@
 	import type { DBFactStatement } from '$lib/types';
 	import { readable } from 'svelte/store';
 
-	export let latestFact: DBFactStatement | null;
+	interface Props {
+		latestFact: DBFactStatement | null;
+	}
 
-	$: timeSinceLastUpdate = latestFact
+	let { latestFact }: Props = $props();
+
+	let timeSinceLastUpdate = $derived(latestFact
 		? createTimeSinceStore(latestFact.validation_date)
-		: readable('N/A');
+		: readable('N/A'));
 </script>
 
 {#if latestFact}

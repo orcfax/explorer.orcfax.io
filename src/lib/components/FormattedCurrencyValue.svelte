@@ -6,9 +6,13 @@
 		value: number;
 	};
 
-	export let value: $$Props['value'];
-	let className: $$Props['class'] = undefined;
-	export { className as class };
+	interface Props {
+		value: $$Props['value'];
+		class?: $$Props['class'];
+	}
+
+	let { value, class: className = undefined }: Props = $props();
+	
 </script>
 
 <span class={`whitespace-nowrap ${className}`}>

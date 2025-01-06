@@ -7,11 +7,15 @@
 	import { capitalize, getHeartbeatFromInterval } from '$lib/client/helpers';
 	import PriceDifferenceBadges from '$lib/components/PriceDifferenceBadges.svelte';
 
-	export let feed: Feed;
-	export let riskRatings: RiskRatings;
+	interface Props {
+		feed: Feed;
+		riskRatings: RiskRatings;
+	}
 
-	$: deviationPercentage = feed.deviation + '%';
-	$: heartbeat = getHeartbeatFromInterval(feed.heartbeat_interval);
+	let { feed, riskRatings }: Props = $props();
+
+	let deviationPercentage = $derived(feed.deviation + '%');
+	let heartbeat = $derived(getHeartbeatFromInterval(feed.heartbeat_interval));
 </script>
 
 <!-- Large screen view -->

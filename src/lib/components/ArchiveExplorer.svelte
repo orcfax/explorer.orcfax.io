@@ -1,4 +1,6 @@
 <script lang="ts">
+	import { run } from 'svelte/legacy';
+
 	import TreeView from '$lib/components/TreeView/index.svelte';
 	import * as Resizable from '$lib/components/ui/resizable';
 	import FileViewer from './FileViewer.svelte';
@@ -6,9 +8,14 @@
 	import type { Archive } from '$lib/types';
 	import ArchiveDownloader from '$lib/components/ArchiveDownloader.svelte';
 
-	// import { page } from '$app/stores';
+	
 
-	export let archive: Archive | null;
+	interface Props {
+		// import { page } from '$app/state';
+		archive: Archive | null;
+	}
+
+	let { archive }: Props = $props();
 
 	// TODO: enable url store archive nav
 	// $: selectedFile = archive && archive.files ? archive.files[0] : null;
@@ -19,12 +26,15 @@
 	// 		if (file) {
 	// 			selectedFile = file;
 	// 			const index = archive.files?.indexOf(file);
-	// 			updateSelectedItem($page.url, index);
+	// 			updateSelectedItem(page.url, index);
 	// 		}
 	// 	}
 	// });
 
-	$: selectedFile = archive && archive.files ? archive.files[0] : null;
+	let selectedFile;
+	run(() => {
+		selectedFile = archive && archive.files ? archive.files[0] : null;
+	});
 
 	selectedItemStore.subscribe((value) => {
 		if (value) {

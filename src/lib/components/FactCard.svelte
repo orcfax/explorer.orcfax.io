@@ -6,8 +6,12 @@
 	import BlockchainBadges from './BlockchainBadges.svelte';
 	import { createTimeSinceStore } from '$lib/stores/time';
 
-	export let fact: FactStatement;
-	$: timeSincePublished = createTimeSinceStore(fact.publication_date);
+	interface Props {
+		fact: FactStatement;
+	}
+
+	let { fact }: Props = $props();
+	let timeSincePublished = $derived(createTimeSinceStore(fact.publication_date));
 </script>
 
 <li class="carousel-item" transition:fly={{ x: 200, duration: 1000 }}>
@@ -22,7 +26,7 @@
 			</h2>
 			<h3 class="text-base text-center font-medium">on {fact.validation_date_formatted}</h3>
 			<h3 class="text-base text-center font-medium">at {fact.validation_time_formatted}</h3>
-			<div class="divider my-2" />
+			<div class="divider my-2"></div>
 			<div class="flex flex-col p-2 pt-0 pb-2 gap-3">
 				<FactCardField
 					name="Fact Statement ID"

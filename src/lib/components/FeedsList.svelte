@@ -1,20 +1,24 @@
 <script lang="ts">
+	import { run } from 'svelte/legacy';
+
 	import type { DBFeedWithData, FactStatement, Feed } from '$lib/types';
 	import FeedCard from './FeedCard.svelte';
 	import * as Select from '$lib/components/ui/select';
 	import Input from '$lib/components/ui/input/input.svelte';
 	import { formatFeedForDisplay } from '$lib/client/helpers';
 
-	export let feeds: DBFeedWithData[];
-	$: formattedFeeds = feeds.map(formatFeedForDisplay);
+	interface Props {
+		feeds: DBFeedWithData[];
+	}
 
-	let query = '';
-	let filteredFeeds: Feed[];
-	let sortBy = { value: 'updated', label: 'Last Updated' };
-	let sourceType = { value: 'all', label: 'All' };
-	let status = { value: 'active', label: 'Active' };
+	let { feeds }: Props = $props();
 
-	$: filterAndSortFeeds(formattedFeeds, query, sortBy, sourceType, status);
+	let query = $state('');
+	let filteredFeeds: Feed[] = $state();
+	let sortBy = $state({ value: 'updated', label: 'Last Updated' });
+	let sourceType = $state({ value: 'all', label: 'All' });
+	let status = $state({ value: 'active', label: 'Active' });
+
 
 	async function filterAndSortFeeds(
 		formattedFeeds: Feed[],
@@ -46,6 +50,10 @@
 
 		filteredFeeds = sorted;
 	}
+	let formattedFeeds = $derived(feeds.map(formatFeedForDisplay));
+	run(() => {
+		filterAndSortFeeds(formattedFeeds, query, sortBy, sourceType, status);
+	});
 </script>
 
 <div class="flex flex-col w-full h-full min-h-96 section-container lg:p-14 lg:pt-10">

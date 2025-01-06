@@ -6,16 +6,20 @@
 	import UnchangedIcon from '$lib/icons/UnchangedIcon.svelte';
 	import { calculatePriceDifference } from '$lib/client/helpers';
 
-	export let feed: Feed;
-	export { className as class };
+	
 
-	let className: string | undefined | null;
+	interface Props {
+		feed: Feed;
+		class: string | undefined | null;
+	}
 
-	$: priceDifferences = {
+	let { feed, class: className }: Props = $props();
+
+	let priceDifferences = $derived({
 		'1D': feed.latestFact ? calculatePriceDifference(feed.latestFact.value, feed.oneDayAgo) : 0,
 		'3D': feed.latestFact ? calculatePriceDifference(feed.latestFact.value, feed.threeDaysAgo) : 0,
 		'7D': feed.latestFact ? calculatePriceDifference(feed.latestFact.value, feed.sevenDaysAgo) : 0
-	};
+	});
 
 	function getIcon(difference: number) {
 		if (difference > 0) return UpIcon;
@@ -36,7 +40,8 @@
 			<span class={`text-xs whitespace-nowrap text-card-foreground text-opacity-60`}>
 				{period}
 			</span>
-			<svelte:component this={getIcon(difference)} />
+			{@const SvelteComponent = getIcon(difference)}
+			<SvelteComponent />
 			<span class={`text-[10px] whitespace-nowrap ${getColor(difference)}`}>
 				{difference === 0 ? 'N/A' : `${difference.toFixed(2)}%`}
 			</span>

@@ -5,20 +5,22 @@
 	import { Button } from '$lib/components/ui/button/index.js';
 	import * as DropdownMenu from '$lib/components/ui/dropdown-menu/index.js';
 
-	type $$Props = {
+	interface Props {
 		class?: string;
-	};
-	let className: $$Props['class'] = undefined;
-	export { className as class };
+	}
+
+	let { class: className = undefined }: Props = $props();
 </script>
 
 <DropdownMenu.Root>
-	<DropdownMenu.Trigger asChild let:builder>
-		<Button builders={[builder]} variant="outline" size="icon" class={className}>
-			<Sun />
-			<Moon />
-			<span class="sr-only">Toggle theme</span>
-		</Button>
+	<DropdownMenu.Trigger asChild>
+		{#snippet children({ builder })}
+			<Button builders={[builder]} variant="outline" size="icon" class={className}>
+				<Sun />
+				<Moon />
+				<span class="sr-only">Toggle theme</span>
+			</Button>
+		{/snippet}
 	</DropdownMenu.Trigger>
 	<DropdownMenu.Content align="end">
 		<DropdownMenu.Item on:click={() => setMode('light')}>Light</DropdownMenu.Item>

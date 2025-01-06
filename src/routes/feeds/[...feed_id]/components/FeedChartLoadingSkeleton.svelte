@@ -1,7 +1,11 @@
 <script lang="ts">
 	import Skeleton from '$lib/components/ui/skeleton/skeleton.svelte';
 
-	export let isOnlyChart = false;
+	interface Props {
+		isOnlyChart?: boolean;
+	}
+
+	let { isOnlyChart = false }: Props = $props();
 </script>
 
 <div

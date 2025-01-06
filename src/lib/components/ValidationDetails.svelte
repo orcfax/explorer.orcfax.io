@@ -3,7 +3,11 @@
 	import FactCardField from './FactCardField.svelte';
 	import Skeleton from '$lib/components/ui/skeleton/skeleton.svelte';
 
-	export let archive: Promise<Archive> | null;
+	interface Props {
+		archive: Promise<Archive> | null;
+	}
+
+	let { archive }: Props = $props();
 </script>
 
 <section class="w-fit xl:w-full flex flex-col">

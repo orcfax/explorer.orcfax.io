@@ -5,7 +5,11 @@
 	import SourceTable from './SourceTable.svelte';
 	import Skeleton from '$lib/components/ui/skeleton/skeleton.svelte';
 
-	export let archive: Promise<Archive> | null;
+	interface Props {
+		archive: Promise<Archive> | null;
+	}
+
+	let { archive }: Props = $props();
 </script>
 
 <section class="w-fit md:w-full xl:w-fit flex flex-col xl:self-start">
@@ -30,7 +34,7 @@
 				<div class={`flex flex-col ${isCEX ? 'items-center' : ''}`}>
 					<h4 class="font-bold pb-4">Primary Sources:</h4>
 					<div class="hidden xs:flex space-x-6">
-						<SourceTable sources={isCEX ? sortedSources : archive.details.sources} showWithValues />
+						<!-- <SourceTable sources={isCEX ? sortedSources : archive.details.sources} showWithValues /> -->
 					</div>
 					<ol class="flex xs:hidden">
 						{#each isCEX ? sortedSources : archive.details.sources as source, index (source.id)}

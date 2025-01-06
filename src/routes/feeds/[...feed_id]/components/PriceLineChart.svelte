@@ -19,23 +19,33 @@
 	import { mode } from 'mode-watcher';
 	import { formatCurrencyValue } from '$lib/client/helpers';
 
-	export let facts: FactStatement[];
-	export let selectedFact: FactStatement;
-	export let onPointClick: (fact: FactStatement) => void;
-	export let range: FeedRange = '1';
-	export let isMobile: boolean;
+	interface Props {
+		facts: FactStatement[];
+		selectedFact: FactStatement;
+		onPointClick: (fact: FactStatement) => void;
+		range?: FeedRange;
+		isMobile: boolean;
+	}
 
-	let chart: ChartJS<'line', Point[]>;
+	let {
+		facts,
+		selectedFact,
+		onPointClick,
+		range = '1',
+		isMobile
+	}: Props = $props();
+
+	let chart: ChartJS<'line', Point[]> = $state();
 
 	let primaryColor = 'hsl(174 25% 51%)';
-	$: gridColor = $mode === 'dark' ? 'rgb(59, 59, 59)' : 'rgb(166, 166, 166)';
-	$: labelColor = $mode === 'dark' ? 'rgb(227, 227, 222)' : 'rgb(38, 38, 38)';
-	$: pointColor = 'hsl(174 25% 40%)';
+	let gridColor = $derived($mode === 'dark' ? 'rgb(59, 59, 59)' : 'rgb(166, 166, 166)');
+	let labelColor = $derived($mode === 'dark' ? 'rgb(227, 227, 222)' : 'rgb(38, 38, 38)');
+	let pointColor = $derived('hsl(174 25% 40%)');
 
-	let innerWidth = 0;
-	let innerHeight = 0;
+	let innerWidth = $state(0);
+	let innerHeight = $state(0);
 
-	$: omitLabels = innerWidth < 400;
+	let omitLabels = $derived(innerWidth < 400);
 
 	const getChartData = (fact: FactStatement, range: FeedRange, facts: FactStatement[]) => {
 		return {
@@ -173,9 +183,9 @@
 		};
 	};
 
-	$: data = getChartData(selectedFact, range, facts);
+	let data = $derived(getChartData(selectedFact, range, facts));
 
-	$: options = getChartOptions(range, isMobile, omitLabels);
+	let options = $derived(getChartOptions(range, isMobile, omitLabels));
 
 	function handleChartClick(event: CustomEvent<unknown>) {
 		if (event instanceof PointerEvent) {

@@ -5,10 +5,14 @@
 	import FormattedCurrencyValue from '$lib/components/FormattedCurrencyValue.svelte';
 	import type { FactStatement, Feed } from '$lib/types';
 
-	export let feed: Feed;
-	export let onLatestFactClick: (latestFact: FactStatement) => void;
+	interface Props {
+		feed: Feed;
+		onLatestFactClick: (latestFact: FactStatement) => void;
+	}
 
-	$: timeSinceLastUpdate = createTimeSinceStore(feed.latestFact.validation_date);
+	let { feed, onLatestFactClick }: Props = $props();
+
+	let timeSinceLastUpdate = $derived(createTimeSinceStore(feed.latestFact.validation_date));
 </script>
 
 <div class="flex flex-col h-max gap-4 w-full relative">
@@ -20,7 +24,7 @@
 			<button
 				type="button"
 				class="text-xl whitespace-nowrap w-min font-bold"
-				on:click={() => onLatestFactClick(feed.latestFact)}
+				onclick={() => onLatestFactClick(feed.latestFact)}
 			>
 				<FormattedCurrencyValue
 					value={feed.latestFact.value}

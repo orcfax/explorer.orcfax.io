@@ -15,14 +15,23 @@
 	import FeedChartLoadingSkeleton from './FeedChartLoadingSkeleton.svelte';
 	import { formatFactStatementForDisplay } from '$lib/client/helpers';
 
-	export let feed: Feed;
-	export let selectedFact: FactStatement | null;
-	export let chartFacts: DBFactStatement[];
-	export let onChartPointClick: (fact: FactStatement) => void;
+	interface Props {
+		feed: Feed;
+		selectedFact: FactStatement | null;
+		chartFacts: DBFactStatement[];
+		onChartPointClick: (fact: FactStatement) => void;
+	}
 
-	let isLoading = false;
+	let {
+		feed,
+		selectedFact,
+		chartFacts,
+		onChartPointClick
+	}: Props = $props();
 
-	$: facts = chartFacts.map((fact) => formatFactStatementForDisplay(fact, feed));
+	let isLoading = $state(false);
+
+	let facts = $derived(chartFacts.map((fact) => formatFactStatementForDisplay(fact, feed)));
 
 	const range = writable<FeedRange>('1');
 	page.subscribe((value) => {
@@ -39,10 +48,10 @@
 		isLoading = false;
 	}
 
-	let innerWidth = 0;
-	let innerHeight = 0;
+	let innerWidth = $state(0);
+	let innerHeight = $state(0);
 
-	$: isMobile = innerWidth < 640;
+	let isMobile = $derived(innerWidth < 640);
 </script>
 
 <svelte:window bind:innerWidth bind:innerHeight />

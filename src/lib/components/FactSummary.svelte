@@ -4,11 +4,15 @@
 	import BlockchainBadges from './BlockchainBadges.svelte';
 	import FormattedCurrencyValue from './FormattedCurrencyValue.svelte';
 
-	export let fact: FactStatement;
-	export let feed: Feed;
+	interface Props {
+		fact: FactStatement;
+		feed: Feed;
+	}
 
-	let innerWidth = 0;
-	let innerHeight = 0;
+	let { fact, feed }: Props = $props();
+
+	let innerWidth = $state(0);
+	let innerHeight = $state(0);
 </script>
 
 <svelte:window bind:innerWidth bind:innerHeight />
@@ -27,7 +31,7 @@
 			</h4>
 			<h5 class="text-base text-center font-medium">on {fact.validation_date_formatted}</h5>
 			<h5 class="text-base text-center font-medium">at {fact.validation_time_formatted}</h5>
-			<div class="divider my-2" />
+			<div class="divider my-2"></div>
 		</header>
 
 		<div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-1 p-2 pt-0 pb-2 gap-3">

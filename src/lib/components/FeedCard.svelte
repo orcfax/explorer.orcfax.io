@@ -13,10 +13,14 @@
 	import { readable } from 'svelte/store';
 	import { CircleHelp } from 'lucide-svelte';
 
-	export let feed: Feed;
-	$: timeSinceLastUpdate = feed.latestFact
+	interface Props {
+		feed: Feed;
+	}
+
+	let { feed }: Props = $props();
+	let timeSinceLastUpdate = $derived(feed.latestFact
 		? createTimeSinceStore(feed.latestFact.validation_date)
-		: readable('N/A');
+		: readable('N/A'));
 </script>
 
 <a href={getFeedUrl(feed)} class="w-max">

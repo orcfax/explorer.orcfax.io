@@ -9,7 +9,7 @@
 		formatFeedForDisplay,
 		getFeedUrl
 	} from '$lib/client/helpers';
-	import { page } from '$app/stores';
+	import { page } from '$app/state';
 	import { goto } from '$app/navigation';
 	import ArchiveDetails from '$lib/components/ArchiveDetails.svelte';
 	import FactSummary from '$lib/components/FactSummary.svelte';
@@ -23,20 +23,20 @@
 	import FactStatementDetailsAccordion from '$lib/components/FactStatementDetailsAccordion.svelte';
 	import Skeleton from '$lib/components/ui/skeleton/skeleton.svelte';
 
-	export let data;
+	let { data } = $props();
 
-	let factSummary: HTMLElement;
-	let selectedFact: FactStatement | null = data.selectedFact
-		? formatFactStatementForDisplay(data.selectedFact, data.feed)
-		: null;
+	let factSummary: HTMLElement = $state();
+	let selectedFact: FactStatement | null = $state(
+		data.selectedFact ? formatFactStatementForDisplay(data.selectedFact, data.feed) : null
+	);
 
-	$: feed = formatFeedForDisplay(data.feed);
-	$: chartFacts = data.chartFacts;
-	$: archive = data.archive;
-	$: riskRatings = data.riskRatings;
+	let feed = $derived(formatFeedForDisplay(data.feed));
+	let chartFacts = $derived(data.chartFacts);
+	let archive = $derived(data.archive);
+	let riskRatings = $derived(data.riskRatings);
 
 	async function handleSelectedFactChange(newFactStatement: FactStatement | null) {
-		const params = new URLSearchParams($page.url.searchParams);
+		const params = new URLSearchParams(page.url.searchParams);
 		selectedFact = newFactStatement;
 		factSummary.scrollIntoView({ behavior: 'smooth' });
 		await goto(
@@ -142,7 +142,7 @@
 			{`All ${feed.name} Fact Statements`}
 		</h2>
 		<div class="section-container p-7">
-			<FactTable feedFilter={feed.feed_id} />
+			<!-- <FactTable feedFilter={feed.feed_id} /> -->
 		</div>
 	</section>
 </div>
