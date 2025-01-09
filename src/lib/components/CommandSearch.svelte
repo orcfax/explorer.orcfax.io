@@ -14,7 +14,7 @@
 	import { networkStore } from '$lib/stores/network';
 
 	let isOpen = $state(false);
-	let metaKey: '⌘' | 'Ctrl' = $state();
+	let metaKey: '⌘' | 'Ctrl' | undefined = $state();
 	let query = $state('');
 	let isLoading = $state(false);
 	let debounceTimer: ReturnType<typeof setTimeout>;

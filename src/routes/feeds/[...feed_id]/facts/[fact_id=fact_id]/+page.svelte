@@ -25,7 +25,7 @@
 
 	let { data } = $props();
 
-	let factSummary: HTMLElement = $state();
+	let factSummary: HTMLElement | undefined = $state();
 	let selectedFact: FactStatement | null = $state(
 		data.selectedFact ? formatFactStatementForDisplay(data.selectedFact, data.feed) : null
 	);

@@ -8,10 +8,6 @@
 
 	let labelText = $state('');
 
-	if (!feed.base_asset || !feed.quote_asset)
-		error(500, 'FeedNameplate must have base and quote assets');
-
-
 	interface Props {
 		feed: Pick<DBFeedWithData, 'feed_id' | 'name' | 'base_asset' | 'quote_asset'>;
 		label?: 'fullID' | 'name' | 'typeAndName';
@@ -19,6 +15,9 @@
 	}
 
 	let { feed, label = 'name', size = 'lg' }: Props = $props();
+
+	if (!feed.base_asset || !feed.quote_asset)
+		error(500, 'FeedNameplate must have base and quote assets');
 
 	const assetSizes = {
 		container: {
