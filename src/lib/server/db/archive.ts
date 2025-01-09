@@ -140,7 +140,7 @@ async function getDetailsFromArchive(
 
 		// Map file names to sources with exact name matching
 		let sources = messageFileNames.map((name) => {
-			const match = name.match(/-([\w]+?)(?:\.tick_|-\d{4}-\d{2}-\d{2}T)/);
+			const match = name.match(/-([\w_]+?)(?:\.tick_|-\d{4}-\d{2}-\d{2}T)/i);
 			if (!match) throw new Error('Error retrieving source name from file name');
 			const source = allSources.find((source) => {
 				return match[1].toLowerCase() === source.name.toLowerCase();
