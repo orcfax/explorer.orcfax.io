@@ -10,11 +10,14 @@
 	export let allowCopyToClipboard = false;
 	export let ellipsisAndHover = false;
 	export let midllipsisAndHover = false;
+	export let noHover = false;
 	export let accessoryLink: { text: string; link: string } | null = null;
 	export let showWithHTML = false;
 
 	$: showWithTooltip =
-		(ellipsisAndHover || midllipsisAndHover) && value.toString().length >= maxFieldLength;
+		!noHover &&
+		(ellipsisAndHover || midllipsisAndHover) &&
+		value.toString().length >= maxFieldLength;
 </script>
 
 <div class="flex">
@@ -48,7 +51,12 @@
 					{#if showWithHTML}
 						{@html value}
 					{:else}
-						{value}
+						{ellipsisAndHover || midllipsisAndHover
+							? ellipsis(value, {
+									maxLength: maxFieldLength,
+									placement: ellipsisAndHover ? 'end' : 'middle'
+								})
+							: value}
 					{/if}
 				</p>
 			{/if}

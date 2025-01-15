@@ -139,7 +139,8 @@
 										name=""
 										value={item.fact_urn}
 										midllipsisAndHover
-										maxFieldLength={30}
+										noHover
+										maxFieldLength={32}
 									/>
 									<span class="text-xs text-muted-foreground"
 										>{getFormattedDate(item.validation_date)} at {getFormattedTime(
@@ -161,7 +162,17 @@
 							onSelect={() => onSelectItem(item)}
 							data-value={getFeedUrl(item)}
 						>
-							<FeedNameplate feed={item} size="md" label="typeAndName" />
+							<div class="flex gap-2 items-center">
+								<FeedNameplate feed={item} size="md" label="typeAndName" />
+								<div class="text-sm text-muted-foreground">
+									<FactCardField
+										name=""
+										value={item.source_type === 'DEX'
+											? 'Decentralized Exchange Feed'
+											: 'Centralized Exchange Feed'}
+									/>
+								</div>
+							</div>
 						</Command.Item>
 					{/each}
 				</Command.Group>
