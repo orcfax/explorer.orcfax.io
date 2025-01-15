@@ -3,20 +3,21 @@
 	import { browser } from '$app/environment';
 	import * as Command from '$lib/components/ui/command';
 	import Search from '$lib/icons/Search.svelte';
-	import type { DBFactStatement, Feed } from '$lib/types';
+	import type { DBFactStatementWithFeed, Feed } from '$lib/types';
 	import { onMount } from 'svelte';
 	import { writable } from 'svelte/store';
 	import FeedNameplate from './FeedNameplate.svelte';
 	import { goto } from '$app/navigation';
-	import { getFeedUrl } from '$lib/client/helpers';
+	import { getFeedUrl, getFormattedDate, getFormattedTime } from '$lib/client/helpers';
 	import { networkStore } from '$lib/stores/network';
+	import FactCardField from './FactCardField.svelte';
 
 	let isOpen = false;
 	let metaKey: '⌘' | 'Ctrl';
 	let query = '';
 	let isLoading = false;
 	let debounceTimer: ReturnType<typeof setTimeout>;
-	let results = writable<{ factStatements: DBFactStatement[]; feeds: Feed[] }>({
+	let results = writable<{ factStatements: DBFactStatementWithFeed[]; feeds: Feed[] }>({
 		factStatements: [],
 		feeds: []
 	});
@@ -37,7 +38,7 @@
 		};
 	});
 
-	async function onSelectItem(item: DBFactStatement | Feed) {
+	async function onSelectItem(item: DBFactStatementWithFeed | Feed) {
 		isLoading = true;
 		if ('fact_urn' in item) {
 			if (typeof item.feed === 'string') {
@@ -54,9 +55,7 @@
 
 	async function handleSearch(query: string): Promise<void> {
 		if (!query) {
-			if ($results.factStatements.length > 0 || $results.feeds.length > 0) {
-				results.set({ factStatements: [], feeds: [] });
-			}
+			results.set({ factStatements: [], feeds: [] });
 			isLoading = false;
 			return;
 		}
@@ -67,9 +66,11 @@
 			);
 			const data = await res.json();
 			if (res.ok) {
-				results.set(data);
+				results.set({
+					factStatements: Array.isArray(data.factStatements) ? data.factStatements : [],
+					feeds: Array.isArray(data.feeds) ? data.feeds : []
+				});
 			} else {
-				console.error('Search error:', data.error);
 				results.set({ factStatements: [], feeds: [] });
 			}
 		} catch (error) {
@@ -113,47 +114,58 @@
 	<div class="hidden text-sm xs:flex sm:hidden text-muted-foreground">Tap to search</div>
 </button>
 
-<Command.Dialog bind:open={isOpen} loop>
+<Command.Dialog bind:open={isOpen} loop shouldFilter={false}>
 	<Command.Input placeholder="Search Orcfax..." bind:value={query} />
-	{#if isLoading}
-		<Command.Loading asChild>
-			<Loading class="min-h-[300px]" />
-		</Command.Loading>
-	{:else}
-		{#await $results}
-			<Command.Loading asChild>
+	<Command.List>
+		{#if isLoading}
+			<Command.Loading>
 				<Loading class="min-h-[300px]" />
 			</Command.Loading>
-		{:then data}
+		{:else if $results.factStatements.length === 0 && $results.feeds.length === 0}
 			<Command.Empty>No results found</Command.Empty>
-			{#if data && (data.factStatements.length > 0 || data.feeds.length > 0)}
-				<Command.List>
-					<Command.Group heading="Fact Statements">
-						{#each data.factStatements as item}
-							<Command.Item
-								class="cursor-pointer"
-								onSelect={(_) => onSelectItem(item)}
-								value={item.fact_urn}
-							>
-								{item.fact_urn}
-							</Command.Item>
-						{/each}
-					</Command.Group>
-					<Command.Group heading="Feeds">
-						{#each data.feeds as item}
-							<Command.Item
-								class="cursor-pointer"
-								onSelect={(_) => onSelectItem(item)}
-								value={getFeedUrl(item)}
-							>
-								<FeedNameplate feed={item} size="md" label="typeAndName" />
-							</Command.Item>
-						{/each}
-					</Command.Group>
-				</Command.List>
+		{:else}
+			{#if $results.factStatements.length > 0}
+				<Command.Group heading="Fact Statements">
+					{#each $results.factStatements as item}
+						<Command.Item
+							value={item.fact_urn}
+							onSelect={() => onSelectItem(item)}
+							data-value={item.fact_urn}
+						>
+							<div class="flex gap-4">
+								<FeedNameplate feed={item.feed} size="sm" label="typeAndName" />
+								<div class="flex flex-col">
+									<FactCardField
+										name=""
+										value={item.fact_urn}
+										midllipsisAndHover
+										maxFieldLength={30}
+									/>
+									<span class="text-xs text-muted-foreground"
+										>{getFormattedDate(item.validation_date)} at {getFormattedTime(
+											item.validation_date
+										)}</span
+									>
+								</div>
+							</div>
+						</Command.Item>
+					{/each}
+				</Command.Group>
 			{/if}
-		{:catch error}
-			<Command.Empty>{error.message}</Command.Empty>
-		{/await}
-	{/if}
+
+			{#if $results.feeds.length > 0}
+				<Command.Group heading="Feeds">
+					{#each $results.feeds as item}
+						<Command.Item
+							value={getFeedUrl(item)}
+							onSelect={() => onSelectItem(item)}
+							data-value={getFeedUrl(item)}
+						>
+							<FeedNameplate feed={item} size="md" label="typeAndName" />
+						</Command.Item>
+					{/each}
+				</Command.Group>
+			{/if}
+		{/if}
+	</Command.List>
 </Command.Dialog>

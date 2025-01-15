@@ -231,7 +231,7 @@ export function getHeartbeatFromInterval(seconds: number): string {
 	return result || '0 secs';
 }
 
-export function getFeedUrl(feed: DBFeedWithData | Feed | DBFeed, fact_urn?: string): string {
+export function getFeedUrl(feed: DBFeedWithData | Feed | DBFeed | DBFeedWithAssets, fact_urn?: string): string {
 	const feedPart = getFeedIDWithoutVersion(feed.feed_id);
 	const hasFactUrn = fact_urn !== undefined || ('latestFact' in feed && feed.latestFact);
 	const factPart = fact_urn
