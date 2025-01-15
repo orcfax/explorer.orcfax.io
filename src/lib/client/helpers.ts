@@ -80,7 +80,10 @@ export function ellipsis(str: string | number, options?: EllipsisOptions) {
 
 	if (str.length > maxLength) {
 		if (placement === 'start') return '...' + str.slice(-maxLength);
-		else if (placement === 'middle') return str.slice(0, 6) + '...' + str.slice(-6);
+		else if (placement === 'middle') {
+			const charsPerSide = Math.floor((maxLength - 3) / 2); // -3 for the ...
+			return str.slice(0, charsPerSide) + '...' + str.slice(-charsPerSide);
+		}
 		else if (placement === 'end') return str.slice(0, maxLength) + '...';
 	}
 	return str;
