@@ -8,7 +8,7 @@
 	let innerWidth = 0;
 	let innerHeight = 0;
 
-	$: maxFieldLength = innerWidth < 780 ? 20 : 22;
+	$: maxFieldLength = innerWidth < 780 ? 13 : 15;
 </script>
 
 <svelte:window bind:innerWidth bind:innerHeight />
@@ -46,6 +46,7 @@
 					allowCopyToClipboard
 					ellipsisAndHover
 					accessory=""
+					{maxFieldLength}
 				/>
 
 				<FactCardField name="Output Index" value={`${fact.output_index} `} accessory="" />
@@ -56,6 +57,7 @@
 					allowCopyToClipboard
 					ellipsisAndHover
 					accessory=""
+					{maxFieldLength}
 				/>
 				<FactCardField
 					name="Publication Date"

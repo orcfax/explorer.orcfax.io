@@ -18,7 +18,7 @@
 						name="Content Signature"
 						value={archive.details.contentSignature}
 						ellipsisAndHover
-						maxFieldLength={15}
+						maxFieldLength={13}
 					/>
 					<FactCardField name="Validation Date" value={archive.details.validationDate} />
 				</div>

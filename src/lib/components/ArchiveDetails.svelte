@@ -8,7 +8,7 @@
 	let innerWidth = 0;
 	let innerHeight = 0;
 
-	$: maxFieldLength = innerWidth < 780 ? 20 : 22;
+	$: maxFieldLength = innerWidth < 780 ? 13 : 15;
 </script>
 
 <svelte:window bind:innerWidth bind:innerHeight />
@@ -40,7 +40,7 @@
 						text: 'View Wallet →',
 						link: `https://viewblock.io/arweave/address/${$networkStore.network.arweave_wallet_address}`
 					}}
-					maxFieldLength={maxFieldLength - 3}
+					{maxFieldLength}
 				/>
 				<FactCardField name="Storage Cost" value={`-`} accessory="" />
 			</div>
