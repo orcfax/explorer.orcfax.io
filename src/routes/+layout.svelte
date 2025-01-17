@@ -1,4 +1,6 @@
 <script lang="ts">
+	import { run } from 'svelte/legacy';
+
 	import '../app.css';
 	import { browser } from '$app/environment';
 	import { time } from '$lib/stores/time';
@@ -10,10 +12,12 @@
 	import AppFooter from '$lib/components/AppFooter.svelte';
 	import { feedsListStore } from '$lib/stores/feedsList';
 
-	export let data;
+	let { data, children } = $props();
 
 	$time;
-	$: networkStore.set({ network: data.network, networks: data.networks });
+	run(() => {
+		networkStore.set({ network: data.network, networks: data.networks });
+	});
 	feedsListStore.set(data.feeds);
 
 	const queryClient = new QueryClient({
@@ -30,7 +34,7 @@
 	<div class="flex flex-col w-full h-full min-h-full">
 		<AppHeader />
 		<div class="bg-background mb-14 mt-[100px] xxxs:mt-[120px] relative">
-			<slot />
+			{@render children?.()}
 		</div>
 		<AppFooter />
 	</div>

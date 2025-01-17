@@ -23,17 +23,17 @@
 	import FactStatementDetailsAccordion from '$lib/components/FactStatementDetailsAccordion.svelte';
 	import Skeleton from '$lib/components/ui/skeleton/skeleton.svelte';
 
-	export let data;
+	let { data } = $props();
 
-	let factSummary: HTMLElement;
-	let selectedFact: FactStatement | null = data.selectedFact
+	let factSummary: HTMLElement = $state();
+	let selectedFact: FactStatement | null = $state(data.selectedFact
 		? formatFactStatementForDisplay(data.selectedFact, data.feed)
-		: null;
+		: null);
 
-	$: feed = formatFeedForDisplay(data.feed);
-	$: chartFacts = data.chartFacts;
-	$: archive = data.archive;
-	$: riskRatings = data.riskRatings;
+	let feed = $derived(formatFeedForDisplay(data.feed));
+	let chartFacts = $derived(data.chartFacts);
+	let archive = $derived(data.archive);
+	let riskRatings = $derived(data.riskRatings);
 
 	async function handleSelectedFactChange(newFactStatement: FactStatement | null) {
 		const params = new URLSearchParams($page.url.searchParams);

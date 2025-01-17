@@ -7,7 +7,11 @@
 	import * as Tooltip from '$lib/components/ui/tooltip';
 	import CopyToClipboard from './CopyToClipboard.svelte';
 
-	export let file: ArchivedFile | null;
+	interface Props {
+		file: ArchivedFile | null;
+	}
+
+	let { file }: Props = $props();
 </script>
 
 <svelte:head>
@@ -52,10 +56,12 @@
 					code={typeof file.content === 'object'
 						? JSON.stringify(file.content, null, 2)
 						: file.content.trim()}
-					let:highlighted
+					
 				>
-					<LineNumbers {highlighted} />
-				</Highlight>
+					{#snippet children({ highlighted })}
+										<LineNumbers {highlighted} />
+														{/snippet}
+								</Highlight>
 			</div>
 		</div>
 	{/if}

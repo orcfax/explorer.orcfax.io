@@ -1,5 +1,9 @@
 <script lang="ts">
-	export let text = 'This is a scrolling text banner. ';
+	interface Props {
+		text?: string;
+	}
+
+	let { text = 'This is a scrolling text banner. ' }: Props = $props();
 </script>
 
 <div

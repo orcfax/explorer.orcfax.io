@@ -8,18 +8,13 @@
 	import type { RiskRating } from '$lib/types';
 	import { Separator } from 'bits-ui';
 
-	type $$Props = {
+	interface Props {
 		riskRating: RiskRating;
 		size: 'sm' | 'md' | 'lg';
 		class?: string;
-	};
+	}
 
-	export let riskRating: RiskRating;
-
-	export let size: 'sm' | 'md' | 'lg' = 'lg';
-
-	let className: $$Props['class'] = undefined;
-	export { className as class };
+	let { riskRating, size = 'lg', class: className = '' }: Props = $props();
 
 	const assetSizes = {
 		icon: {
@@ -44,8 +39,8 @@
 		}
 	};
 
-	$: assetSize = assetSizes.icon[size];
-	$: fallbackTextSize = assetSizes.fallbackText[size];
+	let assetSize = $derived(assetSizes.icon[size]);
+	let fallbackTextSize = $derived(assetSizes.fallbackText[size]);
 </script>
 
 <div class={`${className}`}>

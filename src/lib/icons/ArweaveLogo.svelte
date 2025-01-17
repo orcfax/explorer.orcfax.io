@@ -1,8 +1,17 @@
-<script>
-	export let fillColor = 'fill-neutral';
-	export let strokeColor = 'stroke-neutral';
-	export let height = '24';
-	export let width = '24';
+<script lang="ts">
+	interface Props {
+		fillColor?: string;
+		strokeColor?: string;
+		height?: string;
+		width?: string;
+	}
+
+	let {
+		fillColor = 'fill-neutral',
+		strokeColor = 'stroke-neutral',
+		height = '24',
+		width = '24'
+	}: Props = $props();
 </script>
 
 <svg {height} {width} viewBox="0 0 31.8 31.8" class={fillColor} xmlns="http://www.w3.org/2000/svg">

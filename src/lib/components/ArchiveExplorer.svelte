@@ -1,7 +1,7 @@
 <script lang="ts">
 	import TreeView from '$lib/components/TreeView/index.svelte';
 	import * as Resizable from '$lib/components/ui/resizable';
-	import FileViewer from './FileViewer.svelte';
+	import FileViewer from '$lib/components/FileViewer.svelte';
 	import { selectedItemStore } from '$lib/stores/archive';
 	import type { Archive } from '$lib/types';
 	import ArchiveDownloader from '$lib/components/ArchiveDownloader.svelte';

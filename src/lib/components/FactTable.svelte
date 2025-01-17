@@ -15,8 +15,12 @@
 	import FactCardField from './FactCardField.svelte';
 	import FeedNameplate from '$lib/components/FeedNameplate.svelte';
 
-	export let feedFilter = '';
-	export let onTableRowClick: (fact: FactStatement) => void = () => {};
+	interface Props {
+		feedFilter?: string;
+		onTableRowClick?: (fact: FactStatement) => void;
+	}
+
+	let { feedFilter = '', onTableRowClick = () => {} }: Props = $props();
 
 	const currentPage = writable(1);
 	const response = createQuery<GetFactsPageResponse, Error>(
@@ -97,11 +101,13 @@
 						<Subscribe rowAttrs={headerRow.attrs()}>
 							<Table.Row>
 								{#each headerRow.cells as cell (cell.id)}
-									<Subscribe attrs={cell.attrs()} let:attrs props={cell.props()}>
-										<Table.Head {...attrs}>
-											<Render of={cell.render()} />
-										</Table.Head>
-									</Subscribe>
+									<Subscribe attrs={cell.attrs()}  props={cell.props()}>
+										{#snippet children({ attrs })}
+																						<Table.Head {...attrs}>
+												<Render of={cell.render()} />
+											</Table.Head>
+																															{/snippet}
+																				</Subscribe>
 								{/each}
 							</Table.Row>
 						</Subscribe>
@@ -109,59 +115,63 @@
 				</Table.Header>
 				<Table.Body {...$tableBodyAttrs}>
 					{#each $pageRows as row (row.id)}
-						<Subscribe rowAttrs={row.attrs()} let:rowAttrs>
-							<Table.Row
-								class="cursor-pointer"
-								{...rowAttrs}
-								on:click={() => {
-									if (feedFilter) {
-										onTableRowClick(row.original);
-									} else {
-										goto(getFeedUrl(row.original.feed, row.original.fact_urn));
-									}
-								}}
-							>
-								{#each row.cells as cell (cell.id)}
-									<Subscribe attrs={cell.attrs()} let:attrs>
-										{#if cell.id === 'fact_urn'}
-											<Table.Cell {...attrs}>
-												<FactCardField
-													name=""
-													value={cell.value}
-													allowCopyToClipboard
-													ellipsisAndHover
-												/>
-											</Table.Cell>
-										{:else if cell.id === 'value'}
-											<Table.Cell {...attrs}>
-												<FormattedCurrencyValue value={cell.value} />
-											</Table.Cell>
-										{:else if cell.id === 'feed'}
-											<Table.Cell {...attrs}>
-												<FeedNameplate feed={cell.value} size="md" />
-											</Table.Cell>
-										{:else if cell.id === 'validation_date'}
-											<Table.Cell {...attrs}>
-												{`${getFormattedDate(cell.value)} ${getFormattedTime(cell.value)}`}
-											</Table.Cell>
-										{:else if cell.id === 'participating_nodes'}
-											<Table.Cell {...attrs}>
-												<FactCardField
-													name=""
-													value={cell.value.length === 1 ? cell.value[0].node_urn : `N/A`}
-													allowCopyToClipboard
-													ellipsisAndHover
-												/>
-											</Table.Cell>
-										{:else}
-											<Table.Cell {...attrs}>
-												<Render of={cell.render()} />
-											</Table.Cell>
-										{/if}
-									</Subscribe>
-								{/each}
-							</Table.Row>
-						</Subscribe>
+						<Subscribe rowAttrs={row.attrs()} >
+							{#snippet children({ rowAttrs })}
+																<Table.Row
+									class="cursor-pointer"
+									{...rowAttrs}
+									on:click={() => {
+										if (feedFilter) {
+											onTableRowClick(row.original);
+										} else {
+											goto(getFeedUrl(row.original.feed, row.original.fact_urn));
+										}
+									}}
+								>
+									{#each row.cells as cell (cell.id)}
+										<Subscribe attrs={cell.attrs()} >
+											{#snippet children({ attrs })}
+																						{#if cell.id === 'fact_urn'}
+													<Table.Cell {...attrs}>
+														<FactCardField
+															name=""
+															value={cell.value}
+															allowCopyToClipboard
+															ellipsisAndHover
+														/>
+													</Table.Cell>
+												{:else if cell.id === 'value'}
+													<Table.Cell {...attrs}>
+														<FormattedCurrencyValue value={cell.value} />
+													</Table.Cell>
+												{:else if cell.id === 'feed'}
+													<Table.Cell {...attrs}>
+														<FeedNameplate feed={cell.value} size="md" />
+													</Table.Cell>
+												{:else if cell.id === 'validation_date'}
+													<Table.Cell {...attrs}>
+														{`${getFormattedDate(cell.value)} ${getFormattedTime(cell.value)}`}
+													</Table.Cell>
+												{:else if cell.id === 'participating_nodes'}
+													<Table.Cell {...attrs}>
+														<FactCardField
+															name=""
+															value={cell.value.length === 1 ? cell.value[0].node_urn : `N/A`}
+															allowCopyToClipboard
+															ellipsisAndHover
+														/>
+													</Table.Cell>
+												{:else}
+													<Table.Cell {...attrs}>
+														<Render of={cell.render()} />
+													</Table.Cell>
+												{/if}
+																																{/snippet}
+																				</Subscribe>
+									{/each}
+								</Table.Row>
+																						{/snippet}
+														</Subscribe>
 					{/each}
 				</Table.Body>
 			</Table.Root>

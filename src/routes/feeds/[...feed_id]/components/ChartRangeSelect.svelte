@@ -1,8 +1,13 @@
 <script lang="ts">
 	import * as ToggleGroup from '$lib/components/ui/toggle-group/index.js';
 
-	export let onChange: (value: string | undefined) => void;
-	export let value: string | undefined = '1';
+	interface Props {
+		onChange: (value: string | undefined) => void;
+		value?: string | undefined;
+		[key: string]: any
+	}
+
+	let { onChange, value = $bindable('1'), ...rest }: Props = $props();
 </script>
 
 <ToggleGroup.Root
@@ -11,7 +16,7 @@
 		if (value) onChange(value);
 	}}
 	type="single"
-	class={`border rounded-lg ${$$restProps.class}`}
+	class={`border rounded-lg ${rest.class}`}
 >
 	<ToggleGroup.Item
 		class={`bg-section hover:bg-card hover:text-card-foreground`}

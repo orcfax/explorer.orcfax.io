@@ -1,4 +1,5 @@
 <script lang="ts">
+	import Countdown from './Countdown.svelte';
 	import {
 		differenceInDays,
 		differenceInHours,
@@ -9,24 +10,35 @@
 	import { blur } from 'svelte/transition';
 	import { pluralize } from '$lib/client/helpers';
 
-	export let targetDate: Date;
-	export let activeMessage: string;
-	export let endMessage: string;
-	export let secondaryDate: Date | undefined = undefined;
-	export let secondaryActiveMessage: string | undefined = undefined;
-	export let secondaryEndMessage: string | undefined = undefined;
+	interface Props {
+		targetDate: Date;
+		activeMessage: string;
+		endMessage: string;
+		secondaryDate?: Date | undefined;
+		secondaryActiveMessage?: string | undefined;
+		secondaryEndMessage?: string | undefined;
+	}
+
+	let {
+		targetDate,
+		activeMessage,
+		endMessage,
+		secondaryDate = undefined,
+		secondaryActiveMessage = undefined,
+		secondaryEndMessage = undefined
+	}: Props = $props();
 
 	$time;
-	$: totalSeconds = differenceInSeconds(targetDate, $time);
-	$: hasDatePassed = totalSeconds <= 0 ? true : false;
-	$: days = differenceInDays(targetDate, $time);
-	$: hours = differenceInHours(targetDate, $time) % 24;
-	$: minutes = differenceInMinutes(targetDate, $time) % 60;
-	$: seconds = totalSeconds % 60;
+	let totalSeconds = $derived(differenceInSeconds(targetDate, $time));
+	let hasDatePassed = $derived(totalSeconds <= 0 ? true : false);
+	let days = $derived(differenceInDays(targetDate, $time));
+	let hours = $derived(differenceInHours(targetDate, $time) % 24);
+	let minutes = $derived(differenceInMinutes(targetDate, $time) % 60);
+	let seconds = $derived(totalSeconds % 60);
 </script>
 
 {#if hasDatePassed && secondaryDate}
-	<svelte:self
+	<Countdown
 		targetDate={secondaryDate}
 		activeMessage={secondaryActiveMessage}
 		endMessage={secondaryEndMessage}
@@ -43,25 +55,25 @@
 		<div class="flex gap-5 font-semibold">
 			<div>
 				<span class="countdown text-3xl">
-					<span class="text-primary font-extrabold" style={`--value:${days};`} />
+					<span class="text-primary font-extrabold" style={`--value:${days};`}></span>
 				</span>
 				<span class="text-base-content-100 opacity-60 text-2xl">{pluralize('day', days)}</span>
 			</div>
 			<div>
 				<span class="countdown text-3xl">
-					<span class="text-primary font-extrabold" style={`--value:${hours};`} />
+					<span class="text-primary font-extrabold" style={`--value:${hours};`}></span>
 				</span>
 				<span class="text-base-content-100 opacity-60 text-2xl">{pluralize('hour', hours)}</span>
 			</div>
 			<div>
 				<span class="countdown text-3xl">
-					<span class="text-primary font-extrabold" style={`--value:${minutes};`} />
+					<span class="text-primary font-extrabold" style={`--value:${minutes};`}></span>
 				</span>
 				<span class="text-base-content-100 opacity-60 text-2xl">{pluralize('min', minutes)}</span>
 			</div>
 			<div>
 				<span class="countdown text-3xl">
-					<span class="text-primary font-extrabold" style={`--value:${seconds};`} />
+					<span class="text-primary font-extrabold" style={`--value:${seconds};`}></span>
 				</span>
 				<span class="text-base-content-100 opacity-60 text-2xl">{pluralize('sec', seconds)}</span>
 			</div>

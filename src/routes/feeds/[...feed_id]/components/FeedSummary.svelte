@@ -12,14 +12,23 @@
 	import { CircleHelp } from 'lucide-svelte';
 	import FeedSummaryFields from './FeedSummaryFields.svelte';
 
-	export let feed: Feed;
-	export let riskRatings: RiskRatings;
-	export let onLatestFactClick: (latestFact: FactStatement | null) => void;
-	export let onFeedSwitch: (feed: DBFeedWithData) => void;
+	interface Props {
+		feed: Feed;
+		riskRatings: RiskRatings;
+		onLatestFactClick: (latestFact: FactStatement | null) => void;
+		onFeedSwitch: (feed: DBFeedWithData) => void;
+	}
 
-	$: timeSinceLastUpdate = feed.latestFact
+	let {
+		feed,
+		riskRatings,
+		onLatestFactClick,
+		onFeedSwitch
+	}: Props = $props();
+
+	let timeSinceLastUpdate = $derived(feed.latestFact
 		? createTimeSinceStore(feed.latestFact.validation_date)
-		: readable('N/A');
+		: readable('N/A'));
 </script>
 
 <section
@@ -69,7 +78,7 @@
 						<button
 							type="button"
 							class="text-base sm:text-xl whitespace-nowrap w-min font-bold water-reflection-text water-reflection-underline"
-							on:click={() => onLatestFactClick(feed.latestFact)}
+							onclick={() => onLatestFactClick(feed.latestFact)}
 						>
 							{#if feed.latestFact}
 								<FormattedCurrencyValue value={feed.latestFact.value} />

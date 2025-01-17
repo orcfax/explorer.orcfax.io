@@ -5,7 +5,11 @@
 	import SourceTable from './SourceTable.svelte';
 	import Skeleton from '$lib/components/ui/skeleton/skeleton.svelte';
 
-	export let archive: Promise<Archive> | null;
+	interface Props {
+		archive: Promise<Archive> | null;
+	}
+
+	let { archive }: Props = $props();
 </script>
 
 <section class="w-fit md:w-full xl:w-fit flex flex-col xl:self-start">

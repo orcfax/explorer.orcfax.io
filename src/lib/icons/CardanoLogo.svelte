@@ -1,7 +1,11 @@
-<script>
-	export let fillColor = 'fill-neutral';
-	export let height = '24';
-	export let width = '24';
+<script lang="ts">
+	interface Props {
+		fillColor?: string;
+		height?: string;
+		width?: string;
+	}
+
+	let { fillColor = 'fill-neutral', height = '24', width = '24' }: Props = $props();
 </script>
 
 <svg

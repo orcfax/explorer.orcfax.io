@@ -3,12 +3,16 @@
 	import { getSmartContractUrl, getTransactionIDUrl, networkStore } from '$lib/stores/network';
 	import FactCardField from './FactCardField.svelte';
 
-	export let fact: FactStatement | null;
+	interface Props {
+		fact: FactStatement | null;
+	}
 
-	let innerWidth = 0;
-	let innerHeight = 0;
+	let { fact }: Props = $props();
 
-	$: maxFieldLength = innerWidth < 780 ? 13 : 15;
+	let innerWidth = $state(0);
+	let innerHeight = $state(0);
+
+	let maxFieldLength = $derived(innerWidth < 780 ? 13 : 15);
 </script>
 
 <svelte:window bind:innerWidth bind:innerHeight />

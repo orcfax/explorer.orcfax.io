@@ -11,7 +11,11 @@
 	import LatestFactColumn from '$lib/components/LatestFactColumn.svelte';
 	import FeedNameplate from '$lib/components/FeedNameplate.svelte';
 
-	export let nodes: NodeWithMetadata[];
+	interface Props {
+		nodes: NodeWithMetadata[];
+	}
+
+	let { nodes }: Props = $props();
 
 	let nodesStore = writable<(NodeWithMetadata & { lastCollected: Readable<string> | null })[]>(
 		nodes.map((node) => ({
@@ -55,10 +59,10 @@
 
 	const { headerRows, pageRows, tableAttrs, tableBodyAttrs } = table.createViewModel(columns);
 
-	let innerWidth = 0;
-	let innerHeight = 0;
+	let innerWidth = $state(0);
+	let innerHeight = $state(0);
 
-	$: maxFieldLength = innerWidth < 400 ? 8 : 100;
+	let maxFieldLength = $derived(innerWidth < 400 ? 8 : 100);
 </script>
 
 <svelte:window bind:innerWidth bind:innerHeight />
@@ -71,17 +75,19 @@
 					<Subscribe rowAttrs={headerRow.attrs()}>
 						<Table.Row>
 							{#each headerRow.cells as cell (cell.id)}
-								<Subscribe attrs={cell.attrs()} let:attrs props={cell.props()}>
-									{#if cell.id === 'type'}
-										<Table.Head {...attrs} class="hidden md:table-cell">
-											<Render of={cell.render()} />
-										</Table.Head>
-									{:else}
-										<Table.Head {...attrs}>
-											<Render of={cell.render()} />
-										</Table.Head>
-									{/if}
-								</Subscribe>
+								<Subscribe attrs={cell.attrs()}  props={cell.props()}>
+									{#snippet children({ attrs })}
+																		{#if cell.id === 'type'}
+											<Table.Head {...attrs} class="hidden md:table-cell">
+												<Render of={cell.render()} />
+											</Table.Head>
+										{:else}
+											<Table.Head {...attrs}>
+												<Render of={cell.render()} />
+											</Table.Head>
+										{/if}
+																										{/snippet}
+																</Subscribe>
 							{/each}
 						</Table.Row>
 					</Subscribe>
@@ -89,53 +95,57 @@
 			</Table.Header>
 			<Table.Body {...$tableBodyAttrs}>
 				{#each $pageRows as row, index (row.id)}
-					<Subscribe rowAttrs={row.attrs()} let:rowAttrs>
-						<Table.Row {...rowAttrs}>
-							{#each row.cells as cell (cell.id)}
-								<Subscribe attrs={cell.attrs()} let:attrs>
-									{#if cell.id === 'node_urn'}
-										<Table.Cell {...attrs}>
-											<FactCardField
-												name=""
-												value={cell.value}
-												allowCopyToClipboard
-												ellipsisAndHover
-											/>
-										</Table.Cell>
-									{:else if cell.id === 'type'}
-										<Table.Cell {...attrs}>
-											<Render of={toTitleCase(cell.render())} />
-										</Table.Cell>
-									{:else if cell.id === 'status'}
-										<Table.Cell {...attrs}>
-											<div class="flex gap-2 items-center">
-												<PingStatus
-													color={cell.render() === 'active' ? 'green' : 'yellow'}
-													size="md"
-												/>
-												<Render of={toTitleCase(cell.render())} />
-											</div>
-										</Table.Cell>
-									{:else if cell.id === 'latestFact'}
-										<Table.Cell {...attrs}>
-											<div class="flex flex-col gap-2">
-												<FeedNameplate feed={cell.value.feed} size="sm" />
-												<LatestFactColumn latestFact={cell.value} />
-											</div>
-										</Table.Cell>
-									{:else if cell.id === 'totalFacts'}
-										<Table.Cell {...attrs}>
-											<Render of={formatNumber(cell.render())} />
-										</Table.Cell>
-									{:else}
-										<Table.Cell {...attrs}>
-											<Render of={cell.render()} />
-										</Table.Cell>
-									{/if}
-								</Subscribe>
-							{/each}
-						</Table.Row>
-					</Subscribe>
+					<Subscribe rowAttrs={row.attrs()} >
+						{#snippet children({ rowAttrs })}
+												<Table.Row {...rowAttrs}>
+								{#each row.cells as cell (cell.id)}
+									<Subscribe attrs={cell.attrs()} >
+										{#snippet children({ attrs })}
+																		{#if cell.id === 'node_urn'}
+												<Table.Cell {...attrs}>
+													<FactCardField
+														name=""
+														value={cell.value}
+														allowCopyToClipboard
+														ellipsisAndHover
+													/>
+												</Table.Cell>
+											{:else if cell.id === 'type'}
+												<Table.Cell {...attrs}>
+													<Render of={toTitleCase(cell.render())} />
+												</Table.Cell>
+											{:else if cell.id === 'status'}
+												<Table.Cell {...attrs}>
+													<div class="flex gap-2 items-center">
+														<PingStatus
+															color={cell.render() === 'active' ? 'green' : 'yellow'}
+															size="md"
+														/>
+														<Render of={toTitleCase(cell.render())} />
+													</div>
+												</Table.Cell>
+											{:else if cell.id === 'latestFact'}
+												<Table.Cell {...attrs}>
+													<div class="flex flex-col gap-2">
+														<FeedNameplate feed={cell.value.feed} size="sm" />
+														<LatestFactColumn latestFact={cell.value} />
+													</div>
+												</Table.Cell>
+											{:else if cell.id === 'totalFacts'}
+												<Table.Cell {...attrs}>
+													<Render of={formatNumber(cell.render())} />
+												</Table.Cell>
+											{:else}
+												<Table.Cell {...attrs}>
+													<Render of={cell.render()} />
+												</Table.Cell>
+											{/if}
+																											{/snippet}
+																</Subscribe>
+								{/each}
+							</Table.Row>
+																	{/snippet}
+										</Subscribe>
 				{/each}
 			</Table.Body>
 		</Table.Root>

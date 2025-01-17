@@ -1,16 +1,21 @@
 <script lang="ts">
+	import { preventDefault, stopPropagation } from 'svelte/legacy';
+
 	import CopyIcon from '$lib/icons/CopyIcon.svelte';
 	import CopyingIcon from '$lib/icons/CopyingIcon.svelte';
 
-	export let value: string | number;
-	export let tooltipDirection: 'tooltip-right' | 'tooltip-left' | 'tooltip-bottom' | 'tooltip-top' =
-		'tooltip-top';
 
-	export { className as class };
-	let className = '';
+	
+	interface Props {
+		value: string | number;
+		tooltipDirection?: 'tooltip-right' | 'tooltip-left' | 'tooltip-bottom' | 'tooltip-top';
+		class?: string;
+	}
 
-	let isCopying = false;
-	let showCopiedTooltip = false;
+	let { value, tooltipDirection = 'tooltip-top', class: className = '' }: Props = $props();
+
+	let isCopying = $state(false);
+	let showCopiedTooltip = $state(false);
 
 	function handleCopyToClipboard() {
 		navigator.clipboard.writeText(value.toString());
@@ -31,7 +36,7 @@
 	class:tooltip={showCopiedTooltip}
 	class:tooltip-open={showCopiedTooltip}
 	data-tip="Copied!"
-	on:click|preventDefault|stopPropagation={handleCopyToClipboard}
+	onclick={stopPropagation(preventDefault(handleCopyToClipboard))}
 >
 	{#if isCopying}
 		<CopyingIcon />

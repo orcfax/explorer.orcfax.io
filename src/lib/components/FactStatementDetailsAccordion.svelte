@@ -7,8 +7,12 @@
 	import PublicationDetails from './PublicationDetails.svelte';
 	import * as Accordion from '$lib/components/ui/accordion/index.js';
 
-	export let fact: FactStatement | null;
-	export let archive: Promise<Archive> | null;
+	interface Props {
+		fact: FactStatement | null;
+		archive: Promise<Archive> | null;
+	}
+
+	let { fact, archive }: Props = $props();
 </script>
 
 <div class="flex flex-col w-full">

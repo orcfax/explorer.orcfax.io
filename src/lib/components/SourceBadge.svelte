@@ -4,11 +4,20 @@
 	import Skeleton from '$lib/components/ui/skeleton/skeleton.svelte';
 	import type { Source } from '$lib/types';
 
-	export let source: Source;
-	export let hideTooltip = false;
-	export let isPlainLogo = false;
 
-	export let size: 'sm' | 'md' | 'lg' = 'lg';
+	interface Props {
+		source: Source;
+		hideTooltip?: boolean;
+		isPlainLogo?: boolean;
+		size?: 'sm' | 'md' | 'lg';
+	}
+
+	let {
+		source,
+		hideTooltip = false,
+		isPlainLogo = false,
+		size = 'lg'
+	}: Props = $props();
 
 	const assetSizes = {
 		icon: {
@@ -33,8 +42,8 @@
 		}
 	};
 
-	$: assetSize = assetSizes.icon[size];
-	$: fallbackTextSize = assetSizes.fallbackText[size];
+	let assetSize = $derived(assetSizes.icon[size]);
+	let fallbackTextSize = $derived(assetSizes.fallbackText[size]);
 </script>
 
 {#if hideTooltip}
@@ -58,28 +67,30 @@
 	</Avatar.Root>
 {:else}
 	<Tooltip.Root openDelay={150} disableHoverableContent={hideTooltip}>
-		<Tooltip.Trigger asChild let:builder>
-			<div use:builder.action {...builder}>
-				<Avatar.Root
-					class={`border ${assetSize}`}
-					style={source.background_color ? `background-color: ${source.background_color}` : ''}
-				>
-					{#if source.image_path}
-						<Avatar.Image src={source.image_path} alt={`Asset logo of ${source.name}`} />
-						<Avatar.Fallback class={`${fallbackTextSize} text-card-foreground`}>
-							<div class="relative flex items-center justify-center">
-								<Skeleton class={assetSize} />
-								<span class="absolute text-card-foreground">{source.name.slice(0, 2)}</span>
-							</div>
-						</Avatar.Fallback>
-					{:else}
-						<Avatar.Fallback class={`${fallbackTextSize} text-card-foreground`}>
-							{source.name.slice(0, 2)}
-						</Avatar.Fallback>
-					{/if}
-				</Avatar.Root>
-			</div>
-		</Tooltip.Trigger>
+		<Tooltip.Trigger asChild >
+			{#snippet children({ builder })}
+						<div use:builder.action {...builder}>
+					<Avatar.Root
+						class={`border ${assetSize}`}
+						style={source.background_color ? `background-color: ${source.background_color}` : ''}
+					>
+						{#if source.image_path}
+							<Avatar.Image src={source.image_path} alt={`Asset logo of ${source.name}`} />
+							<Avatar.Fallback class={`${fallbackTextSize} text-card-foreground`}>
+								<div class="relative flex items-center justify-center">
+									<Skeleton class={assetSize} />
+									<span class="absolute text-card-foreground">{source.name.slice(0, 2)}</span>
+								</div>
+							</Avatar.Fallback>
+						{:else}
+							<Avatar.Fallback class={`${fallbackTextSize} text-card-foreground`}>
+								{source.name.slice(0, 2)}
+							</Avatar.Fallback>
+						{/if}
+					</Avatar.Root>
+				</div>
+								{/snippet}
+				</Tooltip.Trigger>
 		<Tooltip.Content>
 			<p>
 				{source.name}

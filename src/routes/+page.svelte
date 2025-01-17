@@ -8,7 +8,7 @@
 	import NodesTable from '$lib/components/NodesTable.svelte';
 	import SourceTable from '$lib/components/SourceTable.svelte';
 
-	export let data;
+	let { data } = $props();
 </script>
 
 <main class="flex flex-col items-center w-full px-10 min-h-full overflow-x-hidden">

@@ -4,7 +4,11 @@
 	import type { Archive } from '$lib/types';
 	import * as Tooltip from '$lib/components/ui/tooltip';
 
-	export let archive: Archive;
+	interface Props {
+		archive: Archive;
+	}
+
+	let { archive }: Props = $props();
 
 	async function handleDownload(archive: Archive) {
 		try {
@@ -46,7 +50,7 @@
 	<Tooltip.Trigger class="flex h-fit w-fit">
 		<button
 			class="flex items-center gap-[0.15rem] rounded-lg text-sm text-primary/90 font-medium p-2 py-[.38rem] border bg-muted/50 hover:bg-border/60 hover:text-primary cursor-pointer"
-			on:click={() => handleDownload(archive)}
+			onclick={() => handleDownload(archive)}
 		>
 			<p class="px-1">Download</p>
 			<Download class="stroke-primary h-[1.1rem] w-[1.1rem]" />
