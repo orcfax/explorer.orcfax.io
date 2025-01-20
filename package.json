@@ -55,7 +55,7 @@
 		"dotenv": "^16.4.5",
 		"jszip": "^3.10.1",
 		"lucide-svelte": "^0.399.0",
-		"mode-watcher": "^0.3.1",
+		"mode-watcher": "^0.5.0",
 		"paneforge": "^0.0.5",
 		"pocketbase": "^0.21.3",
 		"tailwind-merge": "^2.3.0",

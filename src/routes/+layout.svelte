@@ -30,6 +30,7 @@
 </script>
 
 <QueryClientProvider client={queryClient}>
+	<!-- TODO: fix hydration_html_changed warning showing in browser console -->
 	<ModeWatcher />
 	<div class="flex flex-col w-full h-full min-h-full">
 		<AppHeader />
