@@ -266,9 +266,6 @@ export type GetFactsPageResponseDB = z.infer<typeof GetFactsPageResponseDBSchema
 
 export const FeedRangeSchema = z.enum(['1', '3', '7']);
 export type FeedRange = z.infer<typeof FeedRangeSchema>;
-export function getFeedChartRange(range: string | null | undefined): FeedRange {
-	return FeedRangeSchema.safeParse(range).data ?? '1';
-}
 
 export const ChartFactsResponseSchema = z.object({
 	facts: z.array(FactStatementSchema)

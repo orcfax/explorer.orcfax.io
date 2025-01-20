@@ -9,7 +9,7 @@
 		formatFeedForDisplay,
 		getFeedUrl
 	} from '$lib/client/helpers';
-	import { page } from '$app/stores';
+	import { page } from '$app/state';
 	import { goto } from '$app/navigation';
 	import ArchiveDetails from '$lib/components/ArchiveDetails.svelte';
 	import FactSummary from '$lib/components/FactSummary.svelte';
@@ -25,10 +25,10 @@
 
 	let { data } = $props();
 
-	let factSummary: HTMLElement = $state();
-	let selectedFact: FactStatement | null = $state(data.selectedFact
-		? formatFactStatementForDisplay(data.selectedFact, data.feed)
-		: null);
+	let factSummary: HTMLElement | undefined = $state();
+	let selectedFact: FactStatement | null = $state(
+		data.selectedFact ? formatFactStatementForDisplay(data.selectedFact, data.feed) : null
+	);
 
 	let feed = $derived(formatFeedForDisplay(data.feed));
 	let chartFacts = $derived(data.chartFacts);
@@ -36,9 +36,11 @@
 	let riskRatings = $derived(data.riskRatings);
 
 	async function handleSelectedFactChange(newFactStatement: FactStatement | null) {
-		const params = new URLSearchParams($page.url.searchParams);
+		const params = new URLSearchParams(page.url.searchParams);
 		selectedFact = newFactStatement;
-		factSummary.scrollIntoView({ behavior: 'smooth' });
+		if (factSummary) {
+			factSummary.scrollIntoView({ behavior: 'smooth' });
+		}
 		await goto(
 			`${getFeedUrl(feed, newFactStatement ? newFactStatement.fact_urn : 'undefined')}?${params.toString()}`,
 			{

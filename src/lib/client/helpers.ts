@@ -1,13 +1,15 @@
 import { format, toZonedTime } from 'date-fns-tz';
 import {
 	EnvironmentSchema,
+	FeedRangeSchema,
 	type DBFactStatement,
 	type DBFactStatementWithFeed,
 	type DBFeed,
 	type DBFeedWithAssets,
 	type DBFeedWithData,
 	type FactStatement,
-	type Feed
+	type Feed,
+	type FeedRange
 } from '$lib/types';
 import { DEFAULT_NETWORK_NAME, VALID_NETWORK_SUBDOMAINS } from '$lib/stores/network';
 import { env } from '$env/dynamic/public';
@@ -83,8 +85,7 @@ export function ellipsis(str: string | number, options?: EllipsisOptions) {
 		else if (placement === 'middle') {
 			const charsPerSide = Math.floor((maxLength - 3) / 2); // -3 for the ...
 			return str.slice(0, charsPerSide) + '...' + str.slice(-charsPerSide);
-		}
-		else if (placement === 'end') return str.slice(0, maxLength) + '...';
+		} else if (placement === 'end') return str.slice(0, maxLength) + '...';
 	}
 	return str;
 }
@@ -234,7 +235,10 @@ export function getHeartbeatFromInterval(seconds: number): string {
 	return result || '0 secs';
 }
 
-export function getFeedUrl(feed: DBFeedWithData | Feed | DBFeed | DBFeedWithAssets, fact_urn?: string): string {
+export function getFeedUrl(
+	feed: DBFeedWithData | Feed | DBFeed | DBFeedWithAssets,
+	fact_urn?: string
+): string {
 	const feedPart = getFeedIDWithoutVersion(feed.feed_id);
 	const hasFactUrn = fact_urn !== undefined || ('latestFact' in feed && feed.latestFact);
 	const factPart = fact_urn
@@ -325,4 +329,8 @@ export function getXerberusRiskDescription(risk: string): string {
 	} else {
 		return 'Unknown';
 	}
+}
+
+export function getFeedChartRange(range: string | null | undefined): FeedRange {
+	return FeedRangeSchema.safeParse(range).data ?? '1';
 }

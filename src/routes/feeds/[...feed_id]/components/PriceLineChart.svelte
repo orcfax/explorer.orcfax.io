@@ -1,7 +1,7 @@
 <script lang="ts">
 	import 'chartjs-adapter-date-fns';
 	import {
-		Chart as ChartJS,
+		Chart,
 		Title,
 		Tooltip,
 		LineElement,
@@ -9,15 +9,15 @@
 		PointElement,
 		CategoryScale,
 		TimeScale,
-		type Point,
-		type ChartOptions
-	} from 'chart.js';
+		type ChartOptions,
+		type TooltipItem
+	} from 'chart.js/auto';
+	import { onMount, onDestroy } from 'svelte';
 	import type { FactStatement, FeedRange } from '$lib/types';
 	import { enUS } from 'date-fns/locale';
 	import { format, toZonedTime } from 'date-fns-tz';
 	import { mode } from 'mode-watcher';
 	import { formatCurrencyValue } from '$lib/client/helpers';
-	import { onMount } from 'svelte';
 
 	interface Props {
 		facts: FactStatement[];
@@ -29,20 +29,18 @@
 
 	let { facts, selectedFact, onPointClick, range = '1', isMobile }: Props = $props();
 
-	let chartCanvas: HTMLCanvasElement;
-	let chart: ChartJS | undefined = $state();
+	let element: HTMLCanvasElement | null = $state(null);
+	let chart: Chart | null = $state(null);
 
-	let primaryColor = 'hsl(174 25% 51%)';
+	let primaryColor = $state('hsl(174 25% 51%)');
 	let gridColor = $derived($mode === 'dark' ? 'rgb(59, 59, 59)' : 'rgb(166, 166, 166)');
 	let labelColor = $derived($mode === 'dark' ? 'rgb(227, 227, 222)' : 'rgb(38, 38, 38)');
-	let pointColor = $derived('hsl(174 25% 40%)');
-
+	let pointColor = $state('hsl(174 25% 40%)');
 	let innerWidth = $state(0);
 	let innerHeight = $state(0);
-
 	let omitLabels = $derived(innerWidth < 400);
 
-	const getChartData = (fact: FactStatement, range: FeedRange, facts: FactStatement[]) => {
+	let data = $derived.by(() => {
 		return {
 			datasets: [
 				{
@@ -56,14 +54,16 @@
 						};
 					}),
 					pointStyle: 'circle',
-					pointRadius: facts.map((f) => (f.fact_urn === fact.fact_urn ? 5 : 1.5)),
+					pointRadius: facts.map((f) => (f.fact_urn === selectedFact.fact_urn ? 5 : 1.5)),
 					pointBorderColor: facts.map((f) =>
-						f.fact_urn === fact.fact_urn ? primaryColor : pointColor
+						f.fact_urn === selectedFact.fact_urn ? primaryColor : pointColor
 					),
 					pointBackgroundColor: facts.map((f) =>
-						f.fact_urn === fact.fact_urn ? primaryColor : pointColor
+						f.fact_urn === selectedFact.fact_urn ? primaryColor : pointColor
 					),
-					pointColor: facts.map((f) => (f.fact_urn === fact.fact_urn ? primaryColor : pointColor)),
+					pointColor: facts.map((f) =>
+						f.fact_urn === selectedFact.fact_urn ? primaryColor : pointColor
+					),
 					pointHoverRadius: 5,
 					pointHitRadius: 25,
 					pointHoverBackgroundColor: primaryColor,
@@ -80,13 +80,8 @@
 				}
 			}
 		};
-	};
-
-	const getChartOptions = (
-		range: FeedRange,
-		isMobile: boolean,
-		omitLabels: boolean
-	): ChartOptions<'line'> => {
+	});
+	let options: ChartOptions<'line'> = $derived.by(() => {
 		return {
 			parsing: false,
 			responsive: true,
@@ -121,6 +116,7 @@
 					}
 				},
 				y: {
+					type: 'linear',
 					position: 'right',
 					title: {
 						display: !omitLabels,
@@ -135,9 +131,8 @@
 					ticks: {
 						display: !omitLabels,
 						color: labelColor,
-						callback(tickValue) {
-							const num = Number(tickValue);
-							return formatCurrencyValue(num, false);
+						callback(tickValue: unknown) {
+							return formatCurrencyValue(Number(tickValue), false);
 						}
 					},
 					grid: {
@@ -160,7 +155,7 @@
 					borderColor: gridColor,
 					borderWidth: 1,
 					callbacks: {
-						label: function (context) {
+						label: function (context: TooltipItem<'line'>) {
 							const date = context.parsed.x;
 							return (
 								'Date: ' +
@@ -169,17 +164,34 @@
 								})
 							);
 						},
-						title: function (context) {
+						title: function (context: TooltipItem<'line'>[]) {
 							return `Value: ${formatCurrencyValue(context[0].parsed.y, false)}`;
 						}
 					}
 				}
 			}
 		};
-	};
+	});
 
-	let data = $derived(getChartData(selectedFact, range, facts));
-	let options = $derived(getChartOptions(range, isMobile, omitLabels));
+	onMount(() => {
+		if (element === null) {
+			console.error('Chart element is not set');
+			return;
+		}
+
+		chart = new Chart(element, {
+			type: 'line',
+			data,
+			options
+		});
+	});
+
+	onDestroy(() => {
+		if (chart) {
+			chart.destroy();
+			chart = null;
+		}
+	});
 
 	function handleChartClick(event: MouseEvent) {
 		if (!chart) return;
@@ -189,36 +201,10 @@
 		onPointClick(facts[index]);
 	}
 
-	ChartJS.register(
-		Title,
-		Tooltip,
-		LineElement,
-		PointElement,
-		TimeScale,
-		CategoryScale,
-		LinearScale
-	);
-
-	$effect(() => {
-		if (!chartCanvas) return;
-
-		if (chart) {
-			chart.destroy();
-		}
-
-		chart = new ChartJS(chartCanvas, {
-			type: 'line',
-			data,
-			options
-		});
-	});
+	Chart.register(Title, Tooltip, LineElement, PointElement, TimeScale, CategoryScale, LinearScale);
 </script>
 
 <svelte:window bind:innerWidth bind:innerHeight />
 
-<canvas
-	bind:this={chartCanvas}
-	class="bg-card p-0 sm:p-6 rounded-lg border"
-	onclick={handleChartClick}
->
+<canvas bind:this={element} class="bg-card p-0 sm:p-6 rounded-lg border" onclick={handleChartClick}>
 </canvas>

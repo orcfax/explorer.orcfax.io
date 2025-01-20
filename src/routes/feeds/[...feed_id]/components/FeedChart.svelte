@@ -1,19 +1,12 @@
 <script lang="ts">
-	import { page } from '$app/stores';
+	import { page } from '$app/state';
 	import { goto } from '$app/navigation';
-	import {
-		getFeedChartRange,
-		type DBFactStatement,
-		type FactStatement,
-		type Feed,
-		type FeedRange
-	} from '$lib/types';
-	import { writable } from 'svelte/store';
+	import { type DBFactStatement, type FactStatement, type Feed } from '$lib/types';
 	import ChartRangeSelect from './ChartRangeSelect.svelte';
 	import { Badge } from '$lib/components/ui/badge/index.js';
 	import PriceLineChart from './PriceLineChart.svelte';
 	import FeedChartLoadingSkeleton from './FeedChartLoadingSkeleton.svelte';
-	import { formatFactStatementForDisplay } from '$lib/client/helpers';
+	import { formatFactStatementForDisplay, getFeedChartRange } from '$lib/client/helpers';
 
 	interface Props {
 		feed: Feed;
@@ -22,28 +15,20 @@
 		onChartPointClick: (fact: FactStatement) => void;
 	}
 
-	let {
-		feed,
-		selectedFact,
-		chartFacts,
-		onChartPointClick
-	}: Props = $props();
+	let { feed, selectedFact, chartFacts, onChartPointClick }: Props = $props();
 
 	let isLoading = $state(false);
 
 	let facts = $derived(chartFacts.map((fact) => formatFactStatementForDisplay(fact, feed)));
 
-	const range = writable<FeedRange>('1');
-	page.subscribe((value) => {
-		range.set(getFeedChartRange(value.url.searchParams.get('range')));
+	const range = $derived.by(() => {
+		return getFeedChartRange(page.url.searchParams.get('range'));
 	});
 
 	async function handleRangeSelect(value: string | undefined) {
 		isLoading = true;
-		const params = new URLSearchParams($page.url.searchParams);
-		const newRange = getFeedChartRange(value);
-		range.set(newRange);
-		params.set('range', newRange);
+		const params = new URLSearchParams(page.url.searchParams);
+		params.set('range', getFeedChartRange(value));
 		await goto(`?${params.toString()}`);
 		isLoading = false;
 	}
@@ -69,7 +54,7 @@
 		class="flex flex-col justify-center items-center w-full relative border border-t-0 rounded-lg rounded-t-none p-2 md:p-6 pt-0 md:pt-0"
 	>
 		<div class="flex justify-start items-center space-x-2 w-full">
-			<ChartRangeSelect class="self-end my-4" value={$range} onChange={handleRangeSelect} />
+			<ChartRangeSelect class="self-end my-4" value={range} onChange={handleRangeSelect} />
 			<Badge variant="outline" class="flex">
 				<p class="text-card-foreground text-opacity-70">
 					<span class="hidden xxs:inline">Showing</span>
@@ -80,13 +65,7 @@
 		</div>
 
 		{#if selectedFact}
-			<PriceLineChart
-				{facts}
-				{selectedFact}
-				onPointClick={onChartPointClick}
-				range={$range}
-				{isMobile}
-			/>
+			<PriceLineChart {facts} {selectedFact} onPointClick={onChartPointClick} {range} {isMobile} />
 		{/if}
 	</div>
 {/if}

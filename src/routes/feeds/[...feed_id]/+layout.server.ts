@@ -1,6 +1,6 @@
 import { error } from '@sveltejs/kit';
 import { getFeedByID, getFeedFactsByDateRange } from '$lib/server/db';
-import { getFeedChartRange } from '$lib/types';
+import { getFeedChartRange } from '$lib/client/helpers';
 import type { LayoutServerLoad } from './$types';
 
 export const load: LayoutServerLoad = async ({ parent, params, url }) => {
