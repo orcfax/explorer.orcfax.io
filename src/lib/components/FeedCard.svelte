@@ -18,9 +18,9 @@
 	}
 
 	let { feed }: Props = $props();
-	let timeSinceLastUpdate = $derived(feed.latestFact
-		? createTimeSinceStore(feed.latestFact.validation_date)
-		: readable('N/A'));
+	let timeSinceLastUpdate = $derived(
+		feed.latestFact ? createTimeSinceStore(feed.latestFact.validation_date) : readable('N/A')
+	);
 </script>
 
 <a href={getFeedUrl(feed)} class="w-max">

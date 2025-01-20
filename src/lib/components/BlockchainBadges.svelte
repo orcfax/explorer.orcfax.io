@@ -6,7 +6,7 @@
 
 	interface Props {
 		fact: FactStatement;
-		[key: string]: any
+		[key: string]: any;
 	}
 
 	let { ...props }: Props = $props();

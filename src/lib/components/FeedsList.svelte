@@ -19,7 +19,6 @@
 	let sourceType = $state({ value: 'all', label: 'All' });
 	let status = $state({ value: 'active', label: 'Active' });
 
-
 	async function filterAndSortFeeds(
 		formattedFeeds: Feed[],
 		query: string,

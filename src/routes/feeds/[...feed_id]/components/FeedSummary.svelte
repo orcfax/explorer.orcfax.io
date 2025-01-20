@@ -19,16 +19,11 @@
 		onFeedSwitch: (feed: DBFeedWithData) => void;
 	}
 
-	let {
-		feed,
-		riskRatings,
-		onLatestFactClick,
-		onFeedSwitch
-	}: Props = $props();
+	let { feed, riskRatings, onLatestFactClick, onFeedSwitch }: Props = $props();
 
-	let timeSinceLastUpdate = $derived(feed.latestFact
-		? createTimeSinceStore(feed.latestFact.validation_date)
-		: readable('N/A'));
+	let timeSinceLastUpdate = $derived(
+		feed.latestFact ? createTimeSinceStore(feed.latestFact.validation_date) : readable('N/A')
+	);
 </script>
 
 <section

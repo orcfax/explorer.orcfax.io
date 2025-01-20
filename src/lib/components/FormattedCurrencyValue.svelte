@@ -12,7 +12,6 @@
 	}
 
 	let { value, class: className = undefined }: Props = $props();
-	
 </script>
 
 <span class={`whitespace-nowrap ${className}`}>

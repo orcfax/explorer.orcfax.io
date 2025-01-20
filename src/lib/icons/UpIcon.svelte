@@ -5,7 +5,11 @@
 		width?: string;
 	}
 
-	let { fillColor = 'fill-green-600 dark:fill-green-500', height = '20', width = '20' }: Props = $props();
+	let {
+		fillColor = 'fill-green-600 dark:fill-green-500',
+		height = '20',
+		width = '20'
+	}: Props = $props();
 </script>
 
 <svg {height} {width} viewBox="0 0 1200 1200" class={fillColor} xmlns="http://www.w3.org/2000/svg">

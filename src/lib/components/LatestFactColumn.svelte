@@ -11,9 +11,9 @@
 
 	let { latestFact }: Props = $props();
 
-	let timeSinceLastUpdate = $derived(latestFact
-		? createTimeSinceStore(latestFact.validation_date)
-		: readable('N/A'));
+	let timeSinceLastUpdate = $derived(
+		latestFact ? createTimeSinceStore(latestFact.validation_date) : readable('N/A')
+	);
 </script>
 
 {#if latestFact}

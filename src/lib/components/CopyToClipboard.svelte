@@ -4,8 +4,6 @@
 	import CopyIcon from '$lib/icons/CopyIcon.svelte';
 	import CopyingIcon from '$lib/icons/CopyingIcon.svelte';
 
-
-	
 	interface Props {
 		value: string | number;
 		tooltipDirection?: 'tooltip-right' | 'tooltip-left' | 'tooltip-bottom' | 'tooltip-top';

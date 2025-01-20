@@ -316,16 +316,16 @@ export async function searchFactStatements(
 
 		const withExpandedFeeds = records.items.map((item) => {
 			if (!item.expand?.feed) error(500, 'Fact is missing feed');
-		const parsedFact = DBFactStatementWithFeedSchema.safeParse({
-			...item,
-			feed: {
-				...item.expand.feed,
-				base_asset: item.expand.feed.expand.base_asset,
-				quote_asset: item.expand.feed.expand.quote_asset
-			},
-		});
-		if (parsedFact.success) return parsedFact.data;
-		else error(500, `Invalid fact: ${parsedFact.error}`);
+			const parsedFact = DBFactStatementWithFeedSchema.safeParse({
+				...item,
+				feed: {
+					...item.expand.feed,
+					base_asset: item.expand.feed.expand.base_asset,
+					quote_asset: item.expand.feed.expand.quote_asset
+				}
+			});
+			if (parsedFact.success) return parsedFact.data;
+			else error(500, `Invalid fact: ${parsedFact.error}`);
 		});
 		const parsedFacts = z.array(DBFactStatementWithFeedSchema).parse(withExpandedFeeds);
 

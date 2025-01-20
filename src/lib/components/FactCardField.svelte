@@ -29,10 +29,11 @@
 		showWithHTML = false
 	}: Props = $props();
 
-	let showWithTooltip =
-		$derived(!noHover &&
-		(ellipsisAndHover || midllipsisAndHover) &&
-		value.toString().length >= maxFieldLength);
+	let showWithTooltip = $derived(
+		!noHover &&
+			(ellipsisAndHover || midllipsisAndHover) &&
+			value.toString().length >= maxFieldLength
+	);
 </script>
 
 <div class="flex">

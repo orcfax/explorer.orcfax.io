@@ -6,8 +6,6 @@
 	import UnchangedIcon from '$lib/icons/UnchangedIcon.svelte';
 	import { calculatePriceDifference } from '$lib/client/helpers';
 
-	
-
 	interface Props {
 		feed: Feed;
 		class: string | undefined | null;

@@ -4,7 +4,7 @@
 	interface Props {
 		onChange: (value: string | undefined) => void;
 		value?: string | undefined;
-		[key: string]: any
+		[key: string]: any;
 	}
 
 	let { onChange, value = $bindable('1'), ...rest }: Props = $props();

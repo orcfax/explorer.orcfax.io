@@ -56,12 +56,11 @@
 					code={typeof file.content === 'object'
 						? JSON.stringify(file.content, null, 2)
 						: file.content.trim()}
-					
 				>
 					{#snippet children({ highlighted })}
-										<LineNumbers {highlighted} />
-														{/snippet}
-								</Highlight>
+						<LineNumbers {highlighted} />
+					{/snippet}
+				</Highlight>
 			</div>
 		</div>
 	{/if}

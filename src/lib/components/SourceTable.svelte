@@ -109,9 +109,9 @@
 					<Subscribe rowAttrs={headerRow.attrs()}>
 						<Table.Row>
 							{#each headerRow.cells as cell (cell.id)}
-								<Subscribe attrs={cell.attrs()}  props={cell.props()}>
+								<Subscribe attrs={cell.attrs()} props={cell.props()}>
 									{#snippet children({ attrs })}
-																		{#if cell.id === 'type'}
+										{#if cell.id === 'type'}
 											<Table.Head {...attrs} class="hidden md:table-cell">
 												<Render of={cell.render()} />
 											</Table.Head>
@@ -120,8 +120,8 @@
 												<Render of={cell.render()} />
 											</Table.Head>
 										{/if}
-																										{/snippet}
-																</Subscribe>
+									{/snippet}
+								</Subscribe>
 							{/each}
 						</Table.Row>
 					</Subscribe>
@@ -129,18 +129,18 @@
 			</Table.Header>
 			<Table.Body {...$tableBodyAttrs}>
 				{#each $pageRows as row, index (row.id)}
-					<Subscribe rowAttrs={row.attrs()} >
+					<Subscribe rowAttrs={row.attrs()}>
 						{#snippet children({ rowAttrs })}
-												<Table.Row
+							<Table.Row
 								{...rowAttrs}
 								class={highlightRow(index, $sourcesStore, isCEX) && showWithValues
 									? 'bg-muted/50'
 									: ''}
 							>
 								{#each row.cells as cell (cell.id)}
-									<Subscribe attrs={cell.attrs()} >
+									<Subscribe attrs={cell.attrs()}>
 										{#snippet children({ attrs })}
-																		{#if cell.id === 'name'}
+											{#if cell.id === 'name'}
 												<Table.Cell {...attrs}>
 													<div class="flex gap-3 items-center">
 														<SourceBadge source={row.original} />
@@ -182,12 +182,12 @@
 													<Render of={cell.render()} />
 												</Table.Cell>
 											{/if}
-																											{/snippet}
-																</Subscribe>
+										{/snippet}
+									</Subscribe>
 								{/each}
 							</Table.Row>
-																	{/snippet}
-										</Subscribe>
+						{/snippet}
+					</Subscribe>
 				{/each}
 				{#if showWithValues && isDEX}
 					<Table.Row class="bg-muted/50">

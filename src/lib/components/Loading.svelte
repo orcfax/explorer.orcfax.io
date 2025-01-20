@@ -4,7 +4,6 @@
 	}
 
 	let { class: className = undefined }: Props = $props();
-	
 </script>
 
 <div class={`flex justify-center items-center w-full min-w-full p-6 ${className}`}>

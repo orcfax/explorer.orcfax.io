@@ -4,7 +4,6 @@
 	import Skeleton from '$lib/components/ui/skeleton/skeleton.svelte';
 	import type { Source } from '$lib/types';
 
-
 	interface Props {
 		source: Source;
 		hideTooltip?: boolean;
@@ -12,12 +11,7 @@
 		size?: 'sm' | 'md' | 'lg';
 	}
 
-	let {
-		source,
-		hideTooltip = false,
-		isPlainLogo = false,
-		size = 'lg'
-	}: Props = $props();
+	let { source, hideTooltip = false, isPlainLogo = false, size = 'lg' }: Props = $props();
 
 	const assetSizes = {
 		icon: {
@@ -67,9 +61,9 @@
 	</Avatar.Root>
 {:else}
 	<Tooltip.Root openDelay={150} disableHoverableContent={hideTooltip}>
-		<Tooltip.Trigger asChild >
+		<Tooltip.Trigger asChild>
 			{#snippet children({ builder })}
-						<div use:builder.action {...builder}>
+				<div use:builder.action {...builder}>
 					<Avatar.Root
 						class={`border ${assetSize}`}
 						style={source.background_color ? `background-color: ${source.background_color}` : ''}
@@ -89,8 +83,8 @@
 						{/if}
 					</Avatar.Root>
 				</div>
-								{/snippet}
-				</Tooltip.Trigger>
+			{/snippet}
+		</Tooltip.Trigger>
 		<Tooltip.Content>
 			<p>
 				{source.name}

@@ -29,15 +29,9 @@ dependencies:
   jszip:
     specifier: ^3.10.1
     version: 3.10.1
-  lucide-svelte:
-    specifier: ^0.399.0
-    version: 0.399.0(svelte@5.18.0)
   mode-watcher:
     specifier: ^0.5.0
     version: 0.5.0(svelte@5.18.0)
-  paneforge:
-    specifier: ^0.0.5
-    version: 0.0.5(svelte@5.18.0)
   pocketbase:
     specifier: ^0.21.3
     version: 0.21.3
@@ -112,6 +106,12 @@ devDependencies:
   husky:
     specifier: ^9.0.11
     version: 9.0.11
+  lucide-svelte:
+    specifier: ^0.399.0
+    version: 0.399.0(svelte@5.18.0)
+  paneforge:
+    specifier: 1.0.0-next.2
+    version: 1.0.0-next.2(svelte@5.18.0)
   postcss:
     specifier: ^8.4.39
     version: 8.4.39
@@ -2293,7 +2293,7 @@ packages:
       svelte: ^3 || ^4 || ^5.0.0-next.42
     dependencies:
       svelte: 5.18.0
-    dev: false
+    dev: true
 
   /magic-string@0.30.10:
     resolution: {integrity: sha512-iIRwTIf0QKV3UAnYK4PU8uiEc4SRh5jX0mwpIwETPpHdhVM4f53RSwS/vXvN1JhGX+Cs7B8qIq3d6AH49O5fAQ==}
@@ -2399,6 +2399,7 @@ packages:
     resolution: {integrity: sha512-oLxFY2gd2IqnjcYyOXD8XGCftpGtZP2AbHbOkthDkvRywH5ayNtPVy9YlOPcHckXzbLTCHpkb7FB+yuxKV13pQ==}
     engines: {node: ^18 || >=20}
     hasBin: true
+    dev: true
 
   /natural-compare@1.4.0:
     resolution: {integrity: sha512-OWND8ei3VtNC9h7V60qff3SVobHr996CTwgxubgyQYEpg290h9J0buyECNNJexkFm5sOajh5G116RYA1c8ZMSw==}
@@ -2485,14 +2486,14 @@ packages:
     resolution: {integrity: sha512-4hLB8Py4zZce5s4yd9XzopqwVv/yGNhV1Bl8NTmCq1763HeK2+EwVTv+leGeL13Dnh2wfbqowVPXCIO0z4taYw==}
     dev: false
 
-  /paneforge@0.0.5(svelte@5.18.0):
-    resolution: {integrity: sha512-98QHobaN/KeQhqqglbvjUmNCTRC4h4iqDxpSV8jCGhRLttgGlRXZNzWNr4Firni5rwasAZjOza0k/JdwppB/AQ==}
+  /paneforge@1.0.0-next.2(svelte@5.18.0):
+    resolution: {integrity: sha512-Z3XJDcy6qO4RsP24hKPxfFgJaZeH9ORFaudIoRIcgT3eG9ryxVr4B06zPEOzkgsWVtqLDBUr/5jzHcyf1Csuiw==}
     peerDependencies:
-      svelte: ^4.0.0 || ^5.0.0-next.1
+      svelte: ^5.11.0
     dependencies:
-      nanoid: 5.0.7
       svelte: 5.18.0
-    dev: false
+      svelte-toolbelt: 0.4.6(svelte@5.18.0)
+    dev: true
 
   /parent-module@1.0.1:
     resolution: {integrity: sha512-GQ2EWRpQV8/o+Aw8YqtfZZPfNRWZYkbidE9k5rpl/hC3vtHHBfGm2Ifi6qWV+coDGkrUKZAxE3Lot5kcsRlh+g==}
@@ -3070,6 +3071,17 @@ packages:
     resolution: {integrity: sha512-YIpA6LBVpghQndBsbZQLl3ufEje179vQTtC7FH/utbEmUwYecIXsBq4mcwNkCeUuCrpcaF0DkrppWmMp/ZoPfA==}
     dependencies:
       highlight.js: 11.9.0
+    dev: true
+
+  /svelte-toolbelt@0.4.6(svelte@5.18.0):
+    resolution: {integrity: sha512-k8OUvXBUifHZcAlWeY/HLg/4J0v5m2iOfOhn8fDmjt4AP8ZluaDh9eBFus9lFiLX6O5l6vKqI1dKL5wy7090NQ==}
+    engines: {node: '>=18', pnpm: '>=8.7.0'}
+    peerDependencies:
+      svelte: ^5.0.0-next.126
+    dependencies:
+      clsx: 2.1.1
+      style-to-object: 1.0.8
+      svelte: 5.18.0
     dev: true
 
   /svelte-toolbelt@0.7.0(svelte@5.18.0):

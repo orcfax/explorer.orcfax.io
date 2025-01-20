@@ -4,8 +4,6 @@
 	import Skeleton from '$lib/components/ui/skeleton/skeleton.svelte';
 	import type { Asset } from '$lib/types';
 
-	
-
 	interface Props {
 		asset: Asset;
 		size?: 'sm' | 'md' | 'lg';
@@ -13,7 +11,6 @@
 	}
 
 	let { asset, size = 'lg', class: className = '' }: Props = $props();
-	
 
 	const assetSizes = {
 		icon: {
@@ -33,9 +30,9 @@
 </script>
 
 <Tooltip.Root openDelay={150}>
-	<Tooltip.Trigger asChild >
+	<Tooltip.Trigger asChild>
 		{#snippet children({ builder })}
-				<div use:builder.action {...builder} class={className}>
+			<div use:builder.action {...builder} class={className}>
 				<Avatar.Root
 					class={`border ${assetSize}`}
 					style={asset.background_color ? `background-color: ${asset.background_color}` : ''}
@@ -55,8 +52,8 @@
 					{/if}
 				</Avatar.Root>
 			</div>
-					{/snippet}
-		</Tooltip.Trigger>
+		{/snippet}
+	</Tooltip.Trigger>
 	<Tooltip.Content>
 		<p>
 			{asset.name}
