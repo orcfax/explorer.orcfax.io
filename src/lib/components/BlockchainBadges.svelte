@@ -17,27 +17,31 @@
 		class="flex space-x-2 bg-primary shadow border border-primary/20 border-l-0 p-2 rounded-r-lg"
 	>
 		{#if props.fact.transaction_id}
-			<Tooltip.Root openDelay={150}>
-				<Tooltip.Trigger>
-					<CardanoLogo fillColor={'fill-primary-foreground'} />
-				</Tooltip.Trigger>
-				<Tooltip.Content>
-					<p>This Fact was published to Cardano</p>
-				</Tooltip.Content>
-			</Tooltip.Root>
+			<Tooltip.Provider>
+				<Tooltip.Root delayDuration={150}>
+					<Tooltip.Trigger>
+						<CardanoLogo fillColor={'fill-primary-foreground'} />
+					</Tooltip.Trigger>
+					<Tooltip.Content>
+						<p>This Fact was published to Cardano</p>
+					</Tooltip.Content>
+				</Tooltip.Root>
+			</Tooltip.Provider>
 		{/if}
 		{#if props.fact.storage_urn && props.fact.id !== '4e97b11a-2e17-41fd-a2ca-4f7aad636403'}
-			<Tooltip.Root openDelay={150}>
-				<Tooltip.Trigger>
-					<ArweaveLogo
-						fillColor={'fill-primary-foreground'}
-						strokeColor={'stroke-primary-foreground'}
-					/>
-				</Tooltip.Trigger>
-				<Tooltip.Content>
-					<p>This Fact was stored on Arweave</p>
-				</Tooltip.Content>
-			</Tooltip.Root>
+			<Tooltip.Provider>
+				<Tooltip.Root delayDuration={150}>
+					<Tooltip.Trigger>
+						<ArweaveLogo
+							fillColor={'fill-primary-foreground'}
+							strokeColor={'stroke-primary-foreground'}
+						/>
+					</Tooltip.Trigger>
+					<Tooltip.Content>
+						<p>This Fact was stored on Arweave</p>
+					</Tooltip.Content>
+				</Tooltip.Root>
+			</Tooltip.Provider>
 		{/if}
 	</div>
 </div>

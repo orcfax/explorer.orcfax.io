@@ -47,6 +47,7 @@
 	},
 	"dependencies": {
 		"@tanstack/svelte-query": "^5.50.1",
+		"@tanstack/table-core": "^8.20.5",
 		"chart.js": "^4.4.3",
 		"chartjs-adapter-date-fns": "^3.0.0",
 		"chartjs-plugin-datalabels": "^2.2.0",

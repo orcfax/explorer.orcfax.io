@@ -43,25 +43,27 @@
 		{/if}
 		<div class="flex">
 			{#if showWithTooltip}
-				<Tooltip.Root openDelay={150}>
-					<Tooltip.Trigger>
-						<p class="text-start">
-							{ellipsis(value, {
-								maxLength: maxFieldLength,
-								placement: ellipsisAndHover ? 'end' : 'middle'
-							})}
-						</p>
-					</Tooltip.Trigger>
-					<Tooltip.Content side={'top'}>
-						<p class="max-w-72 break-words">
-							{#if showWithHTML}
-								{@html value}
-							{:else}
-								{value}
-							{/if}
-						</p>
-					</Tooltip.Content>
-				</Tooltip.Root>
+				<Tooltip.Provider>
+					<Tooltip.Root delayDuration={150}>
+						<Tooltip.Trigger>
+							<p class="text-start">
+								{ellipsis(value, {
+									maxLength: maxFieldLength,
+									placement: ellipsisAndHover ? 'end' : 'middle'
+								})}
+							</p>
+						</Tooltip.Trigger>
+						<Tooltip.Content side={'top'}>
+							<p class="max-w-72 break-words">
+								{#if showWithHTML}
+									{@html value}
+								{:else}
+									{value}
+								{/if}
+							</p>
+						</Tooltip.Content>
+					</Tooltip.Root>
+				</Tooltip.Provider>
 			{:else}
 				<p class="text-start">
 					{#if showWithHTML}

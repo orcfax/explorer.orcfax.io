@@ -1,4 +1,64 @@
 <script lang="ts">
+	import type { SourceWithMetadata } from '$lib/types';
+	import type { ColumnDef } from '@tanstack/table-core';
+	import DataTable from '$lib/components/ui/data-table/data-table.svelte';
+
+	interface Props {
+		sources: SourceWithMetadata[];
+		showWithValues?: boolean;
+	}
+
+	let { sources, showWithValues = false }: Props = $props();
+
+	let columns: ColumnDef<SourceWithMetadata>[] = $derived(
+		showWithValues
+			? [
+					{
+						accessorKey: 'name',
+						header: 'Name'
+					},
+					...(sources.length > 0 && sources[0].type === 'CEX API'
+						? [
+								{
+									accessorKey: 'assetPairValue',
+									header: 'Value'
+								}
+							]
+						: [
+								{
+									accessorKey: 'baseAssetValue',
+									header: 'Base'
+								},
+								{
+									accessorKey: 'quoteAssetValue',
+									header: 'Quote'
+								}
+							])
+				]
+			: [
+					{
+						accessorKey: 'name',
+						header: 'Name'
+					},
+					{
+						accessorKey: 'type',
+						header: 'Type'
+					},
+					{
+						accessorKey: 'totalFacts',
+						header: 'Facts Sourced'
+					},
+					{
+						accessorKey: 'latestFact',
+						header: 'Last Sourced'
+					}
+				]
+	);
+</script>
+
+<DataTable {columns} data={sources} />
+
+<!-- <script lang="ts">
 	import { writable } from 'svelte/store';
 	import type { SourceWithMetadata } from '$lib/types';
 	import SourceBadge from './SourceBadge.svelte';
@@ -233,4 +293,4 @@
 			</span>
 		</div>
 	</div>
-</div>
+</div> -->

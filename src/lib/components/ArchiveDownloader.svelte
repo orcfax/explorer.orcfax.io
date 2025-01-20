@@ -46,17 +46,19 @@
 	}
 </script>
 
-<Tooltip.Root openDelay={150}>
-	<Tooltip.Trigger class="flex h-fit w-fit">
-		<button
-			class="flex items-center gap-[0.15rem] rounded-lg text-sm text-primary/90 font-medium p-2 py-[.38rem] border bg-muted/50 hover:bg-border/60 hover:text-primary cursor-pointer"
-			onclick={() => handleDownload(archive)}
-		>
-			<p class="px-1">Download</p>
-			<Download class="stroke-primary h-[1.1rem] w-[1.1rem]" />
-		</button>
-	</Tooltip.Trigger>
-	<Tooltip.Content sideOffset={10}>
-		<p>Download full archive</p>
-	</Tooltip.Content>
-</Tooltip.Root>
+<Tooltip.Provider>
+	<Tooltip.Root delayDuration={150}>
+		<Tooltip.Trigger class="flex h-fit w-fit">
+			<button
+				class="flex items-center gap-[0.15rem] rounded-lg text-sm text-primary/90 font-medium p-2 py-[.38rem] border bg-muted/50 hover:bg-border/60 hover:text-primary cursor-pointer"
+				onclick={() => handleDownload(archive)}
+			>
+				<p class="px-1">Download</p>
+				<Download class="stroke-primary h-[1.1rem] w-[1.1rem]" />
+			</button>
+		</Tooltip.Trigger>
+		<Tooltip.Content sideOffset={10}>
+			<p>Download full archive</p>
+		</Tooltip.Content>
+	</Tooltip.Root>
+</Tooltip.Provider>

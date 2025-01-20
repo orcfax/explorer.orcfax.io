@@ -1,4 +1,44 @@
 <script lang="ts">
+	import type { FactStatement } from '$lib/types';
+	import type { ColumnDef } from '@tanstack/table-core';
+	import DataTable from '$lib/components/ui/data-table/data-table.svelte';
+
+	interface Props {
+		feedFilter?: string;
+		onTableRowClick?: (fact: FactStatement) => void;
+	}
+
+	let { feedFilter = '', onTableRowClick = () => {} }: Props = $props();
+
+	let facts = $state<FactStatement[]>([]);
+
+	let columns: ColumnDef<FactStatement>[] = $state([
+		{
+			accessorKey: 'feed',
+			header: 'Feed'
+		},
+		{
+			accessorKey: 'fact_urn',
+			header: 'Fact Statement ID'
+		},
+		{
+			accessorKey: 'value',
+			header: 'Value'
+		},
+		{
+			accessorKey: 'validation_date',
+			header: 'Validation Date'
+		},
+		{
+			accessorKey: 'participating_nodes',
+			header: 'Collected By'
+		}
+	]);
+</script>
+
+<DataTable {columns} data={facts} />
+
+<!-- <script lang="ts">
 	import { derived, writable } from 'svelte/store';
 	import { getTableResults } from '$lib/client/api';
 	import { createQuery } from '@tanstack/svelte-query';
@@ -120,7 +160,7 @@
 								<Table.Row
 									class="cursor-pointer"
 									{...rowAttrs}
-									on:click={() => {
+									onclick={() => {
 										if (feedFilter) {
 											onTableRowClick(row.original);
 										} else {
@@ -187,16 +227,16 @@
 				<Button
 					variant="outline"
 					size="sm"
-					on:click={() => ($pageIndex = $pageIndex - 1)}
+					onclick={() => ($pageIndex = $pageIndex - 1)}
 					disabled={!$hasPreviousPage}>Previous</Button
 				>
 				<Button
 					variant="outline"
 					size="sm"
 					disabled={!$hasNextPage}
-					on:click={() => ($pageIndex = $pageIndex + 1)}>Next</Button
+					onclick={() => ($pageIndex = $pageIndex + 1)}>Next</Button
 				>
 			</div>
 		</div>
 	</div>
-{/if}
+{/if} -->

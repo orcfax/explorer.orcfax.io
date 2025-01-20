@@ -13,23 +13,30 @@
 	import { getFeedUrl } from '$lib/client/helpers';
 	import Loading from '$lib/components/Loading.svelte';
 
-	export let initialFeedID = '';
-	export let feeds: DBFeedWithData[];
-	export let onFeedSwitch: (feed: DBFeedWithData) => void;
+	interface Props {
+		initialFeedID?: string;
+		feeds: DBFeedWithData[];
+		onFeedSwitch: (feed: DBFeedWithData) => void;
+	}
 
-	let isSwitchingFeeds = false;
-	let open = false;
-	$: value = initialFeedID;
+	let { initialFeedID = '', feeds, onFeedSwitch }: Props = $props();
 
-	$: feedOptions = feeds.map(({ name, feed_id, base_asset, quote_asset }) => ({
-		label: name,
-		value: feed_id,
-		base_asset,
-		quote_asset
-	}));
+	let isSwitchingFeeds = $state(false);
+	let open = $state(false);
+	let value = $state(initialFeedID);
 
-	$: selectedFeed = feedOptions.find((f) => f.value === value);
+	let feedOptions = $derived(
+		feeds.map(({ name, feed_id, base_asset, quote_asset }) => ({
+			label: name,
+			value: feed_id,
+			base_asset,
+			quote_asset
+		}))
+	);
 
+	let selectedFeed = $derived(feedOptions.find((f) => f.value === value));
+
+	// TODO: fix this 
 	// Refocus the trigger button when the user selects an item from the list
 	function closeAndFocusTrigger(triggerId: string) {
 		open = false;
@@ -47,31 +54,33 @@
 	</div>
 {/if}
 
-<Popover.Root bind:open let:ids>
-	<Popover.Trigger asChild let:builder>
-		<Button
-			builders={[builder]}
-			variant="outline"
-			role="combobox"
-			aria-expanded={open}
-			class="w-min min-[370px]:w-full xxxs:w-fit h-fit p-3"
-		>
-			{#if selectedFeed}
-				<FeedNameplate
-					feed={{
-						feed_id: selectedFeed.value,
-						name: selectedFeed.label,
-						base_asset: selectedFeed.base_asset,
-						quote_asset: selectedFeed.quote_asset
-					}}
-					size="md"
-				/>
-			{:else}
-				<span class="text-muted-foreground">Switch feeds...</span>
-			{/if}
+<Popover.Root bind:open>
+	<Popover.Trigger>
+		{#snippet child({ props })}
+			<Button
+				variant="outline"
+				role="combobox"
+				aria-expanded={open}
+				class="w-min min-[370px]:w-full xxxs:w-fit h-fit p-3"
+				{...props}
+			>
+				{#if selectedFeed}
+					<FeedNameplate
+						feed={{
+							feed_id: selectedFeed.value,
+							name: selectedFeed.label,
+							base_asset: selectedFeed.base_asset,
+							quote_asset: selectedFeed.quote_asset
+						}}
+						size="md"
+					/>
+				{:else}
+					<span class="text-muted-foreground">Switch feeds...</span>
+				{/if}
 
-			<ChevronsUpDown class="ml-2 h-4 w-4 md:h-4 md:w-4 shrink-0 opacity-50" />
-		</Button>
+				<ChevronsUpDown class="ml-2 h-4 w-4 md:h-4 md:w-4 shrink-0 opacity-50" />
+			</Button>
+		{/snippet}
 	</Popover.Trigger>
 	<Popover.Content class="w-[200px] p-0 h-full max-h-72">
 		<Command.Root>
@@ -81,12 +90,12 @@
 				{#each feedOptions as option}
 					<Command.Item
 						value={option.value}
-						onSelect={async (currentValue) => {
+						onSelect={async () => {
 							isSwitchingFeeds = true;
 							const params = new URLSearchParams($page.url.searchParams);
-							value = currentValue;
-							closeAndFocusTrigger(ids.trigger);
-							const currentFeed = feeds.find((f) => f.feed_id === currentValue);
+							// value = currentValue;
+							// closeAndFocusTrigger(ids.trigger);
+							const currentFeed = feeds.find((f) => f.feed_id === value);
 							if (!currentFeed) return;
 							await goto(
 								`${getFeedUrl(currentFeed, currentFeed.latestFact ? currentFeed.latestFact.fact_urn : 'undefined')}?${params.toString()}`

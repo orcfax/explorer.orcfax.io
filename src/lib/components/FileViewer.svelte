@@ -24,23 +24,25 @@
 			<div class="flex justify-between items-center w-full px-4 py-2 border-b h-min">
 				<h3 class="text-lg font-bold">{file.fileName}</h3>
 				<div class="flex justify-center items-center gap-2">
-					<Tooltip.Root openDelay={150}>
-						<Tooltip.Trigger>
-							<div
-								class="flex justify-center items-center rounded-full border border-card hover:bg-border/50 hover:border-border h-min"
-							>
-								<CopyToClipboard
-									value={typeof file.content === 'string'
-										? file.content
-										: JSON.stringify(file.content, null, 2)}
-									class="-mt-0 h-min"
-								/>
-							</div>
-						</Tooltip.Trigger>
-						<Tooltip.Content side={'top'} sideOffset={6}>
-							<p>Copy current file</p>
-						</Tooltip.Content>
-					</Tooltip.Root>
+					<Tooltip.Provider>
+						<Tooltip.Root delayDuration={150}>
+							<Tooltip.Trigger>
+								<div
+									class="flex justify-center items-center rounded-full border border-card hover:bg-border/50 hover:border-border h-min"
+								>
+									<CopyToClipboard
+										value={typeof file.content === 'string'
+											? file.content
+											: JSON.stringify(file.content, null, 2)}
+										class="-mt-0 h-min"
+									/>
+								</div>
+							</Tooltip.Trigger>
+							<Tooltip.Content side={'top'} sideOffset={6}>
+								<p>Copy current file</p>
+							</Tooltip.Content>
+						</Tooltip.Root>
+					</Tooltip.Provider>
 
 					<h4 class="font-bold">{file.extension}</h4>
 				</div>
@@ -50,17 +52,14 @@
 				class="overflow-auto h-full min-h-full"
 				style={`background-color: ${$theme === 'dark' ? '#282C34' : '#FAFAFA'}`}
 			>
-				<Highlight
-					class="overflow-y-scroll min-h-full h-full"
-					language={json}
-					code={typeof file.content === 'object'
-						? JSON.stringify(file.content, null, 2)
-						: file.content.trim()}
-				>
-					{#snippet children({ highlighted })}
-						<LineNumbers {highlighted} />
-					{/snippet}
-				</Highlight>
+				<pre class="overflow-y-scroll min-h-full h-full">
+					<Highlight
+						language={json}
+						code={typeof file.content === 'object'
+							? JSON.stringify(file.content, null, 2)
+							: file.content.trim()}
+					/>
+				</pre>
 			</div>
 		</div>
 	{/if}

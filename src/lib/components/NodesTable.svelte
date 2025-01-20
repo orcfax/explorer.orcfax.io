@@ -1,4 +1,45 @@
 <script lang="ts">
+	import type { FactStatement, NodeWithMetadata } from '$lib/types';
+	import type { ColumnDef } from '@tanstack/table-core';
+	import DataTable from '$lib/components/ui/data-table/data-table.svelte';
+
+	interface Props {
+		nodes: NodeWithMetadata[];
+	}
+
+	let { nodes }: Props = $props();
+
+	let columns: ColumnDef<NodeWithMetadata>[] = $state([
+		{
+			accessorKey: 'node_urn',
+			header: 'Node ID'
+		},
+		{
+			accessorKey: 'type',
+			header: 'Type'
+		},
+		{
+			accessorKey: 'status',
+			header: 'Status'
+		},
+		{
+			accessorKey: 'address_locality',
+			header: 'Location'
+		},
+		{
+			accessorKey: 'totalFacts',
+			header: 'Total Facts'
+		},
+		{
+			accessorKey: 'latestFact',
+			header: 'Last Collection'
+		}
+	]);
+</script>
+
+<DataTable {columns} data={nodes} />
+
+<!-- <script lang="ts">
 	import type { NodeWithMetadata } from '$lib/types';
 	import { writable, type Readable } from 'svelte/store';
 	import * as Table from '$lib/components/ui/table';
@@ -157,4 +198,4 @@
 			</span>
 		</div>
 	</div>
-</div>
+</div> -->

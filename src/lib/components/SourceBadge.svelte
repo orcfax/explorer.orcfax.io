@@ -60,13 +60,14 @@
 		{/if}
 	</Avatar.Root>
 {:else}
-	<Tooltip.Root openDelay={150} disableHoverableContent={hideTooltip}>
-		<Tooltip.Trigger asChild>
-			{#snippet children({ builder })}
-				<div use:builder.action {...builder}>
+	<Tooltip.Provider>
+		<Tooltip.Root delayDuration={150} disableHoverableContent={hideTooltip}>
+			<Tooltip.Trigger>
+				{#snippet child({ props })}
 					<Avatar.Root
 						class={`border ${assetSize}`}
 						style={source.background_color ? `background-color: ${source.background_color}` : ''}
+						{...props}
 					>
 						{#if source.image_path}
 							<Avatar.Image src={source.image_path} alt={`Asset logo of ${source.name}`} />
@@ -82,19 +83,19 @@
 							</Avatar.Fallback>
 						{/if}
 					</Avatar.Root>
-				</div>
-			{/snippet}
-		</Tooltip.Trigger>
-		<Tooltip.Content>
-			<p>
-				{source.name}
-				{#if source.website}
-					-
-					<a href={source.website} target="_blank" class="underline">
-						{source.website}
-					</a>
-				{/if}
-			</p>
-		</Tooltip.Content>
-	</Tooltip.Root>
+				{/snippet}
+			</Tooltip.Trigger>
+			<Tooltip.Content>
+				<p>
+					{source.name}
+					{#if source.website}
+						-
+						<a href={source.website} target="_blank" class="underline">
+							{source.website}
+						</a>
+					{/if}
+				</p>
+			</Tooltip.Content>
+		</Tooltip.Root>
+	</Tooltip.Provider>
 {/if}

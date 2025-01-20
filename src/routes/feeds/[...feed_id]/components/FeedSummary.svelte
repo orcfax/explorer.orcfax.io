@@ -37,23 +37,25 @@
 						<span class="font-bold">ID:</span>
 						<span class="text-muted-foreground whitespace-nowrap">{feed.feed_id}</span>
 					</p>
-					<Tooltip.Root openDelay={150}>
-						<Tooltip.Trigger class="flex items-center gap-2 self-end mb-1">
-							<PingStatus color={feed.status === 'active' ? 'green' : 'red'} size="md" />
-							{#if feed.status === 'inactive' && feed.inactive_reason}
-								<CircleHelp
-									strokeWidth="2.5px"
-									class="stroke-primary fill-primary-foreground w-4"
-								/>
-							{/if}
-						</Tooltip.Trigger>
-						<Tooltip.Content>
-							<p>
-								{(feed.status === 'inactive' && feed.inactive_reason) ||
-									`This feed is ${feed.status}`}
-							</p>
-						</Tooltip.Content>
-					</Tooltip.Root>
+					<Tooltip.Provider>
+						<Tooltip.Root delayDuration={150}>
+							<Tooltip.Trigger class="flex items-center gap-2 self-end mb-1">
+								<PingStatus color={feed.status === 'active' ? 'green' : 'red'} size="md" />
+								{#if feed.status === 'inactive' && feed.inactive_reason}
+									<CircleHelp
+										strokeWidth="2.5px"
+										class="stroke-primary fill-primary-foreground w-4"
+									/>
+								{/if}
+							</Tooltip.Trigger>
+							<Tooltip.Content>
+								<p>
+									{(feed.status === 'inactive' && feed.inactive_reason) ||
+										`This feed is ${feed.status}`}
+								</p>
+							</Tooltip.Content>
+						</Tooltip.Root>
+					</Tooltip.Provider>
 				</div>
 				{#await $feedsListStore}
 					<Skeleton class="h-[3.88rem] w-[11.44rem]" />
@@ -82,20 +84,22 @@
 							{/if}
 						</button>
 
-						<Tooltip.Root openDelay={150}>
-							<Tooltip.Trigger>
-								<p class="text-xs text-start mt-2 text-card-foreground">
-									{$timeSinceLastUpdate}
-								</p>
-							</Tooltip.Trigger>
-							<Tooltip.Content side="bottom">
-								<p>
-									{feed.latestFact
-										? `${feed.latestFact.validation_date_formatted} ${feed.latestFact.validation_time_formatted}`
-										: 'N/A'}
-								</p>
-							</Tooltip.Content>
-						</Tooltip.Root>
+						<Tooltip.Provider>
+							<Tooltip.Root delayDuration={150}>
+								<Tooltip.Trigger>
+									<p class="text-xs text-start mt-2 text-card-foreground">
+										{$timeSinceLastUpdate}
+									</p>
+								</Tooltip.Trigger>
+								<Tooltip.Content side="bottom">
+									<p>
+										{feed.latestFact
+											? `${feed.latestFact.validation_date_formatted} ${feed.latestFact.validation_time_formatted}`
+											: 'N/A'}
+									</p>
+								</Tooltip.Content>
+							</Tooltip.Root>
+						</Tooltip.Provider>
 					</div>
 
 					<PriceDifferenceBadges {feed} class="hidden xs:block space-y-2 self-center" />
