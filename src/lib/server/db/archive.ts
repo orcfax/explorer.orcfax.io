@@ -22,7 +22,6 @@ import {
 	CEXValidationFileSchema,
 	DEXValidationFileSchema,
 	SourceSchema,
-	type DBFactStatement,
 	type DBFeedWithData,
 	type Network
 } from '$lib/types';
@@ -31,7 +30,7 @@ import { z } from 'zod';
 
 export async function getArchive(
 	network: Network,
-	fact: DBFactStatement,
+	fact: DBFactStatementWithFeed,
 	sourceType: DBFeed['source_type']
 ): Promise<Archive> {
 	try {

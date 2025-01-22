@@ -1,6 +1,4 @@
 <script lang="ts">
-	import { run } from 'svelte/legacy';
-
 	import type { DBFeedWithData, FactStatement, Feed } from '$lib/types';
 	import FeedCard from './FeedCard.svelte';
 	import * as Select from '$lib/components/ui/select';
@@ -14,18 +12,12 @@
 	let { feeds }: Props = $props();
 
 	let query = $state('');
-	let filteredFeeds: Feed[] = $state();
 	let sortBy = $state({ value: 'updated', label: 'Last Updated' });
 	let sourceType = $state({ value: 'all', label: 'All' });
 	let status = $state({ value: 'active', label: 'Active' });
+	let formattedFeeds = $derived(feeds.map(formatFeedForDisplay));
 
-	async function filterAndSortFeeds(
-		formattedFeeds: Feed[],
-		query: string,
-		sortBy: { value: string; label: string },
-		sourceType: { value: string; label: string },
-		status: { value: string; label: string }
-	) {
+	let filteredFeeds: Feed[] = $derived.by(() => {
 		const fuzzySearch = (query: string) => new RegExp(query.replace(/[-/\s]/g, '.*'), 'i');
 		const filtered =
 			formattedFeeds.filter((feed) => {
@@ -47,11 +39,7 @@
 			}
 		});
 
-		filteredFeeds = sorted;
-	}
-	let formattedFeeds = $derived(feeds.map(formatFeedForDisplay));
-	run(() => {
-		filterAndSortFeeds(formattedFeeds, query, sortBy, sourceType, status);
+		return sorted;
 	});
 </script>
 
@@ -74,10 +62,8 @@
 
 		<div class="flex flex-col -mt-5">
 			<h3 class="text-muted-foreground text-xs mb-1">Sort By:</h3>
-			<Select.Root bind:selected={sortBy}>
-				<Select.Trigger class="w-[150px]">
-					<Select.Value placeholder="Sort By" />
-				</Select.Trigger>
+			<Select.Root type="single" bind:value={sortBy.value}>
+				<Select.Trigger class="w-[120px]" data-placeholder="Sort By" />
 				<Select.Content>
 					<Select.Item value="updated">Last Updated</Select.Item>
 					<Select.Item value="alpha">Alphabetical</Select.Item>
@@ -87,10 +73,8 @@
 
 		<div class="flex flex-col -mt-5">
 			<h3 class="text-muted-foreground text-xs mb-1">Status:</h3>
-			<Select.Root bind:selected={status}>
-				<Select.Trigger class="w-[120px]">
-					<Select.Value placeholder="Status" />
-				</Select.Trigger>
+			<Select.Root type="single" bind:value={status.value}>
+				<Select.Trigger class="w-[120px]" data-placeholder="Status" />
 				<Select.Content>
 					<Select.Item value="all">All</Select.Item>
 					<Select.Item value="active">Active</Select.Item>
@@ -101,10 +85,8 @@
 
 		<div class="flex flex-col -mt-5">
 			<h3 class="text-muted-foreground text-xs mb-1">Source Type:</h3>
-			<Select.Root bind:selected={sourceType}>
-				<Select.Trigger class="w-[120px]">
-					<Select.Value placeholder="Source Type" />
-				</Select.Trigger>
+			<Select.Root type="single" bind:value={sourceType.value}>
+				<Select.Trigger class="w-[120px]" data-placeholder="Source Type" />
 				<Select.Content>
 					<Select.Item value="all">All</Select.Item>
 					<Select.Item value="cex">CEX APIs</Select.Item>

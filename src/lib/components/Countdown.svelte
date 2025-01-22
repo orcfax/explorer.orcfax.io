@@ -12,8 +12,8 @@
 
 	interface Props {
 		targetDate: Date;
-		activeMessage: string;
-		endMessage: string;
+		activeMessage: string | undefined;
+		endMessage: string | undefined;
 		secondaryDate?: Date | undefined;
 		secondaryActiveMessage?: string | undefined;
 		secondaryEndMessage?: string | undefined;
@@ -21,8 +21,8 @@
 
 	let {
 		targetDate,
-		activeMessage,
-		endMessage,
+		activeMessage = undefined,
+		endMessage = undefined,
 		secondaryDate = undefined,
 		secondaryActiveMessage = undefined,
 		secondaryEndMessage = undefined

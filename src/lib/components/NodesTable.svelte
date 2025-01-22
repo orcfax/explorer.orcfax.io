@@ -1,5 +1,5 @@
 <script lang="ts">
-	import type { FactStatement, NodeWithMetadata } from '$lib/types';
+	import type { NodeWithMetadata } from '$lib/types';
 	import type { ColumnDef } from '@tanstack/table-core';
 	import DataTable from '$lib/components/ui/data-table/data-table.svelte';
 

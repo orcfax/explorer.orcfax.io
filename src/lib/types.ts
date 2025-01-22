@@ -356,7 +356,7 @@ export interface ArchiveDetails {
 }
 
 export interface Archive {
-	fact: DBFactStatement;
+	fact: DBFactStatementWithFeed;
 	directoryTree: DirectoryNode[] | null;
 	files: ArchivedFile[] | null;
 	details: ArchiveDetails | null;

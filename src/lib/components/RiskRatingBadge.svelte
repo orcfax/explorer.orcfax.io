@@ -134,13 +134,15 @@
 									<div class="flex flex-col">
 										<p class="font-bold">Signed By:</p>
 										<div class="flex gap-1 h-full items-center">
-											<!-- Integrate this source into the db eventually -->
+											<!-- TODO: Integrate this source into the db eventually -->
 											<SourceBadge
 												source={{
 													id: '1',
 													name: riskRating.xSignedBy,
-													description: 'Xerberus',
 													type: 'CEX API',
+													network: 'Cardano',
+													recipient: 'xerberus.io',
+													sender: 'xerberus.io',
 													image_path: '/sources/xerberus.png',
 													website: 'https://xerberus.io',
 													background_color: ''

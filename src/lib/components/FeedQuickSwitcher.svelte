@@ -36,14 +36,14 @@
 
 	let selectedFeed = $derived(feedOptions.find((f) => f.value === value));
 
-	// TODO: fix this 
+	// TODO: fix this
 	// Refocus the trigger button when the user selects an item from the list
-	function closeAndFocusTrigger(triggerId: string) {
-		open = false;
-		tick().then(() => {
-			document.getElementById(triggerId)?.focus();
-		});
-	}
+	// function closeAndFocusTrigger(triggerId: string) {
+	// 	open = false;
+	// 	tick().then(() => {
+	// 		document.getElementById(triggerId)?.focus();
+	// 	});
+	// }
 </script>
 
 {#if isSwitchingFeeds}

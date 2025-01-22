@@ -6,7 +6,6 @@
 	import type { DirectoryNode } from '$lib/types';
 	import { writable } from 'svelte/store';
 	import type { Archive } from '$lib/types';
-	import ArchiveDownloader from '$lib/components/ArchiveDownloader.svelte';
 	// import { updateSelectedItem } from '$lib/stores/archive';
 	// import { page } from '$app/stores';
 	import { selectedItemStore } from '$lib/stores/archive';

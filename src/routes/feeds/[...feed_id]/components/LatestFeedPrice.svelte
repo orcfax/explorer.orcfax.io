@@ -4,6 +4,7 @@
 	import PriceDifferenceBadges from '$lib/components/PriceDifferenceBadges.svelte';
 	import FormattedCurrencyValue from '$lib/components/FormattedCurrencyValue.svelte';
 	import type { FactStatement, Feed } from '$lib/types';
+	import { readable } from 'svelte/store';
 
 	interface Props {
 		feed: Feed;
@@ -12,7 +13,9 @@
 
 	let { feed, onLatestFactClick }: Props = $props();
 
-	let timeSinceLastUpdate = $derived(createTimeSinceStore(feed.latestFact.validation_date));
+	let timeSinceLastUpdate = $derived(
+		feed.latestFact ? createTimeSinceStore(feed.latestFact.validation_date) : readable<string>('')
+	);
 </script>
 
 <div class="flex flex-col h-max gap-4 w-full relative">
@@ -21,29 +24,35 @@
 	>
 		<div class="flex flex-col">
 			<h3 class="font-bold">Latest Value:</h3>
-			<button
-				type="button"
-				class="text-xl whitespace-nowrap w-min font-bold"
-				onclick={() => onLatestFactClick(feed.latestFact)}
-			>
-				<FormattedCurrencyValue
-					value={feed.latestFact.value}
-					class="water-reflection-text water-reflection-underline"
-				/>
-			</button>
+			{#if feed.latestFact}
+				<button
+					type="button"
+					class="text-xl whitespace-nowrap w-min font-bold"
+					onclick={() => onLatestFactClick(feed.latestFact!)}
+				>
+					<FormattedCurrencyValue
+						value={feed.latestFact.value}
+						class="water-reflection-text water-reflection-underline"
+					/>
+				</button>
 
-			<Tooltip.Root openDelay={150}>
-				<Tooltip.Trigger>
-					<p class="text-xs text-start mt-2 text-card-foreground">
-						{$timeSinceLastUpdate}
-					</p>
-				</Tooltip.Trigger>
-				<Tooltip.Content side="bottom">
-					<p>
-						{`${feed.latestFact.validation_date_formatted} ${feed.latestFact.validation_time_formatted}`}
-					</p>
-				</Tooltip.Content>
-			</Tooltip.Root>
+				<Tooltip.Provider>
+					<Tooltip.Root delayDuration={150}>
+						<Tooltip.Trigger>
+							<p class="text-xs text-start mt-2 text-card-foreground">
+								{$timeSinceLastUpdate}
+							</p>
+						</Tooltip.Trigger>
+						<Tooltip.Content side="bottom">
+							<p>
+								{`${feed.latestFact.validation_date_formatted} ${feed.latestFact.validation_time_formatted}`}
+							</p>
+						</Tooltip.Content>
+					</Tooltip.Root>
+				</Tooltip.Provider>
+			{:else}
+				<p class="text-xs text-start mt-2 text-card-foreground">N/A</p>
+			{/if}
 		</div>
 		<PriceDifferenceBadges
 			{feed}

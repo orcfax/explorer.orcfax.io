@@ -1,15 +1,8 @@
 <script lang="ts">
-	import { run } from 'svelte/legacy';
-
 	import type { DBFeedWithData } from '$lib/types';
 	import { getFeedIDWithoutVersion } from '$lib/client/helpers';
 	import AssetBadge from './AssetBadge.svelte';
 	import { error } from '@sveltejs/kit';
-
-	let labelText = $state('');
-
-	if (!feed.base_asset || !feed.quote_asset)
-		error(500, 'FeedNameplate must have base and quote assets');
 
 	interface Props {
 		feed: Pick<DBFeedWithData, 'feed_id' | 'name' | 'base_asset' | 'quote_asset'>;
@@ -18,6 +11,19 @@
 	}
 
 	let { feed, label = 'name', size = 'lg' }: Props = $props();
+
+	if (!feed.base_asset || !feed.quote_asset)
+		error(500, 'FeedNameplate must have base and quote assets');
+
+	let labelText = $derived.by(() => {
+		if (label === 'fullID') {
+			return feed.feed_id;
+		} else if (label === 'name') {
+			return feed.name;
+		} else if (label === 'typeAndName') {
+			return getFeedIDWithoutVersion(feed.feed_id);
+		}
+	});
 
 	const assetSizes = {
 		container: {
@@ -32,15 +38,6 @@
 		}
 	};
 
-	run(() => {
-		if (label === 'fullID') {
-			labelText = feed.feed_id;
-		} else if (label === 'name') {
-			labelText = feed.name;
-		} else if (label === 'typeAndName') {
-			labelText = getFeedIDWithoutVersion(feed.feed_id);
-		}
-	});
 	let containerSize = $derived(assetSizes.container[size]);
 	let overlap = $derived(assetSizes.overlap[size]);
 </script>

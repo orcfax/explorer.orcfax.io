@@ -94,7 +94,11 @@
 </div>
 
 <!-- Mobile view -->
-<Accordion.Root class="block w-full rounded-lg px-4 m-4 mt-8 border h-fit" value="feedDetails">
+<Accordion.Root
+	type="single"
+	class="block w-full rounded-lg px-4 m-4 mt-8 border h-fit"
+	value={'feedDetails'}
+>
 	<Accordion.Item value="feedDetails" class="border-none">
 		<Accordion.Trigger class="font-bold w-full">Feed Details</Accordion.Trigger>
 		<Accordion.Content>

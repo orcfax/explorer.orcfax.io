@@ -17,7 +17,7 @@
 
 <div class="flex flex-col w-full">
 	<h3 class="font-bold text-2xl">Fact <span class="hidden xxs:inline">Statement</span> Details</h3>
-	<Accordion.Root class="w-full" multiple={true}>
+	<Accordion.Root class="w-full" type="multiple">
 		<Accordion.Item value="collection">
 			<Accordion.Trigger class="text-xl font-bold">Collection</Accordion.Trigger>
 			<Accordion.Content class="flex flex-col items-center md:items-start">

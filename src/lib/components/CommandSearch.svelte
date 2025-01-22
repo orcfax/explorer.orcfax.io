@@ -15,7 +15,7 @@
 	import FactCardField from './FactCardField.svelte';
 
 	let isOpen = $state(false);
-	let metaKey: '⌘' | 'Ctrl' = $state();
+	let metaKey: '⌘' | 'Ctrl' = $state('Ctrl');
 	let query = $state('');
 	let isLoading = $state(false);
 	let debounceTimer: ReturnType<typeof setTimeout>;

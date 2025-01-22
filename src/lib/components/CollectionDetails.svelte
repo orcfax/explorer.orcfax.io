@@ -34,7 +34,13 @@
 				<div class={`flex flex-col ${isCEX ? 'items-center' : ''}`}>
 					<h4 class="font-bold pb-4">Primary Sources:</h4>
 					<div class="hidden xs:flex space-x-6">
-						<SourceTable sources={isCEX ? sortedSources : archive.details.sources} showWithValues />
+						<!-- TODO: fix the typing issues workaround here -->
+						<SourceTable
+							sources={isCEX
+								? sortedSources.map((s) => ({ ...s, totalFacts: 0, latestFact: null }))
+								: archive.details.sources.map((s) => ({ ...s, totalFacts: 0, latestFact: null }))}
+							showWithValues
+						/>
 					</div>
 					<ol class="flex xs:hidden">
 						{#each isCEX ? sortedSources : archive.details.sources as source, index (source.id)}
