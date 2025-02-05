@@ -7,7 +7,7 @@ export const GET: RequestHandler = async ({ url, params }) => {
 	const { category } = RSSFeedParamsSchema.parse({ category: categoryFilter });
 	redirect(
 		303,
-		`https://status-test.server.orcfax.io/${params.rss_feed}${categoryFilter ? `?category=${category.join(',')}` : ''}`
+		`https://status.orcfax.io/${params.rss_feed}${categoryFilter ? `?category=${category.join(',')}` : ''}`
 	);
 };
 
