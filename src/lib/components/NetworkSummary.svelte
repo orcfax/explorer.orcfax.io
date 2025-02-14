@@ -97,18 +97,20 @@
 								<a
 									href={latestNetworkUpdate.link}
 									target="_blank"
-									class="text-lg font-bold underline"
+									class="text-sm sm:text-lg font-bold underline"
 								>
 									{latestNetworkUpdate.title}
 								</a>
 
-								<p class="text-sm text-muted-foreground">{latestNetworkUpdate.description}</p>
+								<p class="text-xs sm:text-sm text-muted-foreground">
+									{latestNetworkUpdate.description}
+								</p>
 							</div>
 						</div>
 
 						<hr class="my-4" />
 
-						<div class="flex justify-between gap-2 w-full -mb-2 mt-3">
+						<div class="flex flex-col xs:flex-row xs:justify-between gap-2 w-full -mb-2 mt-3">
 							<div class="flex gap-2 items-center">
 								<PingStatus color={activeIncidents > 0 ? 'red' : 'green'} size="sm" />
 								<a
@@ -129,8 +131,8 @@
 					</Card.Content>
 				</Card.Root>
 			</li>
-			<li class="col-span-1 self-center">
-				<Card.Root class="h-fit col-span-1">
+			<li class="col-span-1 sm:self-center">
+				<Card.Root class="h-full sm:h-fit col-span-1">
 					<Card.Header class="flex flex-row items-center justify-between space-y-0 pb-0">
 						<Card.Title class="text-sm font-medium">
 							<a href="#nodes" class="underline">Oracle Nodes</a>
