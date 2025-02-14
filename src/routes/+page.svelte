@@ -48,7 +48,11 @@
 			<section id={`nodes`} class="hidden sm:flex flex-col mt-14">
 				<h1 class="font-bold text-3xl pb-4">All Nodes</h1>
 				<div class="section-container p-7">
-					<NodesTable {nodes} />
+					{#if data.network.name === 'Preview'}
+						<p>Node data unavailable for this network</p>
+					{:else}
+						<NodesTable {nodes} />
+					{/if}
 				</div>
 			</section>
 		{/await}
@@ -59,7 +63,11 @@
 			<section id={`sources`} class="hidden sm:flex flex-col mt-14">
 				<h1 class="font-bold text-3xl pb-4">All Sources</h1>
 				<div class="section-container p-7">
-					<SourceTable {sources} />
+					{#if data.network.name === 'Preview'}
+						<p>Source data unavailable for this network</p>
+					{:else}
+						<SourceTable {sources} />
+					{/if}
 				</div>
 			</section>
 		{/await}

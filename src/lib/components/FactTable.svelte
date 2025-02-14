@@ -29,6 +29,8 @@
 	let facts = writable<FactStatement[]>([]);
 	let totalFacts = writable<number>(0);
 
+	const { network } = $networkStore;
+
 	response.subscribe((value) => {
 		if (value.isSuccess) {
 			facts.set(value.data.facts);
@@ -64,10 +66,14 @@
 			accessor: 'validation_date',
 			header: 'Validation Date'
 		}),
-		table.column({
-			accessor: 'participating_nodes',
-			header: 'Collected By'
-		})
+		...(network.name === 'Preview'
+			? []
+			: [
+				table.column({
+					accessor: 'participating_nodes',
+					header: 'Collected By'
+				})
+				]),
 	]);
 
 	const { headerRows, pageRows, tableAttrs, tableBodyAttrs, pluginStates } =
