@@ -7,8 +7,11 @@
 	import { Nfc } from 'lucide-svelte';
 	import NodeIcon from '$lib/icons/NodeIcon.svelte';
 	import PingStatus from '$lib/components/PingStatus.svelte';
+	import { networkStore } from '$lib/stores/network';
 
 	export let summary: OrcfaxStats;
+
+	const { network } = $networkStore;
 
 	$: totalNodes = summary.nodes.length;
 	$: activeNodes = summary.nodes.filter((node) => node.status === 'active').length;
@@ -60,9 +63,16 @@
 						<DataSourceIcon />
 					</Card.Header>
 					<Card.Content>
-						<div class="text-2xl font-bold">{totalSources}</div>
-						<p class="text-xs mt-1">{dexSources} DEX LPs</p>
-						<p class="text-xs">{cexSources} CEX APIs</p>
+						{#if network.name === 'Preview'}
+							<div class="flex flex-col">
+								<span class="text-md font-semibold text-muted-foreground">Unavailable</span>
+								<p class="text-xs text-muted-foreground font-semibold">for this network</p>
+							</div>
+						{:else}
+							<div class="text-2xl font-bold">{totalSources}</div>
+							<p class="text-xs mt-1">{dexSources} DEX LPs</p>
+							<p class="text-xs">{cexSources} CEX APIs</p>
+						{/if}
 					</Card.Content>
 				</Card.Root>
 			</li>
@@ -84,16 +94,23 @@
 						<NodeIcon />
 					</Card.Header>
 					<Card.Content>
-						<div class="text-2xl font-bold">{totalNodes}</div>
-						<div class="flex items-center gap-2 self-end my-1">
-							<PingStatus
-								color={totalNodes === activeNodes ? 'green' : totalNodes >= 3 ? 'yellow' : 'red'}
-								size="md"
-							/>
-							<p class="text-xs">
-								{`${activeNodes} / ${totalNodes} Active`}
-							</p>
-						</div>
+						{#if network.name === 'Preview'}
+							<div class="flex flex-col">
+								<span class="text-md font-semibold text-muted-foreground">Unavailable</span>
+								<p class="text-xs text-muted-foreground font-semibold">for this network</p>
+							</div>
+						{:else}
+							<div class="text-2xl font-bold">{totalNodes}</div>
+							<div class="flex items-center gap-2 self-end my-1">
+								<PingStatus
+									color={totalNodes === activeNodes ? 'green' : totalNodes >= 3 ? 'yellow' : 'red'}
+									size="md"
+								/>
+								<p class="text-xs">
+									{`${activeNodes} / ${totalNodes} Active`}
+								</p>
+							</div>
+						{/if}
 					</Card.Content>
 				</Card.Root>
 			</li>
