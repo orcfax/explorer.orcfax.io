@@ -83,8 +83,7 @@ export function ellipsis(str: string | number, options?: EllipsisOptions) {
 		else if (placement === 'middle') {
 			const charsPerSide = Math.floor((maxLength - 3) / 2); // -3 for the ...
 			return str.slice(0, charsPerSide) + '...' + str.slice(-charsPerSide);
-		}
-		else if (placement === 'end') return str.slice(0, maxLength) + '...';
+		} else if (placement === 'end') return str.slice(0, maxLength) + '...';
 	}
 	return str;
 }
@@ -234,7 +233,10 @@ export function getHeartbeatFromInterval(seconds: number): string {
 	return result || '0 secs';
 }
 
-export function getFeedUrl(feed: DBFeedWithData | Feed | DBFeed | DBFeedWithAssets, fact_urn?: string): string {
+export function getFeedUrl(
+	feed: DBFeedWithData | Feed | DBFeed | DBFeedWithAssets,
+	fact_urn?: string
+): string {
 	const feedPart = getFeedIDWithoutVersion(feed.feed_id);
 	const hasFactUrn = fact_urn !== undefined || ('latestFact' in feed && feed.latestFact);
 	const factPart = fact_urn
@@ -296,8 +298,10 @@ export function getNetworkUrl(url: string, networkName: string): string {
 	// Build the new URL
 	newUrl.search = '';
 	newUrl.hash = '';
+	newUrl.pathname = newUrl.pathname.includes('/facts')
+		? newUrl.pathname.split('/facts')[0]
+		: newUrl.pathname;
 	newUrl.hostname = `${networkPart}${appPart}${env.PUBLIC_BASE_URL}${newUrl.pathname}`;
-
 	return newUrl.toString();
 }
 
