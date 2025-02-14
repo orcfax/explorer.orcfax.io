@@ -111,7 +111,7 @@
 											<div class="flex gap-2 items-center">
 												<PingStatus
 													color={cell.render() === 'active' ? 'green' : 'yellow'}
-													size="md"
+													size="sm"
 												/>
 												<Render of={toTitleCase(cell.render())} />
 											</div>

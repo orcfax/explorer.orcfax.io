@@ -28,7 +28,9 @@
 			<li class="col-span-1">
 				<Card.Root class="h-full">
 					<Card.Header class="flex flex-row items-center justify-between space-y-0 space-x-2 pb-0">
-						<Card.Title class="text-sm font-medium">Active Feeds</Card.Title>
+						<Card.Title class="text-sm font-medium">
+							<a href="#feeds" class="underline">Active Feeds</a>
+						</Card.Title>
 						<Nfc class="stroke-primary" size="30" />
 					</Card.Header>
 					<Card.Content>
@@ -44,7 +46,9 @@
 			<li class="col-span-1">
 				<Card.Root class="h-full">
 					<Card.Header class="flex flex-row items-center justify-between space-y-0 space-x-6 pb-0">
-						<Card.Title class="text-sm font-medium">Published Facts</Card.Title>
+						<Card.Title class="text-sm font-medium">
+							<a href="#facts" class="underline">Published Facts</a>
+						</Card.Title>
 						<FactIcon />
 					</Card.Header>
 					<Card.Content>
@@ -60,7 +64,9 @@
 			<li class="col-span-1">
 				<Card.Root class="h-full">
 					<Card.Header class="flex flex-row items-center justify-between space-y-0 pb-0">
-						<Card.Title class="text-sm font-medium">Data Sources</Card.Title>
+						<Card.Title class="text-sm font-medium">
+							<a href="#sources" class="underline">Data Sources</a>
+						</Card.Title>
 						<DataSourceIcon />
 					</Card.Header>
 					<Card.Content>
@@ -71,8 +77,9 @@
 							</div>
 						{:else}
 							<div class="text-2xl font-bold">{totalSources}</div>
-							<p class="text-xs mt-1">{dexSources} DEX LPs</p>
-							<p class="text-xs">{cexSources} CEX APIs</p>
+							<span class="text-xs">
+								{dexSources} DEX LPs · {cexSources} CEX APIs
+							</span>
 						{/if}
 					</Card.Content>
 				</Card.Root>
@@ -122,10 +129,12 @@
 					</Card.Content>
 				</Card.Root>
 			</li>
-			<li class="col-span-1">
-				<Card.Root class="h-full col-span-1">
+			<li class="col-span-1 self-center">
+				<Card.Root class="h-fit col-span-1">
 					<Card.Header class="flex flex-row items-center justify-between space-y-0 pb-0">
-						<Card.Title class="text-sm font-medium">Oracle Nodes</Card.Title>
+						<Card.Title class="text-sm font-medium">
+							<a href="#nodes" class="underline">Oracle Nodes</a>
+						</Card.Title>
 						<NodeIcon />
 					</Card.Header>
 					<Card.Content>
@@ -139,7 +148,7 @@
 							<div class="flex items-center gap-2 self-end my-1">
 								<PingStatus
 									color={totalNodes === activeNodes ? 'green' : totalNodes >= 3 ? 'yellow' : 'red'}
-									size="md"
+									size="sm"
 								/>
 								<p class="text-xs">
 									{`${activeNodes} / ${totalNodes} Active`}

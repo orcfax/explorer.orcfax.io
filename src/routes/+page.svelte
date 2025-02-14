@@ -35,7 +35,7 @@
 		/>
 	{/await}
 	<div class="w-full max-w-max md:mt-6">
-		<section id={`oracleFeedsList`} class="flex flex-col items-center mt-14">
+		<section id={`feeds`} class="flex flex-col items-center mt-14 scroll-mt-24">
 			<h2 class="font-bold text-3xl pb-4 self-start">Oracle Feeds</h2>
 			{#await data.feeds}
 				<FeedsListLoadingSkeleton />
@@ -44,7 +44,7 @@
 			{/await}
 		</section>
 
-		<section id={`allFactsTable`} class="hidden sm:flex flex-col mt-14">
+		<section id={`facts`} class="hidden sm:flex flex-col mt-14 scroll-mt-24">
 			<h1 class="font-bold text-3xl pb-4">All Fact Statements</h1>
 			<div class="section-container p-7">
 				<FactTable />
@@ -54,7 +54,7 @@
 		{#await data.nodes}
 			<Loading />
 		{:then nodes}
-			<section id={`nodes`} class="hidden sm:flex flex-col mt-14">
+			<section id={`nodes`} class="hidden sm:flex flex-col mt-14 scroll-mt-24">
 				<h1 class="font-bold text-3xl pb-4">All Nodes</h1>
 				<div class="section-container p-7">
 					{#if data.network.name === 'Preview'}
@@ -69,7 +69,7 @@
 		{#await data.sources}
 			<Loading />
 		{:then sources}
-			<section id={`sources`} class="hidden sm:flex flex-col mt-14">
+			<section id={`sources`} class="hidden sm:flex flex-col mt-14 scroll-mt-24">
 				<h1 class="font-bold text-3xl pb-4">All Sources</h1>
 				<div class="section-container p-7">
 					{#if data.network.name === 'Preview'}

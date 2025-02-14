@@ -38,7 +38,7 @@
 					</p>
 					<Tooltip.Root openDelay={150}>
 						<Tooltip.Trigger class="flex items-center gap-2">
-							<PingStatus color={feed.status === 'active' ? 'green' : 'red'} size="md" />
+							<PingStatus color={feed.status === 'active' ? 'green' : 'red'} size="sm" />
 							{#if feed.status === 'inactive' && feed.inactive_reason}
 								<CircleHelp
 									strokeWidth="2.5px"
