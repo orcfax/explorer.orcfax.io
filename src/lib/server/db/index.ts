@@ -15,7 +15,9 @@ import {
 	type DBFactStatementWithFeed,
 	NodeSchema,
 	type NodeWithMetadata,
-	type SourceWithMetadata
+	type SourceWithMetadata,
+	NotificationSchema,
+	type Notification
 } from '$lib/types';
 import { format, sub } from 'date-fns';
 import { env } from '$env/dynamic/public';
@@ -316,16 +318,16 @@ export async function searchFactStatements(
 
 		const withExpandedFeeds = records.items.map((item) => {
 			if (!item.expand?.feed) error(500, 'Fact is missing feed');
-		const parsedFact = DBFactStatementWithFeedSchema.safeParse({
-			...item,
-			feed: {
-				...item.expand.feed,
-				base_asset: item.expand.feed.expand.base_asset,
-				quote_asset: item.expand.feed.expand.quote_asset
-			},
-		});
-		if (parsedFact.success) return parsedFact.data;
-		else error(500, `Invalid fact: ${parsedFact.error}`);
+			const parsedFact = DBFactStatementWithFeedSchema.safeParse({
+				...item,
+				feed: {
+					...item.expand.feed,
+					base_asset: item.expand.feed.expand.base_asset,
+					quote_asset: item.expand.feed.expand.quote_asset
+				}
+			});
+			if (parsedFact.success) return parsedFact.data;
+			else error(500, `Invalid fact: ${parsedFact.error}`);
 		});
 		const parsedFacts = z.array(DBFactStatementWithFeedSchema).parse(withExpandedFeeds);
 
@@ -497,5 +499,24 @@ export async function getFactMetadataForSource(
 					}
 				}
 			: null
+	};
+}
+
+export async function getStatusInfo(): Promise<{
+	latestNetworkUpdate: Notification;
+	activeIncidents: number;
+}> {
+	const records = await db.collection('notifications').getFullList({ sort: '-publish_date' });
+	const parsedNotifications = z.array(NotificationSchema).parse(records);
+	const activeIncidents = parsedNotifications.filter(
+		(notification) => notification.type === 'incident_reports' && notification.status !== 'resolved'
+	).length;
+	const latestNetworkUpdate = parsedNotifications.filter(
+		(notification) => notification.type === 'network_updates'
+	)[0];
+
+	return {
+		latestNetworkUpdate,
+		activeIncidents
 	};
 }

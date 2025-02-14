@@ -581,3 +581,16 @@ export const RiskRatingsSchema = z.object({
 	quote: RiskRatingSchema
 });
 export type RiskRatings = z.infer<typeof RiskRatingsSchema>;
+
+export const NotificationSchema = z.object({
+	id: z.string(),
+	title: z.string(),
+	type: z.enum(['incident_reports', 'network_updates']),
+	description: z.string(),
+	labels: z.string(),
+	link: z.string().optional(),
+	publish_date: z.coerce.date(),
+	status: z.enum(['under_review', 'resolved', '']).optional()
+});
+
+export type Notification = z.infer<typeof NotificationSchema>;

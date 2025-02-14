@@ -2,14 +2,15 @@
 	import * as Card from '$lib/components/ui/card';
 	import FactIcon from '$lib/icons/FactIcon.svelte';
 	import DataSourceIcon from '$lib/icons/DataSourceIcon.svelte';
-	import type { OrcfaxStats } from '$lib/types';
-	import InfoBox from '$lib/components/InfoBox.svelte';
-	import { Nfc } from 'lucide-svelte';
+	import type { OrcfaxStats, Notification } from '$lib/types';
+	import { Nfc, SatelliteDish } from 'lucide-svelte';
 	import NodeIcon from '$lib/icons/NodeIcon.svelte';
 	import PingStatus from '$lib/components/PingStatus.svelte';
 	import { networkStore } from '$lib/stores/network';
 
 	export let summary: OrcfaxStats;
+	export let latestNetworkUpdate: Notification;
+	export let activeIncidents: number;
 
 	const { network } = $networkStore;
 
@@ -76,16 +77,50 @@
 					</Card.Content>
 				</Card.Root>
 			</li>
-			<li class="col-span-1 xs:col-span-2 self-center order-last sm:order-none">
-				<InfoBox title="Orcfax v1 is live on Mainnet!" className="col-span-2 h-fit self-center p-8">
-					<p>
-						Check out our <a
-							href="https://docs.orcfax.io"
-							target="_blank"
-							class="text-primary underline">docs</a
-						> to see what's new!
-					</p>
-				</InfoBox>
+			<li class="col-span-1 xs:col-span-2 self-center order-last sm:order-none -mt-1">
+				<Card.Root class="h-fit">
+					<Card.Header class="flex flex-row items-center justify-between space-y-0 pb-0">
+						<Card.Title class="text-sm font-medium">Network Status</Card.Title>
+						<SatelliteDish class="stroke-primary" size="30" />
+					</Card.Header>
+					<Card.Content class="mt-2">
+						<div class="flex gap-3">
+							<div class="w-1 bg-primary rounded-full"></div>
+							<div class="w-fit">
+								<a
+									href={latestNetworkUpdate.link}
+									target="_blank"
+									class="text-lg font-bold underline"
+								>
+									{latestNetworkUpdate.title}
+								</a>
+
+								<p class="text-sm text-muted-foreground">{latestNetworkUpdate.description}</p>
+							</div>
+						</div>
+
+						<hr class="my-4" />
+
+						<div class="flex justify-between gap-2 w-full -mb-2 mt-3">
+							<div class="flex gap-2 items-center">
+								<PingStatus color={activeIncidents > 0 ? 'red' : 'green'} size="sm" />
+								<a
+									href="https://status.orcfax.io#incidents"
+									target="_blank"
+									class="text-xs text-muted-foreground underline"
+								>
+									{activeIncidents} Active Incidents
+								</a>
+							</div>
+
+							<a
+								href="https://status.orcfax.io/"
+								target="_blank"
+								class="text-xs text-muted-foreground underline">View status dashboard →</a
+							>
+						</div>
+					</Card.Content>
+				</Card.Root>
 			</li>
 			<li class="col-span-1">
 				<Card.Root class="h-full col-span-1">

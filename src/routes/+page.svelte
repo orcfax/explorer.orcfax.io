@@ -12,7 +12,14 @@
 </script>
 
 <main class="flex flex-col items-center w-full px-10 min-h-full overflow-x-hidden">
-	{#await Promise.all( [data.totalFacts, data.totalFacts24Hour, data.totalActiveFeeds, data.nodes, data.sources] )}
+	{#await Promise.all([
+		data.totalFacts,
+		data.totalFacts24Hour,
+		data.totalActiveFeeds,
+		data.nodes,
+		data.sources,
+		data.statusInfo
+	])}
 		<NetworkSummaryLoadingSkeleton />
 	{:then summary}
 		<NetworkSummary
@@ -23,6 +30,8 @@
 				nodes: summary[3],
 				sources: summary[4]
 			}}
+			latestNetworkUpdate={summary[5].latestNetworkUpdate}
+			activeIncidents={summary[5].activeIncidents}
 		/>
 	{/await}
 	<div class="w-full max-w-max md:mt-6">
