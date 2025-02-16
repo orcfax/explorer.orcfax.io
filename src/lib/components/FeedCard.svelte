@@ -28,7 +28,7 @@
 				<div class="absolute -top-4 -right-4 xxs:top-0 xxs:right-0">
 					<UpRightArrowIcon fillColor="fill-inherit" />
 				</div>
-				<FeedNameplate {feed} />
+				<FeedNameplate {feed} size="md" />
 			</Card.Title>
 			<Card.Description>
 				<div class="relative top-0 left-0 flex items-center h-full space-x-2 mb-2">
