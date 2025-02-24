@@ -2,6 +2,10 @@
 
 A Human-Readable UI for Orcfax Oracle Network hosted at [explorer.orcfax.io](https://explorer.orcfax.io).
 
+Uses the [explorer-index](https://github.com/orcfax/explorer-index) to index and sync fact statement, feed, node, source, and archive data for display on the explorer.
+
+Also uses the [static-archive-viewer](https://github.com/orcfax/static-archive-viewer) for downloading and viewing fact statement archives offline.
+
 ## Overview
 
 The Orcfax Fact Explorer is a SvelteKit application that provides a human-readable interface for exploring and analyzing data on the Orcfax Oracle Network. It offers a comprehensive view of the Orcfax network's data and operations.
@@ -14,6 +18,7 @@ The Orcfax Fact Explorer is a SvelteKit application that provides a human-readab
 - **Node Details**: Monitor node status, locations, and performance
 - **Source Details**: Explore the sources of a fact statement, and see the original data and processing steps used to generate the fact.
 - **Archive Explorer**: Fetch, and explore all fact statement archives stored on the Arweave storage network.
+- **Offline Archive Viewer**: Download and view fact statement archives offline.
 
 ## Getting Started
 
