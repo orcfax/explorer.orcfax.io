@@ -3,27 +3,25 @@ import { redirect } from '@sveltejs/kit';
 import type { RequestHandler } from '@sveltejs/kit';
 
 export const GET: RequestHandler = async ({ url, params }) => {
-	const categoryFilter = url.searchParams.get('category');
-	const { category } = RSSFeedParamsSchema.parse({ category: categoryFilter });
+	const includeFilter = url.searchParams.get('include');
+	const { include } = RSSFeedParamsSchema.parse({ include: includeFilter });
 	redirect(
 		303,
-		`https://status.orcfax.io/${params.rss_feed}${categoryFilter ? `?category=${category.join(',')}` : ''}`
+		`https://status.orcfax.io/${params.rss_feed}${includeFilter ? `?include=${include.join(',')}` : ''}`
 	);
 };
 
 const RSSFeedParamsSchema = z.object({
-	category: z
+	include: z
 		.string()
 		.optional()
 		.nullable()
 		.transform((val) => {
-			if (!val) return ['incident_reports', 'network_updates'];
+			if (!val) return [];
 
 			const categories = val.split(',').map((c) => c.trim());
-			const validCategories = categories.filter(
-				(c) => c === 'incident_reports' || c === 'network_updates'
-			);
+			const validCategories = categories.filter((c) => c === 'blog_posts');
 
-			return validCategories.length ? validCategories : ['incident_reports', 'network_updates'];
+			return validCategories;
 		})
 });

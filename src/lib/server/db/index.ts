@@ -16,8 +16,8 @@ import {
 	NodeSchema,
 	type NodeWithMetadata,
 	type SourceWithMetadata,
-	NotificationSchema,
-	type Notification
+	RSSFeedItemSchema,
+	type RSSFeedItem
 } from '$lib/types';
 import { format, sub } from 'date-fns';
 import { env } from '$env/dynamic/public';
@@ -503,16 +503,16 @@ export async function getFactMetadataForSource(
 }
 
 export async function getStatusInfo(): Promise<{
-	latestNetworkUpdate: Notification;
+	latestNetworkUpdate: RSSFeedItem;
 	activeIncidents: number;
 }> {
-	const records = await db.collection('notifications').getFullList({ sort: '-publish_date' });
-	const parsedNotifications = z.array(NotificationSchema).parse(records);
-	const activeIncidents = parsedNotifications.filter(
-		(notification) => notification.type === 'incident_reports' && notification.status !== 'resolved'
+	const records = await db.collection('rss').getFullList({ sort: '-publish_date' });
+	const parsedRSSFeedItems = z.array(RSSFeedItemSchema).parse(records);
+	const activeIncidents = parsedRSSFeedItems.filter(
+		(rssFeedItem) => rssFeedItem.type === 'incident_reports' && rssFeedItem.status !== 'resolved'
 	).length;
-	const latestNetworkUpdate = parsedNotifications.filter(
-		(notification) => notification.type === 'network_updates'
+	const latestNetworkUpdate = parsedRSSFeedItems.filter(
+		(rssFeedItem) => rssFeedItem.type === 'network_updates'
 	)[0];
 
 	return {
