@@ -110,6 +110,10 @@
 										<Table.Head {...attrs} class="hidden md:table-cell">
 											<Render of={cell.render()} />
 										</Table.Head>
+									{:else if cell.id === 'totalFacts'}
+										<Table.Head {...attrs} class="hidden md:table-cell">
+											<Render of={cell.render()} />
+										</Table.Head>
 									{:else}
 										<Table.Head {...attrs}>
 											<Render of={cell.render()} />
@@ -134,8 +138,8 @@
 								<Subscribe attrs={cell.attrs()} let:attrs>
 									{#if cell.id === 'name'}
 										<Table.Cell {...attrs}>
-											<div class="flex gap-3 items-center">
-												<SourceBadge source={row.original} />
+											<div class="flex gap-1 sm:gap-3 items-center w-fit">
+												<SourceBadge source={row.original} size={innerWidth < 400 ? 'sm' : 'md'} />
 												<div class={`${isDEX ? 'hidden md:block' : ''}`}>
 													{cell.value === 'bitfinex_simple'
 														? 'Bitfinex'
@@ -150,12 +154,12 @@
 											<Render of={cell.render()} />
 										</Table.Cell>
 									{:else if cell.id === 'totalFacts'}
-										<Table.Cell {...attrs}>
+										<Table.Cell {...attrs} class="hidden md:table-cell">
 											<Render of={formatNumber(cell.render())} />
 										</Table.Cell>
 									{:else if cell.id === 'latestFact'}
 										<Table.Cell {...attrs}>
-											<div class="flex flex-col gap-2">
+											<div class="flex flex-col">
 												<FeedNameplate feed={cell.value.feed} size="sm" />
 												<LatestFactColumn latestFact={cell.value} />
 											</div>

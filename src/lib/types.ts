@@ -581,3 +581,17 @@ export const RiskRatingsSchema = z.object({
 	quote: RiskRatingSchema
 });
 export type RiskRatings = z.infer<typeof RiskRatingsSchema>;
+
+export const RSSFeedItemSchema = z.object({
+	id: z.string(),
+	title: z.string(),
+	type: z.enum(['incident_reports', 'network_updates', 'blog_posts']),
+	description: z.string(),
+	link: z.string().optional(),
+	publish_date: z.coerce.date(),
+	status: z
+		.enum(['under_review', 'identified', 'in_progress', 'mitigated', 'resolved', ''])
+		.optional()
+});
+
+export type RSSFeedItem = z.infer<typeof RSSFeedItemSchema>;

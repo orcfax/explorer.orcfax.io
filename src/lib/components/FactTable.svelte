@@ -10,10 +10,11 @@
 	import { Button } from '$lib/components/ui/button';
 	import { goto } from '$app/navigation';
 	import FormattedCurrencyValue from './FormattedCurrencyValue.svelte';
-	import { getFeedUrl, getFormattedDate, getFormattedTime } from '$lib/client/helpers';
+	import { getFeedUrl } from '$lib/client/helpers';
 	import { networkStore } from '$lib/stores/network';
 	import FactCardField from './FactCardField.svelte';
 	import FeedNameplate from '$lib/components/FeedNameplate.svelte';
+	import LatestFactColumn from '$lib/components/LatestFactColumn.svelte';
 
 	export let feedFilter = '';
 	export let onTableRowClick: (fact: FactStatement) => void = () => {};
@@ -28,8 +29,6 @@
 
 	let facts = writable<FactStatement[]>([]);
 	let totalFacts = writable<number>(0);
-
-	const { network } = $networkStore;
 
 	response.subscribe((value) => {
 		if (value.isSuccess) {
@@ -66,14 +65,14 @@
 			accessor: 'validation_date',
 			header: 'Validation Date'
 		}),
-		...(network.name === 'Preview'
+		...($networkStore.network.name === 'Preview'
 			? []
 			: [
-				table.column({
-					accessor: 'participating_nodes',
-					header: 'Collected By'
-				})
-				]),
+					table.column({
+						accessor: 'participating_nodes',
+						header: 'Collected By'
+					})
+				])
 	]);
 
 	const { headerRows, pageRows, tableAttrs, tableBodyAttrs, pluginStates } =
@@ -84,7 +83,12 @@
 	pageIndex.subscribe((value) => {
 		currentPage.set(value + 1);
 	});
+
+	let innerWidth = 0;
+	let innerHeight = 0;
 </script>
+
+<svelte:window bind:innerWidth bind:innerHeight />
 
 {#if $response.isLoading}
 	<Loading />
@@ -103,11 +107,25 @@
 						<Subscribe rowAttrs={headerRow.attrs()}>
 							<Table.Row>
 								{#each headerRow.cells as cell (cell.id)}
-									<Subscribe attrs={cell.attrs()} let:attrs props={cell.props()}>
-										<Table.Head {...attrs}>
-											<Render of={cell.render()} />
-										</Table.Head>
-									</Subscribe>
+									{#if cell.id === 'participating_nodes'}
+										<Subscribe attrs={cell.attrs()} let:attrs props={cell.props()}>
+											<Table.Head {...attrs} class="hidden lg:table-cell">
+												<Render of={cell.render()} />
+											</Table.Head>
+										</Subscribe>
+									{:else if cell.id === 'fact_urn'}
+										<Subscribe attrs={cell.attrs()} let:attrs props={cell.props()}>
+											<Table.Head {...attrs} class="hidden md:table-cell">
+												<Render of={cell.render()} />
+											</Table.Head>
+										</Subscribe>
+									{:else}
+										<Subscribe attrs={cell.attrs()} let:attrs props={cell.props()}>
+											<Table.Head {...attrs}>
+												<Render of={cell.render()} />
+											</Table.Head>
+										</Subscribe>
+									{/if}
 								{/each}
 							</Table.Row>
 						</Subscribe>
@@ -130,7 +148,7 @@
 								{#each row.cells as cell (cell.id)}
 									<Subscribe attrs={cell.attrs()} let:attrs>
 										{#if cell.id === 'fact_urn'}
-											<Table.Cell {...attrs}>
+											<Table.Cell {...attrs} class="hidden md:table-cell">
 												<FactCardField
 													name=""
 													value={cell.value}
@@ -144,14 +162,14 @@
 											</Table.Cell>
 										{:else if cell.id === 'feed'}
 											<Table.Cell {...attrs}>
-												<FeedNameplate feed={cell.value} size="md" />
+												<FeedNameplate feed={cell.value} size="sm" />
 											</Table.Cell>
 										{:else if cell.id === 'validation_date'}
 											<Table.Cell {...attrs}>
-												{`${getFormattedDate(cell.value)} ${getFormattedTime(cell.value)}`}
+												<LatestFactColumn latestFact={row.original} />
 											</Table.Cell>
 										{:else if cell.id === 'participating_nodes'}
-											<Table.Cell {...attrs}>
+											<Table.Cell {...attrs} class="hidden lg:table-cell">
 												<FactCardField
 													name=""
 													value={cell.value.length === 1 ? cell.value[0].node_urn : `N/A`}
@@ -172,7 +190,7 @@
 				</Table.Body>
 			</Table.Root>
 		</div>
-		<div class="flex justify-between">
+		<div class="flex flex-col xxxs:flex-row justify-between">
 			<div class="flex flex-col pt-2 pl-2">
 				<span class="text-sm">{`Page ${$currentPage} of ${$pageCount.toLocaleString()}`}</span>
 				<span class="text-xs text-muted-foreground">

@@ -5,7 +5,8 @@ import {
 	getActiveFeedsCount,
 	getAllFactsCount,
 	getAllNodes,
-	getTodaysFactsCount
+	getTodaysFactsCount,
+	getStatusInfo
 } from '$lib/server/db';
 import type { PageServerLoad } from './$types';
 
@@ -18,6 +19,7 @@ export const load: PageServerLoad = async ({ parent }) => {
 		totalActiveFeeds: getActiveFeedsCount(network),
 		nodes: getAllNodes(network),
 		sources: getAllSources(network.id),
+		statusInfo: getStatusInfo(),
 		network,
 		networks
 	};

@@ -15,7 +15,9 @@ import {
 	type DBFactStatementWithFeed,
 	NodeSchema,
 	type NodeWithMetadata,
-	type SourceWithMetadata
+	type SourceWithMetadata,
+	RSSFeedItemSchema,
+	type RSSFeedItem
 } from '$lib/types';
 import { format, sub } from 'date-fns';
 import { env } from '$env/dynamic/public';
@@ -316,16 +318,16 @@ export async function searchFactStatements(
 
 		const withExpandedFeeds = records.items.map((item) => {
 			if (!item.expand?.feed) error(500, 'Fact is missing feed');
-		const parsedFact = DBFactStatementWithFeedSchema.safeParse({
-			...item,
-			feed: {
-				...item.expand.feed,
-				base_asset: item.expand.feed.expand.base_asset,
-				quote_asset: item.expand.feed.expand.quote_asset
-			},
-		});
-		if (parsedFact.success) return parsedFact.data;
-		else error(500, `Invalid fact: ${parsedFact.error}`);
+			const parsedFact = DBFactStatementWithFeedSchema.safeParse({
+				...item,
+				feed: {
+					...item.expand.feed,
+					base_asset: item.expand.feed.expand.base_asset,
+					quote_asset: item.expand.feed.expand.quote_asset
+				}
+			});
+			if (parsedFact.success) return parsedFact.data;
+			else error(500, `Invalid fact: ${parsedFact.error}`);
 		});
 		const parsedFacts = z.array(DBFactStatementWithFeedSchema).parse(withExpandedFeeds);
 
@@ -451,7 +453,7 @@ export async function getFactMetadataForNode(
 export async function getAllSources(networkID: string): Promise<SourceWithMetadata[]> {
 	try {
 		const response = await db.collection('sources').getFullList({
-			filter: `network = "${networkID}"`
+			filter: `network = "${networkID}" && status = "active"`
 		});
 
 		const sources = z.array(SourceSchema).parse(response);
@@ -497,5 +499,24 @@ export async function getFactMetadataForSource(
 					}
 				}
 			: null
+	};
+}
+
+export async function getStatusInfo(): Promise<{
+	latestNetworkUpdate: RSSFeedItem;
+	activeIncidents: number;
+}> {
+	const records = await db.collection('rss').getFullList({ sort: '-publish_date' });
+	const parsedRSSFeedItems = z.array(RSSFeedItemSchema).parse(records);
+	const activeIncidents = parsedRSSFeedItems.filter(
+		(rssFeedItem) => rssFeedItem.type === 'incident_reports' && rssFeedItem.status !== 'resolved'
+	).length;
+	const latestNetworkUpdate = parsedRSSFeedItems.filter(
+		(rssFeedItem) => rssFeedItem.type === 'network_updates'
+	)[0];
+
+	return {
+		latestNetworkUpdate,
+		activeIncidents
 	};
 }

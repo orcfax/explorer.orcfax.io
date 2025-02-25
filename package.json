@@ -1,6 +1,6 @@
 {
 	"name": "explorer.orcfax.io",
-	"version": "2025-02-14",
+	"version": "2025-02-25",
 	"private": true,
 	"scripts": {
 		"dev": "vite dev",
@@ -55,6 +55,7 @@
 		"dotenv": "^16.4.5",
 		"jszip": "^3.10.1",
 		"lucide-svelte": "^0.399.0",
+		"marked": "^15.0.7",
 		"mode-watcher": "^0.3.1",
 		"paneforge": "^0.0.5",
 		"pocketbase": "^0.21.3",
