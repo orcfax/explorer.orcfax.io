@@ -2,7 +2,7 @@
 	import * as Card from '$lib/components/ui/card';
 	import FactIcon from '$lib/icons/FactIcon.svelte';
 	import DataSourceIcon from '$lib/icons/DataSourceIcon.svelte';
-	import type { OrcfaxStats, Notification } from '$lib/types';
+	import type { OrcfaxStats, RSSFeedItem } from '$lib/types';
 	import { Nfc, SatelliteDish } from 'lucide-svelte';
 	import NodeIcon from '$lib/icons/NodeIcon.svelte';
 	import PingStatus from '$lib/components/PingStatus.svelte';
@@ -10,7 +10,7 @@
 	import { marked } from 'marked';
 
 	export let summary: OrcfaxStats;
-	export let latestNetworkUpdate: Notification;
+	export let latestNetworkUpdate: RSSFeedItem;
 	export let activeIncidents: number;
 
 	const { network } = $networkStore;
