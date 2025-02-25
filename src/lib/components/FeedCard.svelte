@@ -6,6 +6,7 @@
 	import UpRightArrowIcon from '$lib/icons/UpRightArrowIcon.svelte';
 	import { Separator } from 'bits-ui';
 	import * as Tooltip from '$lib/components/ui/tooltip';
+	import { Badge, type Variant } from '$lib/components/ui/badge';
 	import PingStatus from './PingStatus.svelte';
 	import PriceDifferenceBadges from './PriceDifferenceBadges.svelte';
 	import FormattedCurrencyValue from './FormattedCurrencyValue.svelte';
@@ -17,6 +18,8 @@
 	$: timeSinceLastUpdate = feed.latestFact
 		? createTimeSinceStore(feed.latestFact.validation_date)
 		: readable('N/A');
+
+	$: badgeVariant = (feed.funding_type === 'showcase' ? 'outline' : 'default') as Variant;
 </script>
 
 <a href={getFeedUrl(feed)} class="w-max">
@@ -31,28 +34,37 @@
 				<FeedNameplate {feed} size="md" />
 			</Card.Title>
 			<Card.Description>
-				<div class="relative top-0 left-0 flex items-center h-full space-x-2 mb-2">
-					<p class="text-sm">
-						<span class="font-bold">ID:</span>
-						<span class="text-muted-foreground">{feed.feed_id}</span>
-					</p>
-					<Tooltip.Root openDelay={150}>
-						<Tooltip.Trigger class="flex items-center gap-2">
-							<PingStatus color={feed.status === 'active' ? 'green' : 'red'} size="sm" />
-							{#if feed.status === 'inactive' && feed.inactive_reason}
-								<CircleHelp
-									strokeWidth="2.5px"
-									class="stroke-primary fill-primary-foreground w-4"
-								/>
-							{/if}
-						</Tooltip.Trigger>
-						<Tooltip.Content>
-							<p>
-								{(feed.status === 'inactive' && feed.inactive_reason) ||
-									`This feed is ${feed.status}`}
-							</p>
-						</Tooltip.Content>
-					</Tooltip.Root>
+				<div class="relative top-0 left-0 flex flex-wrap items-center h-full gap-2 mb-2">
+					<div class="flex items-center gap-2">
+						<p class="text-sm">
+							<span class="font-bold">ID:</span>
+							<span class="text-muted-foreground">{feed.feed_id}</span>
+						</p>
+
+						<Tooltip.Root openDelay={150}>
+							<Tooltip.Trigger class="flex items-center gap-2">
+								<PingStatus color={feed.status === 'active' ? 'green' : 'red'} size="sm" />
+								{#if feed.status === 'inactive' && feed.inactive_reason}
+									<CircleHelp
+										strokeWidth="2.5px"
+										class="stroke-primary fill-primary-foreground w-4"
+									/>
+								{/if}
+							</Tooltip.Trigger>
+							<Tooltip.Content>
+								<p>
+									{(feed.status === 'inactive' && feed.inactive_reason) ||
+										`This feed is ${feed.status}`}
+								</p>
+							</Tooltip.Content>
+						</Tooltip.Root>
+					</div>
+					<Badge
+						variant={badgeVariant}
+						class="capitalize cursor-default text-card-foreground text-opacity-70"
+					>
+						{feed.funding_type === 'paid' ? 'sponsored' : feed.funding_type}
+					</Badge>
 				</div>
 			</Card.Description>
 		</Card.Header>

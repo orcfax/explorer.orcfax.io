@@ -453,7 +453,7 @@ export async function getFactMetadataForNode(
 export async function getAllSources(networkID: string): Promise<SourceWithMetadata[]> {
 	try {
 		const response = await db.collection('sources').getFullList({
-			filter: `network = "${networkID}"`
+			filter: `network = "${networkID}" && status = "active"`
 		});
 
 		const sources = z.array(SourceSchema).parse(response);

@@ -16,7 +16,7 @@
 
 <section class="flex flex-col bg-card">
 	<div
-		class="p-6 rounded-lg bg-muted dark:bg-muted/50 text-card-foreground border-primary/20 border-2 min-w-max"
+		class="p-6 rounded-lg dark:bg-muted/50 text-card-foreground border-primary/20 border-2 min-w-max"
 	>
 		<header class="flex flex-col">
 			<h4 class="text-lg self-center font-semibold">The price of</h4>
