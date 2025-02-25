@@ -7,6 +7,7 @@
 	import NodeIcon from '$lib/icons/NodeIcon.svelte';
 	import PingStatus from '$lib/components/PingStatus.svelte';
 	import { networkStore } from '$lib/stores/network';
+	import { marked } from 'marked';
 
 	export let summary: OrcfaxStats;
 	export let latestNetworkUpdate: Notification;
@@ -103,7 +104,7 @@
 								</a>
 
 								<p class="text-xs sm:text-sm text-muted-foreground">
-									{latestNetworkUpdate.description}
+									{@html marked(latestNetworkUpdate.description)}
 								</p>
 							</div>
 						</div>
