@@ -85,7 +85,7 @@
 					</Card.Content>
 				</Card.Root>
 			</li>
-			<li class="col-span-1 xs:col-span-2 self-center order-last sm:order-none -mt-1">
+			<li class="col-span-1 xs:col-span-2 self-center order-last sm:order-none -mt-1 max-w-xl">
 				<Card.Root class="h-fit">
 					<Card.Header class="flex flex-row items-center justify-between space-y-0 pb-0">
 						<Card.Title class="text-sm font-medium">Network Status</Card.Title>
