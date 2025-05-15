@@ -511,12 +511,27 @@ export async function getStatusInfo(): Promise<{
 	const activeIncidents = parsedRSSFeedItems.filter(
 		(rssFeedItem) => rssFeedItem.type === 'incident_reports' && rssFeedItem.status !== 'resolved'
 	).length;
-	const latestNetworkUpdate = parsedRSSFeedItems.filter(
-		(rssFeedItem) => rssFeedItem.type === 'network_updates'
-	)[0];
+
+	const latestNetworkUpdate = {
+		...parsedRSSFeedItems[0],
+		description:
+			parsedRSSFeedItems[0].type === 'blog_posts'
+				? processBlogDescription(parsedRSSFeedItems[0].description)
+				: parsedRSSFeedItems[0].description
+	};
 
 	return {
 		latestNetworkUpdate,
 		activeIncidents
 	};
+}
+
+function processBlogDescription(description: string): string {
+	// Remove leading figure and image tags
+	let processed = description.replace(/^<figure>.*?<\/figure>/, '');
+	// Remove leading date paragraph
+	processed = processed.replace(/^<p><em>.*?<\/em><\/p>/, '');
+	// Get only the first paragraph
+	const firstParagraph = processed.match(/<p>.*?<\/p>/);
+	return firstParagraph ? firstParagraph[0] : processed;
 }

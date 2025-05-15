@@ -8,6 +8,7 @@
 	import PingStatus from '$lib/components/PingStatus.svelte';
 	import { networkStore } from '$lib/stores/network';
 	import { marked } from 'marked';
+	import { capitalize } from '$lib/client/helpers';
 
 	export let summary: OrcfaxStats;
 	export let latestNetworkUpdate: RSSFeedItem;
@@ -108,6 +109,15 @@
 								</p>
 							</div>
 						</div>
+
+						{#if latestNetworkUpdate.type === 'incident_reports'}
+							<p class="pt-4 text-xs sm:text-sm">
+								<span class="font-bold">Status:</span>
+								<span class="text-muted-foreground"
+									>{capitalize(latestNetworkUpdate?.status ?? '')}</span
+								>
+							</p>
+						{/if}
 
 						<hr class="my-4" />
 
