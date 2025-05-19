@@ -123,13 +123,13 @@
 
 						<div class="flex flex-col xs:flex-row xs:justify-between gap-2 w-full -mb-2 mt-3">
 							<div class="flex gap-2 items-center">
-								<PingStatus color={activeIncidents > 0 ? 'red' : 'green'} size="sm" />
+								<PingStatus color={activeIncidents > 0 ? 'yellow' : 'green'} size="sm" />
 								<a
 									href="https://status.orcfax.io#incidents"
 									target="_blank"
 									class="text-xs text-muted-foreground underline"
 								>
-									{activeIncidents} Active Incidents
+									{activeIncidents} Unresolved
 								</a>
 							</div>
 
