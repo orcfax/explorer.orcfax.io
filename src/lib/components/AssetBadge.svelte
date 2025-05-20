@@ -57,7 +57,7 @@
 	</Tooltip.Trigger>
 	<Tooltip.Content>
 		<p>
-			{asset.name}
+			{asset.name || asset.ticker}
 			{#if asset.website}
 				-
 				<a href={asset.website} target="_blank" class="underline">
