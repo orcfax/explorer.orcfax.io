@@ -64,11 +64,11 @@
 					value={`${fact.publication_date_formatted} ${fact.publication_time_formatted}`}
 					accessory=""
 				/>
-				<FactCardField
+				<!-- <FactCardField
 					name="Tx Publication Cost"
 					value={`${fact.publication_cost} ADA`}
 					accessory=""
-				/>
+				/> -->
 			</div>
 		{:else}
 			<div class="flex flex-col">
