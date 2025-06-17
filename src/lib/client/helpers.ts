@@ -300,8 +300,10 @@ export function getNetworkUrl(url: string, networkName: string): string {
 	// Build the new URL
 	newUrl.search = '';
 	newUrl.hash = '';
+	newUrl.pathname = newUrl.pathname.includes('/facts')
+		? newUrl.pathname.split('/facts')[0]
+		: newUrl.pathname;
 	newUrl.hostname = `${networkPart}${appPart}${env.PUBLIC_BASE_URL}${newUrl.pathname}`;
-
 	return newUrl.toString();
 }
 

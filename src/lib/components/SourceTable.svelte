@@ -169,18 +169,20 @@
 					<Subscribe rowAttrs={headerRow.attrs()}>
 						<Table.Row>
 							{#each headerRow.cells as cell (cell.id)}
-								<Subscribe attrs={cell.attrs()} props={cell.props()}>
-									{#snippet children({ attrs })}
-										{#if cell.id === 'type'}
-											<Table.Head {...attrs} class="hidden md:table-cell">
-												<Render of={cell.render()} />
-											</Table.Head>
-										{:else}
-											<Table.Head {...attrs}>
-												<Render of={cell.render()} />
-											</Table.Head>
-										{/if}
-									{/snippet}
+								<Subscribe attrs={cell.attrs()} let:attrs props={cell.props()}>
+									{#if cell.id === 'type'}
+										<Table.Head {...attrs} class="hidden md:table-cell">
+											<Render of={cell.render()} />
+										</Table.Head>
+									{:else if cell.id === 'totalFacts'}
+										<Table.Head {...attrs} class="hidden md:table-cell">
+											<Render of={cell.render()} />
+										</Table.Head>
+									{:else}
+										<Table.Head {...attrs}>
+											<Render of={cell.render()} />
+										</Table.Head>
+									{/if}
 								</Subscribe>
 							{/each}
 						</Table.Row>
@@ -189,64 +191,60 @@
 			</Table.Header>
 			<Table.Body {...$tableBodyAttrs}>
 				{#each $pageRows as row, index (row.id)}
-					<Subscribe rowAttrs={row.attrs()}>
-						{#snippet children({ rowAttrs })}
-							<Table.Row
-								{...rowAttrs}
-								class={highlightRow(index, $sourcesStore, isCEX) && showWithValues
-									? 'bg-muted/50'
-									: ''}
-							>
-								{#each row.cells as cell (cell.id)}
-									<Subscribe attrs={cell.attrs()}>
-										{#snippet children({ attrs })}
-											{#if cell.id === 'name'}
-												<Table.Cell {...attrs}>
-													<div class="flex gap-3 items-center">
-														<SourceBadge source={row.original} />
-														<div class={`${isDEX ? 'hidden md:block' : ''}`}>
-															{cell.value === 'bitfinex_simple'
-																? 'Bitfinex'
-																: cell.value === 'kucoin_prices_simple'
-																	? 'Kucoin'
-																	: cell.value}
-														</div>
-													</div>
-												</Table.Cell>
-											{:else if cell.id === 'type'}
-												<Table.Cell {...attrs} class="hidden md:table-cell">
-													<Render of={cell.render()} />
-												</Table.Cell>
-											{:else if cell.id === 'totalFacts'}
-												<Table.Cell {...attrs}>
-													<Render of={formatNumber(cell.render())} />
-												</Table.Cell>
-											{:else if cell.id === 'latestFact'}
-												<Table.Cell {...attrs}>
-													<div class="flex flex-col gap-2">
-														<FeedNameplate feed={cell.value.feed} size="sm" />
-														<LatestFactColumn latestFact={cell.value} />
-													</div>
-												</Table.Cell>
-											{:else if cell.id === 'baseAssetValue' || cell.id === 'quoteAssetValue'}
-												<Table.Cell {...attrs}>
-													<FactCardField
-														name=""
-														value={cell.value}
-														{maxFieldLength}
-														ellipsisAndHover={innerWidth < 400}
-													/>
-												</Table.Cell>
-											{:else}
-												<Table.Cell {...attrs}>
-													<Render of={cell.render()} />
-												</Table.Cell>
-											{/if}
-										{/snippet}
-									</Subscribe>
-								{/each}
-							</Table.Row>
-						{/snippet}
+					<Subscribe rowAttrs={row.attrs()} let:rowAttrs>
+						<Table.Row
+							{...rowAttrs}
+							class={highlightRow(index, $sourcesStore, isCEX) && showWithValues
+								? 'bg-muted/50'
+								: ''}
+						>
+							{#each row.cells as cell (cell.id)}
+								<Subscribe attrs={cell.attrs()} let:attrs>
+									{#if cell.id === 'name'}
+										<Table.Cell {...attrs}>
+											<div class="flex gap-1 sm:gap-3 items-center w-fit">
+												<SourceBadge source={row.original} size={innerWidth < 400 ? 'sm' : 'md'} />
+												<div class={`${isDEX ? 'hidden md:block' : ''}`}>
+													{cell.value === 'bitfinex_simple'
+														? 'Bitfinex'
+														: cell.value === 'kucoin_prices_simple'
+															? 'Kucoin'
+															: cell.value}
+												</div>
+											</div>
+										</Table.Cell>
+									{:else if cell.id === 'type'}
+										<Table.Cell {...attrs} class="hidden md:table-cell">
+											<Render of={cell.render()} />
+										</Table.Cell>
+									{:else if cell.id === 'totalFacts'}
+										<Table.Cell {...attrs} class="hidden md:table-cell">
+											<Render of={formatNumber(cell.render())} />
+										</Table.Cell>
+									{:else if cell.id === 'latestFact'}
+										<Table.Cell {...attrs}>
+											<div class="flex flex-col">
+												<FeedNameplate feed={cell.value.feed} size="sm" />
+												<LatestFactColumn latestFact={cell.value} />
+											</div>
+										</Table.Cell>
+									{:else if cell.id === 'baseAssetValue' || cell.id === 'quoteAssetValue'}
+										<Table.Cell {...attrs}>
+											<FactCardField
+												name=""
+												value={cell.value}
+												{maxFieldLength}
+												ellipsisAndHover={innerWidth < 400}
+											/>
+										</Table.Cell>
+									{:else}
+										<Table.Cell {...attrs}>
+											<Render of={cell.render()} />
+										</Table.Cell>
+									{/if}
+								</Subscribe>
+							{/each}
+						</Table.Row>
 					</Subscribe>
 				{/each}
 				{#if showWithValues && isDEX}

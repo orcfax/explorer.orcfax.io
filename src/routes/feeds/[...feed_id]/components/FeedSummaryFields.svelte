@@ -53,10 +53,11 @@
 
 	<div class="flex flex-col justify-around space-y-1 w-fit">
 		<h3 class="font-bold">Funding:</h3>
-		<Badge variant="outline" class="flex w-fit">
-			<p class="text-card-foreground text-opacity-70">
-				{capitalize(feed.funding_type)}
-			</p>
+		<Badge
+			variant={feed.funding_type === 'showcase' ? 'outline' : 'default'}
+			class="capitalize text-card-foreground text-opacity-70"
+		>
+			{feed.funding_type === 'paid' ? 'sponsored' : feed.funding_type}
 		</Badge>
 	</div>
 
@@ -143,10 +144,11 @@
 
 				<div class="flex flex-col space-y-2 w-fit">
 					<h3 class="font-bold">Funding:</h3>
-					<Badge variant="outline" class="flex w-fit">
-						<p class="text-card-foreground text-opacity-70">
-							{capitalize(feed.funding_type)}
-						</p>
+					<Badge
+						variant={feed.funding_type === 'showcase' ? 'outline' : 'default'}
+						class="capitalize text-card-foreground text-opacity-70"
+					>
+						{feed.funding_type === 'paid' ? 'sponsored' : feed.funding_type}
 					</Badge>
 				</div>
 

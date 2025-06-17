@@ -10,11 +10,11 @@ export type Feed = z.infer<typeof FeedSchema>;
 export const AssetSchema = z.object({
 	id: z.string(),
 	ticker: z.string(),
-	name: z.string(),
-	type: z.enum(['Cryptocurrency', 'Fiat Currency']),
-	website: z.string(),
+	name: z.string().optional(),
+	type: z.enum(['Cryptocurrency', 'Fiat Currency', '']).optional(),
+	website: z.string().optional(),
 	fingerprint: z.string().optional(),
-	image_path: z.string(),
+	image_path: z.string().optional(),
 	background_color: z.string().optional()
 });
 export type Asset = z.infer<typeof AssetSchema>;
@@ -578,3 +578,17 @@ export const RiskRatingsSchema = z.object({
 	quote: RiskRatingSchema
 });
 export type RiskRatings = z.infer<typeof RiskRatingsSchema>;
+
+export const RSSFeedItemSchema = z.object({
+	id: z.string(),
+	title: z.string(),
+	type: z.enum(['incident_reports', 'network_updates', 'blog_posts']),
+	description: z.string(),
+	link: z.string().optional(),
+	publish_date: z.coerce.date(),
+	status: z
+		.enum(['under_review', 'identified', 'in_progress', 'mitigated', 'resolved', ''])
+		.optional()
+});
+
+export type RSSFeedItem = z.infer<typeof RSSFeedItemSchema>;

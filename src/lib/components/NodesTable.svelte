@@ -103,7 +103,7 @@
 	let innerWidth = $state(0);
 	let innerHeight = $state(0);
 
-	let maxFieldLength = $derived(innerWidth < 400 ? 8 : 100);
+	let maxFieldLength = $derived(innerWidth < 600 ? 10 : 20);
 </script>
 
 <svelte:window bind:innerWidth bind:innerHeight />
@@ -116,18 +116,28 @@
 					<Subscribe rowAttrs={headerRow.attrs()}>
 						<Table.Row>
 							{#each headerRow.cells as cell (cell.id)}
-								<Subscribe attrs={cell.attrs()} props={cell.props()}>
-									{#snippet children({ attrs })}
-										{#if cell.id === 'type'}
-											<Table.Head {...attrs} class="hidden md:table-cell">
-												<Render of={cell.render()} />
-											</Table.Head>
-										{:else}
-											<Table.Head {...attrs}>
-												<Render of={cell.render()} />
-											</Table.Head>
-										{/if}
-									{/snippet}
+								<Subscribe attrs={cell.attrs()} let:attrs props={cell.props()}>
+									{#if cell.id === 'type'}
+										<Table.Head {...attrs} class="hidden lg:table-cell">
+											<Render of={cell.render()} />
+										</Table.Head>
+									{:else if cell.id === 'totalFacts'}
+										<Table.Head {...attrs} class="hidden lg:table-cell">
+											<Render of={cell.render()} />
+										</Table.Head>
+									{:else if cell.id === 'address_locality'}
+										<Table.Head {...attrs} class="hidden md:table-cell">
+											<Render of={cell.render()} />
+										</Table.Head>
+									{:else if cell.id === 'status'}
+										<Table.Head {...attrs} class="hidden md:table-cell">
+											<Render of={cell.render()} />
+										</Table.Head>
+									{:else}
+										<Table.Head {...attrs}>
+											<Render of={cell.render()} />
+										</Table.Head>
+									{/if}
 								</Subscribe>
 							{/each}
 						</Table.Row>
@@ -136,56 +146,58 @@
 			</Table.Header>
 			<Table.Body {...$tableBodyAttrs}>
 				{#each $pageRows as row, index (row.id)}
-					<Subscribe rowAttrs={row.attrs()}>
-						{#snippet children({ rowAttrs })}
-							<Table.Row {...rowAttrs}>
-								{#each row.cells as cell (cell.id)}
-									<Subscribe attrs={cell.attrs()}>
-										{#snippet children({ attrs })}
-											{#if cell.id === 'node_urn'}
-												<Table.Cell {...attrs}>
-													<FactCardField
-														name=""
-														value={cell.value}
-														allowCopyToClipboard
-														ellipsisAndHover
-													/>
-												</Table.Cell>
-											{:else if cell.id === 'type'}
-												<Table.Cell {...attrs}>
-													<Render of={toTitleCase(cell.render())} />
-												</Table.Cell>
-											{:else if cell.id === 'status'}
-												<Table.Cell {...attrs}>
-													<div class="flex gap-2 items-center">
-														<PingStatus
-															color={cell.render() === 'active' ? 'green' : 'yellow'}
-															size="md"
-														/>
-														<Render of={toTitleCase(cell.render())} />
-													</div>
-												</Table.Cell>
-											{:else if cell.id === 'latestFact'}
-												<Table.Cell {...attrs}>
-													<div class="flex flex-col gap-2">
-														<FeedNameplate feed={cell.value.feed} size="sm" />
-														<LatestFactColumn latestFact={cell.value} />
-													</div>
-												</Table.Cell>
-											{:else if cell.id === 'totalFacts'}
-												<Table.Cell {...attrs}>
-													<Render of={formatNumber(cell.render())} />
-												</Table.Cell>
-											{:else}
-												<Table.Cell {...attrs}>
-													<Render of={cell.render()} />
-												</Table.Cell>
-											{/if}
-										{/snippet}
-									</Subscribe>
-								{/each}
-							</Table.Row>
-						{/snippet}
+					<Subscribe rowAttrs={row.attrs()} let:rowAttrs>
+						<Table.Row {...rowAttrs}>
+							{#each row.cells as cell (cell.id)}
+								<Subscribe attrs={cell.attrs()} let:attrs>
+									{#if cell.id === 'node_urn'}
+										<Table.Cell {...attrs}>
+											<FactCardField
+												name=""
+												value={cell.value}
+												allowCopyToClipboard={innerWidth > 400}
+												ellipsisAndHover={innerWidth > 400}
+												midllipsisAndHover={innerWidth < 400}
+												{maxFieldLength}
+											/>
+										</Table.Cell>
+									{:else if cell.id === 'type'}
+										<Table.Cell {...attrs} class="hidden lg:table-cell">
+											<Render of={toTitleCase(cell.render())} />
+										</Table.Cell>
+									{:else if cell.id === 'status'}
+										<Table.Cell {...attrs} class="hidden md:table-cell">
+											<div class="flex gap-2 items-center">
+												<PingStatus
+													color={cell.render() === 'active' ? 'green' : 'yellow'}
+													size="sm"
+												/>
+												<Render of={toTitleCase(cell.render())} />
+											</div>
+										</Table.Cell>
+									{:else if cell.id === 'address_locality'}
+										<Table.Cell {...attrs} class="hidden md:table-cell">
+											<Render of={cell.render()} />
+										</Table.Cell>
+									{:else if cell.id === 'latestFact'}
+										<Table.Cell {...attrs}>
+											<div class="flex flex-col items-start w-min">
+												<FeedNameplate feed={cell.value.feed} size="sm" />
+												<LatestFactColumn latestFact={cell.value} />
+											</div>
+										</Table.Cell>
+									{:else if cell.id === 'totalFacts'}
+										<Table.Cell {...attrs} class="hidden lg:table-cell">
+											<Render of={formatNumber(cell.render())} />
+										</Table.Cell>
+									{:else}
+										<Table.Cell {...attrs}>
+											<Render of={cell.render()} />
+										</Table.Cell>
+									{/if}
+								</Subscribe>
+							{/each}
+						</Table.Row>
 					</Subscribe>
 				{/each}
 			</Table.Body>

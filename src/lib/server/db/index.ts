@@ -15,7 +15,9 @@ import {
 	type DBFactStatementWithFeed,
 	NodeSchema,
 	type NodeWithMetadata,
-	type SourceWithMetadata
+	type SourceWithMetadata,
+	RSSFeedItemSchema,
+	type RSSFeedItem
 } from '$lib/types';
 import { format, sub } from 'date-fns';
 import { env } from '$env/dynamic/public';
@@ -451,7 +453,7 @@ export async function getFactMetadataForNode(
 export async function getAllSources(networkID: string): Promise<SourceWithMetadata[]> {
 	try {
 		const response = await db.collection('sources').getFullList({
-			filter: `network = "${networkID}"`
+			filter: `network = "${networkID}" && status = "active"`
 		});
 
 		const sources = z.array(SourceSchema).parse(response);
@@ -498,4 +500,38 @@ export async function getFactMetadataForSource(
 				}
 			: null
 	};
+}
+
+export async function getStatusInfo(): Promise<{
+	latestNetworkUpdate: RSSFeedItem;
+	activeIncidents: number;
+}> {
+	const records = await db.collection('rss').getFullList({ sort: '-publish_date' });
+	const parsedRSSFeedItems = z.array(RSSFeedItemSchema).parse(records);
+	const activeIncidents = parsedRSSFeedItems.filter(
+		(rssFeedItem) => rssFeedItem.type === 'incident_reports' && rssFeedItem.status !== 'resolved'
+	).length;
+
+	const latestNetworkUpdate = {
+		...parsedRSSFeedItems[0],
+		description:
+			parsedRSSFeedItems[0].type === 'blog_posts'
+				? processBlogDescription(parsedRSSFeedItems[0].description)
+				: parsedRSSFeedItems[0].description
+	};
+
+	return {
+		latestNetworkUpdate,
+		activeIncidents
+	};
+}
+
+function processBlogDescription(description: string): string {
+	// Remove leading figure and image tags
+	let processed = description.replace(/^<figure>.*?<\/figure>/, '');
+	// Remove leading date paragraph
+	processed = processed.replace(/^<p><em>.*?<\/em><\/p>/, '');
+	// Get only the first paragraph
+	const firstParagraph = processed.match(/<p>.*?<\/p>/);
+	return firstParagraph ? firstParagraph[0] : processed;
 }

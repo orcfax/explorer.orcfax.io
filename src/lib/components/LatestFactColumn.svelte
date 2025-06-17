@@ -17,11 +17,12 @@
 </script>
 
 {#if latestFact}
-	<FactCardField
-		name=""
-		value={`${getFormattedDate(latestFact.validation_date)} ${getFormattedTime(latestFact.validation_date)}`}
-		accessory={$timeSinceLastUpdate}
-	/>
+	<div class="flex flex-col">
+		<p class="hidden sm:block text-xs">
+			{`${getFormattedDate(latestFact.validation_date)} ${getFormattedTime(latestFact.validation_date)}`}
+		</p>
+		<p class="text-xs text-muted-foreground">{$timeSinceLastUpdate}</p>
+	</div>
 {:else}
 	<FactCardField name="" value="N/A" />
 {/if}

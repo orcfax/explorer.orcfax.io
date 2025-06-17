@@ -4,10 +4,13 @@
 	import SourceBadge from './SourceBadge.svelte';
 	import SourceTable from './SourceTable.svelte';
 	import Skeleton from '$lib/components/ui/skeleton/skeleton.svelte';
+	import { networkStore } from '$lib/stores/network';
 
 	interface Props {
 		archive: Promise<Archive> | null;
 	}
+
+	const { network } = $networkStore;
 
 	let { archive }: Props = $props();
 </script>
@@ -52,6 +55,10 @@
 					<p class="inline xs:hidden mt-2 text-xs text-muted-foreground">
 						{archive.details.sources.length} sources
 					</p>
+				</div>
+			{:else if network.name === 'Preview'}
+				<div class="flex flex-col">
+					<h4 class="text-lg">Unavailable for this network</h4>
 				</div>
 			{:else}
 				<div class="flex flex-col">

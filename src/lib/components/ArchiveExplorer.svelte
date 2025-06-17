@@ -5,10 +5,11 @@
 	import { selectedItemStore } from '$lib/stores/archive';
 	import type { Archive } from '$lib/types';
 	import ArchiveDownloader from '$lib/components/ArchiveDownloader.svelte';
-
-	// import { page } from '$app/stores';
+	import { networkStore } from '$lib/stores/network';
 
 	export let archive: Archive | null;
+
+	const { network } = $networkStore;
 
 	// TODO: enable url store archive nav
 	// $: selectedFile = archive && archive.files ? archive.files[0] : null;
@@ -39,7 +40,7 @@
 <div class="w-full">
 	<div class="flex gap-4">
 		<h3 class="font-bold text-2xl pb-4">Archive Explorer</h3>
-		{#if archive}
+		{#if archive?.details}
 			<ArchiveDownloader {archive} />
 		{/if}
 	</div>
@@ -59,6 +60,12 @@
 				<FileViewer file={selectedFile} />
 			</Resizable.Pane>
 		</Resizable.PaneGroup>
+	{:else if network.name === "Preview"}
+		<div
+			class="flex flex-col justify-center items-center text-center sm:text-start w-full rounded-lg bg-card text-card-foreground border"
+		>
+			<h4 class="text-lg p-12 w-fit">Unavailable for this network</h4>
+		</div>
 	{:else}
 		<div
 			class="flex flex-col justify-center items-center text-center sm:text-start w-full rounded-lg bg-card text-card-foreground border"

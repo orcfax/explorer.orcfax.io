@@ -4,10 +4,13 @@
 	import { Divide, Equal } from 'lucide-svelte';
 	import FactCardField from './FactCardField.svelte';
 	import Skeleton from '$lib/components/ui/skeleton/skeleton.svelte';
+	import { networkStore } from '$lib/stores/network';
 
 	interface Props {
 		archive: Promise<Archive> | null;
 	}
+
+	const { network } = $networkStore;
 
 	let { archive }: Props = $props();
 
@@ -94,6 +97,10 @@
 							</div>
 						{/if}
 					{/if}
+				</div>
+			{:else if network.name === 'Preview'}
+				<div class="flex flex-col">
+					<h4 class="text-lg">Unavailable for this network</h4>
 				</div>
 			{:else}
 				<div class="flex flex-col">

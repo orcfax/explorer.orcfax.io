@@ -46,7 +46,11 @@
 					}}
 					{maxFieldLength}
 				/>
-				<FactCardField name="Storage Cost" value={`-`} accessory="" />
+				<!-- <FactCardField name="Storage Cost" value={`-`} accessory="" /> -->
+			</div>
+		{:else if network.name === 'Preview'}
+			<div class="flex flex-col">
+				<h4 class="text-lg">Unavailable for this network</h4>
 			</div>
 		{:else}
 			<div class="flex flex-col">

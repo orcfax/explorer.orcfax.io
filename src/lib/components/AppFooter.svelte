@@ -6,6 +6,8 @@
 	import OpenLink from '$lib/icons/OpenLink.svelte';
 	import TwitterIcon from '$lib/icons/TwitterIcon.svelte';
 	import orcfaxLogo from '$lib/images/orcfax_logo.png';
+
+	$: year = new Date().getFullYear();
 </script>
 
 <footer
@@ -16,7 +18,7 @@
 			<img class="w-12 bg-primary rounded-full" src={orcfaxLogo} alt="Orcfax Logo" />
 		</a>
 
-		<p class="text-sm font-medium">Copyright © Orcfax Ltd. 2024</p>
+		<p class="text-sm font-medium">Copyright © Orcfax Ltd. {year}</p>
 	</div>
 
 	<div class="flex flex-col xs:flex-row items-center justify-center gap-4">
