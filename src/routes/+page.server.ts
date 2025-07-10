@@ -1,26 +1,17 @@
 export const ssr = false;
 
-import {
-	getAllSources,
-	getActiveFeedsCount,
-	getAllFactsCount,
-	getAllNodes,
-	getTodaysFactsCount,
-	getStatusInfo
-} from '$lib/server/db';
 import type { PageServerLoad } from './$types';
+import { getAllNodes, getAllSources, getNetworkSummary } from '$lib/server/db';
 
 export const load: PageServerLoad = async ({ parent }) => {
 	const { network, networks } = await parent();
 
 	return {
-		totalFacts: getAllFactsCount(network),
-		totalFacts24Hour: getTodaysFactsCount(network),
-		totalActiveFeeds: getActiveFeedsCount(network),
-		nodes: getAllNodes(network),
-		sources: getAllSources(network.id),
-		statusInfo: getStatusInfo(),
 		network,
-		networks
+		networks,
+		// Lazy load / stream dashboard, nodes, and sources
+		dashboard: getNetworkSummary(network.id),
+		nodes: getAllNodes(network),
+		sources: getAllSources(network.id)
 	};
 };

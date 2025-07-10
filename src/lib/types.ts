@@ -26,14 +26,6 @@ export const NetworkSelectSchema = z.object({
 });
 export type NetworkSelect = z.infer<typeof NetworkSelectSchema>;
 
-export interface OrcfaxStats {
-	totalFacts: number;
-	totalFacts24Hour: number;
-	totalActiveFeeds: number;
-	sources: Source[];
-	nodes: NodeWithMetadata[];
-}
-
 export const TagSchema = z.object({
 	name: z.enum([
 		'System Identifier',
@@ -102,9 +94,9 @@ export const SourceSchema = z.object({
 	image_path: z.string(),
 	background_color: z.string(),
 	// For CEX sources, assetPairValue is used. For DEX sources base and quote will be used.
-	baseAssetValue: z.number().optional(),
-	quoteAssetValue: z.number().optional(),
-	assetPairValue: z.number().optional()
+	baseAssetValue: z.number().nullable().optional(),
+	quoteAssetValue: z.number().nullable().optional(),
+	assetPairValue: z.number().nullable().optional()
 });
 
 export type Source = z.infer<typeof SourceSchema>;
@@ -114,7 +106,7 @@ export const DBFactStatementSchema = z.object({
 	network: z.string(),
 	policy: z.string(),
 	fact_urn: z.string(),
-	feed: z.string(),
+	feed: z.union([z.string(), DBFeedWithAssetsSchema]),
 	value: z.coerce.number(),
 	value_inverse: z.coerce.number(),
 	validation_date: z.coerce.date(),
@@ -176,18 +168,18 @@ export const DBFeedWithDataSchema = DBFeedWithAssetsSchema.extend({
 	totalFacts: z.number(),
 	type_description: z.string(),
 	type_description_short: z.string(),
-	oneDayAgo: z.number(),
-	threeDaysAgo: z.number(),
-	sevenDaysAgo: z.number()
+	oneDayAgo: z.coerce.number(),
+	threeDaysAgo: z.coerce.number(),
+	sevenDaysAgo: z.coerce.number()
 });
 
 export type DBFeedWithData = z.infer<typeof DBFeedWithDataSchema>;
 
 export const FeedHistoricalValuesSchema = z.object({
 	feedID: z.string(),
-	oneDayAgo: z.number(),
-	threeDaysAgo: z.number(),
-	sevenDaysAgo: z.number()
+	oneDayAgo: z.coerce.number(),
+	threeDaysAgo: z.coerce.number(),
+	sevenDaysAgo: z.coerce.number()
 });
 
 export type FeedHistoricalValues = z.infer<typeof FeedHistoricalValuesSchema>;
@@ -595,3 +587,25 @@ export const RSSFeedItemSchema = z.object({
 });
 
 export type RSSFeedItem = z.infer<typeof RSSFeedItemSchema>;
+
+export const NetworkSummarySchema = z.object({
+	totalFacts: z.number(),
+	totalFacts24Hour: z.number(),
+	totalActiveFeeds: z.number(),
+	activeIncidents: z.number(),
+	latestNetworkUpdate: RSSFeedItemSchema.nullable(),
+	nodes: z.array(
+		NodeSchema.pick({
+			id: true,
+			node_urn: true,
+			network: true,
+			status: true,
+			type: true,
+			name: true
+		})
+	),
+	sources: z.array(SourceSchema.pick({ id: true, name: true, network: true, type: true })),
+	lastUpdated: z.string()
+});
+
+export type NetworkSummary = z.infer<typeof NetworkSummarySchema>;

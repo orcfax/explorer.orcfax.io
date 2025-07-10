@@ -2,9 +2,11 @@
 
 A Human-Readable UI for Orcfax Oracle Network hosted at [explorer.orcfax.io](https://explorer.orcfax.io).
 
-Uses the [explorer-index](https://github.com/orcfax/explorer-index) to index and sync fact statement, feed, node, source, and archive data for display on the explorer.
+Depends on the following repos:
 
-Also uses the [static-archive-viewer](https://github.com/orcfax/static-archive-viewer) for downloading and viewing fact statement archives offline.
+- [explorer-index](https://github.com/orcfax/explorer-index) to index and sync fact statement, feed, node, source, and archive data for display on the explorer.
+- [static-archive-viewer](https://github.com/orcfax/static-archive-viewer) for downloading and viewing fact statement archives offline.
+- [explorer-database](https://github.com/orcfax/explorer-database) to store all the data for the explorer along with some custom hooks.
 
 ## Overview
 

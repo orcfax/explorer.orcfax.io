@@ -12,27 +12,14 @@
 </script>
 
 <main class="flex flex-col items-center w-full px-10 min-h-full overflow-x-hidden">
-	{#await Promise.all([
-		data.totalFacts,
-		data.totalFacts24Hour,
-		data.totalActiveFeeds,
-		data.nodes,
-		data.sources,
-		data.statusInfo
-	])}
+	{#await data.dashboard}
 		<NetworkSummaryLoadingSkeleton />
-	{:then summary}
-		<NetworkSummary
-			summary={{
-				totalFacts: summary[0],
-				totalFacts24Hour: summary[1],
-				totalActiveFeeds: summary[2],
-				nodes: summary[3],
-				sources: summary[4]
-			}}
-			latestNetworkUpdate={summary[5].latestNetworkUpdate}
-			activeIncidents={summary[5].activeIncidents}
-		/>
+	{:then dashboard}
+		{#if dashboard}
+			<NetworkSummary summary={dashboard} />
+		{:else}
+			<p>Error retrieving network summary</p>
+		{/if}
 	{/await}
 	<div class="w-full max-w-max md:mt-6">
 		<section id={`feeds`} class="flex flex-col items-center mt-14 scroll-mt-24">

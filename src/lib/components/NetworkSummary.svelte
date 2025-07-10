@@ -2,7 +2,7 @@
 	import * as Card from '$lib/components/ui/card';
 	import FactIcon from '$lib/icons/FactIcon.svelte';
 	import DataSourceIcon from '$lib/icons/DataSourceIcon.svelte';
-	import type { OrcfaxStats, RSSFeedItem } from '$lib/types';
+	import type { NetworkSummary } from '$lib/types';
 	import { Nfc, SatelliteDish } from 'lucide-svelte';
 	import NodeIcon from '$lib/icons/NodeIcon.svelte';
 	import PingStatus from '$lib/components/PingStatus.svelte';
@@ -10,11 +10,15 @@
 	import { marked } from 'marked';
 	import { capitalize } from '$lib/client/helpers';
 
-	export let summary: OrcfaxStats;
-	export let latestNetworkUpdate: RSSFeedItem;
-	export let activeIncidents: number;
+	export let summary: NetworkSummary;
 
 	const { network } = $networkStore;
+
+	$: totalFacts = summary.totalFacts;
+	$: totalFacts24Hour = summary.totalFacts24Hour;
+	$: totalActiveFeeds = summary.totalActiveFeeds;
+	$: latestNetworkUpdate = summary.latestNetworkUpdate;
+	$: activeIncidents = summary.activeIncidents;
 
 	$: totalNodes = summary.nodes.length;
 	$: activeNodes = summary.nodes.filter((node) => node.status === 'active').length;
@@ -36,7 +40,7 @@
 						<Nfc class="stroke-primary" size="30" />
 					</Card.Header>
 					<Card.Content>
-						<div class="text-2xl font-bold">{summary.totalActiveFeeds}</div>
+						<div class="text-2xl font-bold">{totalActiveFeeds}</div>
 						<a
 							href="https://orcfax.io#connect"
 							target="_blank"
@@ -55,10 +59,10 @@
 					</Card.Header>
 					<Card.Content>
 						<div class="text-2xl font-bold">
-							{summary.totalFacts.toLocaleString()}
+							{totalFacts.toLocaleString()}
 						</div>
 						<p class="text-xs text-green-600 dark:text-green-500 font-bold dark:font-semibold mt-1">
-							+{summary.totalFacts24Hour.toLocaleString()} Today (UTC)
+							+{totalFacts24Hour.toLocaleString()} Today (UTC)
 						</p>
 					</Card.Content>
 				</Card.Root>
@@ -93,30 +97,44 @@
 						<SatelliteDish class="stroke-primary" size="30" />
 					</Card.Header>
 					<Card.Content class="mt-2">
-						<div class="flex gap-3">
-							<div class="w-1 bg-primary rounded-full"></div>
-							<div class="w-fit">
-								<a
-									href={latestNetworkUpdate.link}
-									target="_blank"
-									class="text-sm sm:text-lg font-bold underline"
-								>
-									{latestNetworkUpdate.title}
-								</a>
+						{#if latestNetworkUpdate}
+							<div class="flex gap-3">
+								<div class="w-1 bg-primary rounded-full"></div>
+								<div class="w-fit">
+									<a
+										href={latestNetworkUpdate.link}
+										target="_blank"
+										class="text-sm sm:text-lg font-bold underline"
+									>
+										{latestNetworkUpdate.title}
+									</a>
 
-								<p class="text-xs sm:text-sm text-muted-foreground">
-									{@html marked(latestNetworkUpdate.description)}
-								</p>
+									<p class="text-xs sm:text-sm text-muted-foreground">
+										{@html marked(latestNetworkUpdate.description)}
+									</p>
+								</div>
 							</div>
-						</div>
 
-						{#if latestNetworkUpdate.type === 'incident_reports'}
-							<p class="pt-4 text-xs sm:text-sm">
-								<span class="font-bold">Status:</span>
-								<span class="text-muted-foreground"
-									>{capitalize(latestNetworkUpdate?.status ?? '')}</span
-								>
-							</p>
+							{#if latestNetworkUpdate.type === 'incident_reports'}
+								<p class="pt-4 text-xs sm:text-sm">
+									<span class="font-bold">Status:</span>
+									<span class="text-muted-foreground"
+										>{capitalize(latestNetworkUpdate?.status ?? '')}</span
+									>
+								</p>
+							{/if}
+						{:else}
+							<div class="flex gap-3">
+								<div class="w-1 bg-primary rounded-full"></div>
+								<div class="w-fit">
+									<p class="text-sm sm:text-lg font-bold text-muted-foreground">
+										No network updates available
+									</p>
+									<p class="text-xs sm:text-sm text-muted-foreground">
+										Check back later for updates
+									</p>
+								</div>
+							</div>
 						{/if}
 
 						<hr class="my-4" />

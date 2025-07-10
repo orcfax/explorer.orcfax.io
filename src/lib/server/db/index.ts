@@ -7,17 +7,18 @@ import {
 	type Feed,
 	type DBFeedWithData,
 	type Network,
-	SourceSchema,
 	NetworkSchema,
 	PolicySchema,
 	DBFeedWithAssetsSchema,
 	DBFactStatementWithFeedSchema,
 	type DBFactStatementWithFeed,
-	NodeSchema,
 	type NodeWithMetadata,
 	type SourceWithMetadata,
-	RSSFeedItemSchema,
-	type RSSFeedItem
+	DBFeedWithDataSchema,
+	type NetworkSummary,
+	NetworkSummarySchema,
+	NodeWithMetadataSchema,
+	SourceWithMetadataSchema
 } from '$lib/types';
 import { format, sub } from 'date-fns';
 import { env } from '$env/dynamic/public';
@@ -28,23 +29,6 @@ import { error } from '@sveltejs/kit';
 // Initialize Database
 const db = new PocketBase(env.PUBLIC_DB_HOST);
 db.autoCancellation(false);
-
-export async function getTodaysFactsCount(network: Network): Promise<number> {
-	const dateFilter = format(new Date(), 'yyyy-MM-dd');
-
-	const { totalItems } = await db.collection('facts').getList(1, 5000, {
-		filter: `network = "${network.id}" && publication_date >='${dateFilter} 00:00:00.000Z'`
-	});
-
-	return totalItems;
-}
-
-export async function getAllFactsCount(network: Network): Promise<number> {
-	const { totalItems } = await db
-		.collection('facts')
-		.getList(1, 1, { filter: `network = "${network.id}"` });
-	return totalItems;
-}
 
 export async function getFactsPage(
 	networkID: string,
@@ -80,53 +64,10 @@ export async function getFactsPage(
 
 export async function getFeeds(network: Network): Promise<DBFeedWithData[]> {
 	try {
-		const feedRecords = await db
-			.collection('feeds')
-			.getFullList({ filter: `network = "${network.id}"`, expand: 'base_asset,quote_asset' });
-		const dbFeeds = feedRecords.map((feed) => {
-			return {
-				...feed,
-				base_asset: feed.expand?.base_asset,
-				quote_asset: feed.expand?.quote_asset
-			};
-		});
-		const parsedFeeds = z.array(DBFeedWithAssetsSchema).parse(dbFeeds);
+		const response = await fetch(`${env.PUBLIC_DB_HOST}/api/explorer/feeds/${network.id}`);
+		const data = await response.json();
+		const feeds = z.array(DBFeedWithDataSchema).parse(data);
 
-		const concurrencyLimit = 4;
-		const feeds: DBFeedWithData[] = [];
-
-		// Process feeds in batches of 2
-		for (let i = 0; i < parsedFeeds.length; i += concurrencyLimit) {
-			const batch = parsedFeeds.slice(i, i + concurrencyLimit);
-			const batchPromises = batch.map(async (dbFeed) => {
-				const [factRecord, historicalValues] = await Promise.all([
-					db.collection('facts').getList(1, 1, {
-						filter: `network = "${network.id}" && feed="${dbFeed.id}"`,
-						sort: '-validation_date'
-					}),
-					fetchHistoricalValues(network.id, dbFeed.id)
-				]);
-
-				const latestFact =
-					factRecord && factRecord.items[0]
-						? DBFactStatementSchema.parse(factRecord.items[0])
-						: null;
-				const totalFacts = factRecord.totalItems;
-
-				return {
-					...dbFeed,
-					latestFact,
-					type_description: 'Current Exchange Rate',
-					type_description_short: 'CER',
-					totalFacts,
-					...historicalValues
-				};
-			});
-
-			// Wait for the current batch to complete before moving to the next
-			const batchResults = await Promise.all(batchPromises);
-			feeds.push(...batchResults);
-		}
 		return feeds;
 	} catch (error) {
 		console.error(`Error retrieving feed records: ${error}`);
@@ -235,13 +176,6 @@ export async function getAllFeedsHistoricalValues(network: Network, feeds: DBFee
 	return historicalValues;
 }
 
-export async function getActiveFeedsCount(network: Network): Promise<number> {
-	const { totalItems } = await db
-		.collection('feeds')
-		.getList(1, 1, { filter: `network = "${network.id}" && status = "active"` });
-	return totalItems;
-}
-
 export async function doesFactExist(network: Network, factID?: string): Promise<boolean> {
 	if (!factID) return false;
 	const fact = await getFactByURN(network, factID);
@@ -285,7 +219,7 @@ export async function getFeedFactsByDateRange(
 	feedID: string,
 	rangeOfDays: number,
 	startDate: Date
-): Promise<(DBFactStatement & { feed: string })[]> {
+): Promise<DBFactStatement[]> {
 	try {
 		const endDateFilter = format(
 			new Date(startDate.getTime() - (rangeOfDays - 1) * 24 * 60 * 60 * 1000),
@@ -398,140 +332,37 @@ export async function getAllNetworks(): Promise<Network[]> {
 	}
 }
 
+export async function getNetworkSummary(networkID: string): Promise<NetworkSummary | null> {
+	try {
+		const response = await fetch(`${env.PUBLIC_DB_HOST}/api/explorer/dashboard/${networkID}`);
+		const data = await response.json();
+		return NetworkSummarySchema.parse(data);
+	} catch (error) {
+		console.error('Error retrieving network summary', error);
+		return null;
+	}
+}
+
 export async function getAllNodes(network: Network): Promise<NodeWithMetadata[]> {
 	try {
-		const response = await db.collection('nodes').getFullList({
-			filter: `network = "${network.id}"`
-		});
-
-		const nodes = z.array(NodeSchema).parse(response);
-
-		const nodesWithMetadata = await Promise.all(
-			nodes.map(async (node) => {
-				const metadata = await getFactMetadataForNode(network.id, node.id);
-				return {
-					...node,
-					latestFact: metadata.latestFact,
-					totalFacts: metadata.totalItems
-				};
-			})
-		);
-
-		return nodesWithMetadata;
+		const response = await fetch(`${env.PUBLIC_DB_HOST}/api/explorer/nodes/${network.id}`);
+		const data = await response.json();
+		const nodes = z.array(NodeWithMetadataSchema).parse(data);
+		return nodes;
 	} catch (error) {
 		console.error('Error retrieving node records', error);
 		return [];
 	}
-}
-
-export async function getFactMetadataForNode(
-	networkID: string,
-	nodeID: string
-): Promise<{ totalItems: number; latestFact: DBFactStatement | null }> {
-	const { items, totalItems } = await db.collection('facts').getList(1, 1, {
-		filter: `network = "${networkID}" && participating_nodes ~ "${nodeID}"`,
-		expand: 'feed.base_asset,feed.quote_asset',
-		sort: '-validation_date'
-	});
-	const latestFact = DBFactStatementSchema.safeParse(items[0]);
-
-	return {
-		totalItems,
-		latestFact: latestFact.success
-			? {
-					...latestFact.data,
-					feed: {
-						...items[0].expand?.feed,
-						base_asset: items[0].expand?.feed.expand?.base_asset,
-						quote_asset: items[0].expand?.feed.expand?.quote_asset
-					}
-				}
-			: null
-	};
 }
 
 export async function getAllSources(networkID: string): Promise<SourceWithMetadata[]> {
 	try {
-		const response = await db.collection('sources').getFullList({
-			filter: `network = "${networkID}" && status = "active"`
-		});
-
-		const sources = z.array(SourceSchema).parse(response);
-
-		const sourcesWithMetadata = await Promise.all(
-			sources.map(async (source) => {
-				const metadata = await getFactMetadataForSource(networkID, source.id);
-				return {
-					...source,
-					latestFact: metadata.latestFact,
-					totalFacts: metadata.totalItems
-				};
-			})
-		);
-
-		return sourcesWithMetadata;
+		const response = await fetch(`${env.PUBLIC_DB_HOST}/api/explorer/sources/${networkID}`);
+		const data = await response.json();
+		const sources = z.array(SourceWithMetadataSchema).parse(data);
+		return sources;
 	} catch (error) {
-		console.error('Error retrieving node records', error);
+		console.error('Error retrieving source records', error);
 		return [];
 	}
-}
-
-export async function getFactMetadataForSource(
-	networkID: string,
-	sourceID: string
-): Promise<{ totalItems: number; latestFact: DBFactStatement | null }> {
-	const { items, totalItems } = await db.collection('facts').getList(1, 1, {
-		filter: `network = "${networkID}" && sources ~ "${sourceID}"`,
-		expand: 'feed.base_asset,feed.quote_asset',
-		sort: '-validation_date'
-	});
-	const latestFact = DBFactStatementSchema.safeParse(items[0]);
-
-	return {
-		totalItems,
-		latestFact: latestFact.success
-			? {
-					...latestFact.data,
-					feed: {
-						...items[0].expand?.feed,
-						base_asset: items[0].expand?.feed.expand?.base_asset,
-						quote_asset: items[0].expand?.feed.expand?.quote_asset
-					}
-				}
-			: null
-	};
-}
-
-export async function getStatusInfo(): Promise<{
-	latestNetworkUpdate: RSSFeedItem;
-	activeIncidents: number;
-}> {
-	const records = await db.collection('rss').getFullList({ sort: '-publish_date' });
-	const parsedRSSFeedItems = z.array(RSSFeedItemSchema).parse(records);
-	const activeIncidents = parsedRSSFeedItems.filter(
-		(rssFeedItem) => rssFeedItem.type === 'incident_reports' && rssFeedItem.status !== 'resolved'
-	).length;
-
-	const latestNetworkUpdate = {
-		...parsedRSSFeedItems[0],
-		description:
-			parsedRSSFeedItems[0].type === 'blog_posts'
-				? processBlogDescription(parsedRSSFeedItems[0].description)
-				: parsedRSSFeedItems[0].description
-	};
-
-	return {
-		latestNetworkUpdate,
-		activeIncidents
-	};
-}
-
-function processBlogDescription(description: string): string {
-	// Remove leading figure and image tags
-	let processed = description.replace(/^<figure>.*?<\/figure>/, '');
-	// Remove leading date paragraph
-	processed = processed.replace(/^<p><em>.*?<\/em><\/p>/, '');
-	// Get only the first paragraph
-	const firstParagraph = processed.match(/<p>.*?<\/p>/);
-	return firstParagraph ? firstParagraph[0] : processed;
 }

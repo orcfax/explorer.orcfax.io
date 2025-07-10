@@ -136,10 +136,14 @@
 										</Table.Cell>
 									{:else if cell.id === 'latestFact'}
 										<Table.Cell {...attrs}>
-											<div class="flex flex-col items-start w-min">
-												<FeedNameplate feed={cell.value.feed} size="sm" />
-												<LatestFactColumn latestFact={cell.value} />
-											</div>
+											{#if cell.value}
+												<div class="flex flex-col items-start w-min">
+													<FeedNameplate feed={cell.value.feed} size="sm" />
+													<LatestFactColumn latestFact={cell.value} />
+												</div>
+											{:else}
+												<span class="text-muted-foreground"> N/A </span>
+											{/if}
 										</Table.Cell>
 									{:else if cell.id === 'totalFacts'}
 										<Table.Cell {...attrs} class="hidden lg:table-cell">
