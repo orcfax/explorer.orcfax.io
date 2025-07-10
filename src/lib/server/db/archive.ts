@@ -60,8 +60,8 @@ export async function getArchive(
 		const archivedBagArrayBuffer = await archivedBagResponse.arrayBuffer();
 		const archivedBagTarball = new Uint8Array(archivedBagArrayBuffer);
 
-		const directoryTree = await buildFileExplorer(archivedBagTarball);
-		const files = await getArchivedFilesFromTarball(archivedBagTarball);
+		const directoryTree = await buildFileExplorer(archivedBagTarball.buffer);
+		const files = await getArchivedFilesFromTarball(archivedBagTarball.buffer);
 		const details = await getDetailsFromArchive(network.id, files, sourceType);
 
 		return { fact, directoryTree, files, details };
@@ -96,8 +96,8 @@ export async function getArchiveFromURN(
 		const archivedBagArrayBuffer = await archivedBagResponse.arrayBuffer();
 		const archivedBagTarball = new Uint8Array(archivedBagArrayBuffer);
 
-		const directoryTree = await buildFileExplorer(archivedBagTarball);
-		const files = await getArchivedFilesFromTarball(archivedBagTarball);
+		const directoryTree = await buildFileExplorer(archivedBagTarball.buffer);
+		const files = await getArchivedFilesFromTarball(archivedBagTarball.buffer);
 		const details = await getDetailsFromArchive(networkID, files, sourceType);
 		const fact = getFactStatementFromArchive(files);
 
