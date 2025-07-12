@@ -551,8 +551,7 @@ const dataSchema = z.object({
 	asset_name: z.string(),
 	subject: z.string(),
 	fingerprint: z.string(),
-	risk_category: z.string(),
-	reference_date: z.string()
+	risk_category: z.string()
 });
 export const XerberusRiskRatingAPIResponseSchema = z.object({
 	status: z.string(),
