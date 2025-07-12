@@ -126,6 +126,30 @@
 		{:else if $results.factStatements.length === 0 && $results.feeds.length === 0}
 			<Command.Empty>No results found</Command.Empty>
 		{:else}
+			{#if $results.feeds.length > 0}
+				<Command.Group heading="Feeds">
+					{#each $results.feeds as item}
+						<Command.Item
+							value={getFeedUrl(item)}
+							onSelect={() => onSelectItem(item)}
+							data-value={getFeedUrl(item)}
+						>
+							<div class="flex gap-2 items-center">
+								<FeedNameplate feed={item} size="md" label="typeAndName" />
+								<div class="text-sm text-muted-foreground">
+									<FactCardField
+										name=""
+										value={item.source_type === 'DEX'
+											? 'Decentralized Exchange Feed'
+											: 'Centralized Exchange Feed'}
+									/>
+								</div>
+							</div>
+						</Command.Item>
+					{/each}
+				</Command.Group>
+			{/if}
+
 			{#if $results.factStatements.length > 0}
 				<Command.Group heading="Fact Statements">
 					{#each $results.factStatements as item}
@@ -149,30 +173,6 @@
 											item.validation_date
 										)}</span
 									>
-								</div>
-							</div>
-						</Command.Item>
-					{/each}
-				</Command.Group>
-			{/if}
-
-			{#if $results.feeds.length > 0}
-				<Command.Group heading="Feeds">
-					{#each $results.feeds as item}
-						<Command.Item
-							value={getFeedUrl(item)}
-							onSelect={() => onSelectItem(item)}
-							data-value={getFeedUrl(item)}
-						>
-							<div class="flex gap-2 items-center">
-								<FeedNameplate feed={item} size="md" label="typeAndName" />
-								<div class="text-sm text-muted-foreground">
-									<FactCardField
-										name=""
-										value={item.source_type === 'DEX'
-											? 'Decentralized Exchange Feed'
-											: 'Centralized Exchange Feed'}
-									/>
 								</div>
 							</div>
 						</Command.Item>
