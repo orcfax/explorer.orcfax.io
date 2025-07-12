@@ -5,6 +5,7 @@ import { Readable } from 'stream';
 import { type RequestHandler } from '@sveltejs/kit';
 import archiveViewer from '$lib/archive-viewer.html?raw';
 import { getArchiveFromURN } from '$lib/server/db/archive';
+import { logError } from '$lib/server/logger';
 
 export const GET: RequestHandler = async ({ url }) => {
 	try {
@@ -44,8 +45,8 @@ export const GET: RequestHandler = async ({ url }) => {
 			}
 		});
 	} catch (error) {
-		console.error(error);
-		return new Response('Internal Server Error', { status: 500 });
+		logError(`Error fetching archive`, error);
+		return new Response(null, { status: 500, statusText: 'Internal Server Error' });
 	}
 };
 

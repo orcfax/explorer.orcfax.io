@@ -11,6 +11,7 @@
 	import { getFeedUrl, getFormattedDate, getFormattedTime } from '$lib/client/helpers';
 	import { networkStore } from '$lib/stores/network';
 	import FactCardField from './FactCardField.svelte';
+	import { logError } from '$lib/client/api';
 
 	let isOpen = false;
 	let metaKey: '⌘' | 'Ctrl';
@@ -44,7 +45,8 @@
 			if (typeof item.feed === 'string') {
 				isOpen = false;
 				isLoading = false;
-				throw new Error('Full feed object is required');
+				await logError('Full feed object is required in CommandSearch');
+				return;
 			} else await goto(getFeedUrl(item.feed, item.fact_urn));
 		} else {
 			await goto(getFeedUrl(item));
@@ -74,7 +76,7 @@
 				results.set({ factStatements: [], feeds: [] });
 			}
 		} catch (error) {
-			console.error('Search request failed:', error);
+			await logError('Search request failed', error);
 			results.set({ factStatements: [], feeds: [] });
 		} finally {
 			isLoading = false;

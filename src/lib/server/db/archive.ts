@@ -26,8 +26,8 @@ import {
 	type DBFeedWithData,
 	type Network
 } from '$lib/types';
-import { error } from '@sveltejs/kit';
 import { z } from 'zod';
+import { logError } from '$lib/server/logger';
 
 export async function getArchive(
 	network: Network,
@@ -49,12 +49,12 @@ export async function getArchive(
 		);
 
 		if (!archivedBagResponse.body || !archivedBagResponse.ok) {
-			error(404, 'Unable to retrieve fact statement archival package');
+			throw new Error(`Bad response from Arweave`);
 		}
 
 		const contentType = archivedBagResponse.headers.get('content-type');
 		if (!contentType || (!contentType.includes('x-tar') && !contentType.includes('gzip'))) {
-			throw new Error(`Unexpected content type: ${contentType}`);
+			throw new Error(`Unexpected content type: ${contentType} for ${fact.fact_urn}`);
 		}
 
 		const archivedBagArrayBuffer = await archivedBagResponse.arrayBuffer();
@@ -66,7 +66,7 @@ export async function getArchive(
 
 		return { fact, directoryTree, files, details };
 	} catch (e) {
-		console.error('Something went wrong fetching the archive: ', JSON.stringify(e, null, 2));
+		await logError(`Something went wrong fetching the archive for ${fact.fact_urn}`, e);
 		return {
 			fact,
 			directoryTree: null,
@@ -85,7 +85,7 @@ export async function getArchiveFromURN(
 		const archivedBagResponse = await fetch(`https://arweave.net/${storage_urn.slice(12)}`, {});
 
 		if (!archivedBagResponse.body || !archivedBagResponse.ok) {
-			error(404, 'Unable to retrieve fact statement archival package');
+			throw new Error(`Bad response from Arweave`);
 		}
 
 		const contentType = archivedBagResponse.headers.get('content-type');
@@ -103,7 +103,7 @@ export async function getArchiveFromURN(
 
 		return { fact, directoryTree, files, details, archiveZip: archivedBagTarball };
 	} catch (e) {
-		console.error('Something went wrong fetching the archive: ', JSON.stringify(e, null, 2));
+		await logError(`Something went wrong fetching the archive for ${storage_urn}`, e);
 		return null;
 	}
 }
@@ -130,73 +130,67 @@ async function getDetailsFromArchive(
 	files: ArchivedFile[],
 	sourceType: string
 ): Promise<ArchiveDetails | null> {
-	try {
-		// Get message file names for source matching
-		const allSources = await getAllSources(networkID);
-		const allFileNames = files.map((file) => file.fileName);
-		const messageFileNames = allFileNames
-			.filter((name) => name.includes('message-'))
-			.map((name) => name.toLowerCase());
+	// Get message file names for source matching
+	const allSources = await getAllSources(networkID);
+	const allFileNames = files.map((file) => file.fileName);
+	const messageFileNames = allFileNames
+		.filter((name) => name.includes('message-'))
+		.map((name) => name.toLowerCase());
 
-		// Map file names to sources with exact name matching
-		let sources = messageFileNames.map((name) => {
-			const match = name.match(/-([\w.]+?)(?:\.tick_|-\d{4}-\d{2}-\d{2}T)/i);
-			if (!match) throw new Error('Error retrieving source name from file name');
-			const source = allSources.find((source) => {
-				return match[1].toLowerCase() === source.name.toLowerCase();
-			});
-			// TODO: This isn't being caught properly
-			if (!source) throw new Error(`Source not found in db: ${name}`);
-			return source;
+	// Map file names to sources with exact name matching
+	let sources = messageFileNames.map((name) => {
+		const match = name.match(/-([\w.]+?)(?:\.tick_|-\d{4}-\d{2}-\d{2}T)/i);
+		if (!match) throw new Error('Error retrieving source name from file name');
+		const source = allSources.find((source) => {
+			return match[1].toLowerCase() === source.name.toLowerCase();
 		});
+		if (!source) throw new Error(`Source not found in db: ${name}`);
+		return source;
+	});
 
-		// Get validation file
-		let validationFileContents: CEXValidationFile | DEXValidationFile;
-		const validationFile = files.find((file) => file.fileName.includes('validation-'));
-		if (!validationFile) throw new Error('Validation file not found in archive');
+	// Get validation file
+	let validationFileContents: CEXValidationFile | DEXValidationFile;
+	const validationFile = files.find((file) => file.fileName.includes('validation-'));
+	if (!validationFile) throw new Error('Validation file not found in archive');
 
-		// Parse validation file contents
-		if (sourceType === 'CEX') {
-			validationFileContents = CEXValidationFileSchema.parse(validationFile.content);
-			const collectedDataPoints =
-				validationFileContents.additionalType[1].about.variableMeasured.valueReference || [];
-			sources = sources.map((source, i) => ({
-				...source,
-				assetPairValue: collectedDataPoints[i]
-			}));
-		} else if (sourceType === 'DEX') {
-			validationFileContents = DEXValidationFileSchema.parse(validationFile.content);
-			const collectedBaseDataPoints =
-				validationFileContents.additionalType[1].about.valueReference[0] || [];
-			const collectedQuoteDataPoints =
-				validationFileContents.additionalType[1].about.valueReference[1] || [];
-			sources = sources.map((source, i) => ({
-				...source,
-				baseAssetValue: collectedBaseDataPoints[i],
-				quoteAssetValue: collectedQuoteDataPoints[i]
-			}));
-		} else {
-			throw new Error('Unknown source type');
-		}
-		const collectionTimestamp = validationFileContents.additionalType[0].recordedIn.hasPart[0].text;
-		const collectorNodeID = validationFileContents.isBasedOn.identifier;
-		const contentSignature = validationFileContents.additionalType[0].recordedIn.description.sha256;
-		const calculationMethod = validationFileContents.additionalType[1].description;
-		const validationDate = validationFileContents.additionalType[0].startDate;
-
-		return {
-			sources: z.array(SourceSchema).parse(sources),
-			collectionTimestamp,
-			collectorNodeID,
-			contentSignature,
-			calculationMethod,
-			validationDate,
-			sourceType
-		};
-	} catch (e) {
-		console.error('error', e);
-		return null;
+	// Parse validation file contents
+	if (sourceType === 'CEX') {
+		validationFileContents = CEXValidationFileSchema.parse(validationFile.content);
+		const collectedDataPoints =
+			validationFileContents.additionalType[1].about.variableMeasured.valueReference || [];
+		sources = sources.map((source, i) => ({
+			...source,
+			assetPairValue: collectedDataPoints[i]
+		}));
+	} else if (sourceType === 'DEX') {
+		validationFileContents = DEXValidationFileSchema.parse(validationFile.content);
+		const collectedBaseDataPoints =
+			validationFileContents.additionalType[1].about.valueReference[0] || [];
+		const collectedQuoteDataPoints =
+			validationFileContents.additionalType[1].about.valueReference[1] || [];
+		sources = sources.map((source, i) => ({
+			...source,
+			baseAssetValue: collectedBaseDataPoints[i],
+			quoteAssetValue: collectedQuoteDataPoints[i]
+		}));
+	} else {
+		throw new Error('Unknown source type');
 	}
+	const collectionTimestamp = validationFileContents.additionalType[0].recordedIn.hasPart[0].text;
+	const collectorNodeID = validationFileContents.isBasedOn.identifier;
+	const contentSignature = validationFileContents.additionalType[0].recordedIn.description.sha256;
+	const calculationMethod = validationFileContents.additionalType[1].description;
+	const validationDate = validationFileContents.additionalType[0].startDate;
+
+	return {
+		sources: z.array(SourceSchema).parse(sources),
+		collectionTimestamp,
+		collectorNodeID,
+		contentSignature,
+		calculationMethod,
+		validationDate,
+		sourceType
+	};
 }
 
 export async function getSelectedFact(
@@ -209,6 +203,7 @@ export async function getSelectedFact(
 	let selectedFact: DBFactStatementWithFeed = { ...feed.latestFact, feed };
 	if (factURN !== feed.latestFact.fact_urn) {
 		const fact = await getFactByURN(network, factURN, `feed="${feed.id}"`);
+		if (!fact) return null;
 		selectedFact = fact;
 	}
 
@@ -291,8 +286,8 @@ async function getDirectoryTree(tarball: ArrayBuffer): Promise<string[]> {
 
 		// Use zlib to decompress the gzipped tarball and pipe it into the tar extract stream
 		const gunzip = zlib.createGunzip();
-		gunzip.on('error', (error) => {
-			console.error('Error during decompression:', error);
+		gunzip.on('error', async (error) => {
+			throw error;
 		});
 		const buffer = Buffer.from(tarball);
 		const bufferStream = Readable.from(buffer);
@@ -353,16 +348,11 @@ async function getArchivedFilesFromTarball(tarball: ArrayBuffer): Promise<Archiv
 		stream.resume();
 	});
 
-	try {
-		const gunzip = zlib.createGunzip();
-		gunzip.on('error', (error) => {
-			console.error('Error during decompression:', error);
-		});
-		await pipelineAsync(stream, gunzip, extract);
-	} catch (err) {
-		console.error('Pipeline failed', err);
-		throw err;
-	}
+	const gunzip = zlib.createGunzip();
+	gunzip.on('error', async (error) => {
+		throw error;
+	});
+	await pipelineAsync(stream, gunzip, extract);
 
 	return files;
 }
@@ -384,8 +374,7 @@ function parseBagInfoTextFile(text: string) {
 	const result = BagInfoSchema.safeParse(data);
 
 	if (!result.success) {
-		console.error('Validation errors:', result.error.format());
-		throw new Error('Invalid data in the text file');
+		throw new Error(`Validation errors: ${result.error.format()}`);
 	}
 
 	return result.data;

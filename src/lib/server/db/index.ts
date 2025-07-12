@@ -25,6 +25,7 @@ import { env } from '$env/dynamic/public';
 import PocketBase from 'pocketbase';
 import { format as formatZonedTime, toZonedTime } from 'date-fns-tz';
 import { error } from '@sveltejs/kit';
+import { logError } from '$lib/server/logger';
 
 // Initialize Database
 const db = new PocketBase(env.PUBLIC_DB_HOST);
@@ -70,7 +71,7 @@ export async function getFeeds(network: Network): Promise<DBFeedWithData[]> {
 
 		return feeds;
 	} catch (error) {
-		console.error(`Error retrieving feed records: ${error}`);
+		await logError(`Error retrieving feed records`, error);
 		return [];
 	}
 }
@@ -116,7 +117,7 @@ export async function getFeedByID(
 			...historicalValues
 		};
 	} catch (error) {
-		console.error(`Error retrieving feed by ID: ${error}`);
+		await logError(`Error retrieving feed by ID`, error);
 		return null;
 	}
 }
@@ -186,7 +187,7 @@ export async function getFactByURN(
 	network: Network,
 	factURN: string,
 	filters = ''
-): Promise<DBFactStatementWithFeed> {
+): Promise<DBFactStatementWithFeed | null> {
 	try {
 		const record = await db
 			.collection('facts')
@@ -209,8 +210,8 @@ export async function getFactByURN(
 
 		return parsed.data;
 	} catch (e) {
-		console.error(`Error retrieving fact by URN: ${e}`);
-		error(500, 'Error retrieving fact by URN');
+		logError(`Error retrieving fact by URN ${factURN}`, e);
+		return null;
 	}
 }
 
@@ -235,7 +236,7 @@ export async function getFeedFactsByDateRange(
 
 		return parsedFacts;
 	} catch (error) {
-		console.error(`Error retrieving feed facts by date range: ${error}`);
+		await logError(`Error retrieving feed facts by date range`, error);
 		return [];
 	}
 }
@@ -267,7 +268,7 @@ export async function searchFactStatements(
 
 		return parsedFacts;
 	} catch (error) {
-		console.error(`Error retrieving fact statement records: ${error}`);
+		await logError(`Error retrieving fact statement records`, error);
 		return [];
 	}
 }
@@ -300,7 +301,7 @@ export async function searchFeeds(
 			};
 		});
 	} catch (error) {
-		console.error(`Error retrieving feed records: ${error}`);
+		await logError(`Error retrieving feed records`, error);
 		return [];
 	}
 }
@@ -327,7 +328,7 @@ export async function getAllNetworks(): Promise<Network[]> {
 
 		return networks;
 	} catch (error) {
-		console.error(`Error retrieving network records: ${error}`);
+		await logError(`Error retrieving network records`, error);
 		return [];
 	}
 }
@@ -338,7 +339,7 @@ export async function getNetworkSummary(networkID: string): Promise<NetworkSumma
 		const data = await response.json();
 		return NetworkSummarySchema.parse(data);
 	} catch (error) {
-		console.error('Error retrieving network summary', error);
+		await logError('Error retrieving network summary', error);
 		return null;
 	}
 }
@@ -350,7 +351,7 @@ export async function getAllNodes(network: Network): Promise<NodeWithMetadata[]>
 		const nodes = z.array(NodeWithMetadataSchema).parse(data);
 		return nodes;
 	} catch (error) {
-		console.error('Error retrieving node records', error);
+		await logError('Error retrieving node records', error);
 		return [];
 	}
 }
@@ -362,7 +363,7 @@ export async function getAllSources(networkID: string): Promise<SourceWithMetada
 		const sources = z.array(SourceWithMetadataSchema).parse(data);
 		return sources;
 	} catch (error) {
-		console.error('Error retrieving source records', error);
+		await logError('Error retrieving source records', error);
 		return [];
 	}
 }

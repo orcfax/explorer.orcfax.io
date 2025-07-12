@@ -12,6 +12,7 @@ import {
 import { DEFAULT_NETWORK_NAME, VALID_NETWORK_SUBDOMAINS } from '$lib/stores/network';
 import { env } from '$env/dynamic/public';
 import { error } from '@sveltejs/kit';
+import { logError } from '$lib/client/api';
 
 export function formatFactStatementForDisplay(
 	fact: DBFactStatement | DBFactStatementWithFeed,
@@ -268,7 +269,10 @@ export function getCleanStatusUrl(): string {
 		development: ''
 	};
 
-	if (!env.PUBLIC_NODE_ENV || !env.PUBLIC_BASE_URL) error(500, 'Missing environment variables');
+	if (!env.PUBLIC_NODE_ENV || !env.PUBLIC_BASE_URL) {
+		logError('Missing environment variables in getCleanStatusUrl');
+		error(500, 'Missing environment variables');
+	}
 	const environment = EnvironmentSchema.parse(env.PUBLIC_NODE_ENV);
 
 	return new URL(

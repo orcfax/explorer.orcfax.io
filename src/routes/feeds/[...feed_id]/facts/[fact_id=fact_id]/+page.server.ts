@@ -6,6 +6,7 @@ import {
 	type Asset,
 	type XerberusRiskRating
 } from '$lib/types';
+import { logError } from '$lib/server/logger';
 
 export const load: ServerLoad = async ({ parent, params }) => {
 	try {
@@ -24,45 +25,45 @@ export const load: ServerLoad = async ({ parent, params }) => {
 			}
 		};
 	} catch (e) {
-		console.error(JSON.stringify(e, null, 2));
-		return error(500, 'An error occurred');
+		return error(500, e as Error);
 	}
 };
 
 async function getXerberusRiskRating(asset: Asset): Promise<XerberusRiskRating | null> {
-	const apiKey = env.PRIVATE_XERBERUS_API_KEY;
-	const userEmail = env.PRIVATE_XERBERUS_USER_EMAIL;
-	if (!apiKey || !userEmail) error(500, 'Missing Xerberus API key');
+	try {
+		const apiKey = env.PRIVATE_XERBERUS_API_KEY;
+		const userEmail = env.PRIVATE_XERBERUS_USER_EMAIL;
+		if (!apiKey || !userEmail) throw new Error('Missing Xerberus API key');
 
-	// Asset fingerprint is required to fetch data from Xerberus API
-	if (!asset.fingerprint) return null;
+		// Ignore assets that don't have a fingerprint or are unsupported by Xerberus
+		if (!asset.fingerprint || !asset.hasXerberusRiskRating) return null;
 
-	const endpoint = `https://api.xerberus.io/public/v1/risk/score/asset?fingerprint=${asset.fingerprint}`;
-	const res = await fetch(endpoint, {
-		headers: {
-			'x-api-key': apiKey,
-			'x-user-email': userEmail
+		const endpoint = `https://api.xerberus.io/public/v1/risk/score/asset?fingerprint=${asset.fingerprint}`;
+		const res = await fetch(endpoint, {
+			headers: {
+				'x-api-key': apiKey,
+				'x-user-email': userEmail
+			}
+		});
+		if (!res.ok) {
+			throw new Error(`Bad response from Xerberus API`);
 		}
-	});
-	if (!res.ok) error(500, 'Failed to fetch data from Xerberus API');
-	const xSignedBy = res.headers.get('X-SIGNED-BY');
-	const xSignature = res.headers.get('X-SIGNATURE');
-	if (!xSignedBy || !xSignature) error(500, 'Missing Xerberus API signature headers');
-	const data = await res.json();
-	const parsed = XerberusRiskRatingAPIResponseSchema.safeParse(data);
-	if (!parsed.success) {
-		console.error(
-			`Failed to parse Xerberus API response for ${asset.ticker}:`,
-			JSON.stringify(parsed.error, null, 2)
-		);
+
+		const xSignedBy = res.headers.get('X-SIGNED-BY');
+		const xSignature = res.headers.get('X-SIGNATURE');
+		if (!xSignedBy || !xSignature) throw new Error(`Missing Xerberus API signature headers`);
+
+		const data = await res.json();
+		const response = XerberusRiskRatingAPIResponseSchema.parse(data);
+
+		return {
+			response,
+			xSignedBy,
+			xSignature,
+			endpoint: endpoint
+		};
+	} catch (e) {
+		logError(`Failed to fetch data from Xerberus Risk API for ${asset.ticker}`, e);
 		return null;
 	}
-	const response = parsed.data;
-
-	return {
-		response,
-		xSignedBy,
-		xSignature,
-		endpoint: endpoint
-	};
 }

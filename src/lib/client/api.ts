@@ -21,3 +21,10 @@ export async function getTableResults(
 		totalPages: res.totalPages
 	};
 }
+
+export async function logError(message: string, error?: unknown) {
+	await fetch('/api/logError', {
+		method: 'POST',
+		body: JSON.stringify({ message, error })
+	});
+}

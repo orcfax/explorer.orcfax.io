@@ -1,6 +1,7 @@
 import { json } from '@sveltejs/kit';
 import type { RequestHandler } from './$types';
 import { searchFactStatements, searchFeeds } from '$lib/server/db';
+import { logError } from '$lib/server/logger';
 
 export const GET: RequestHandler = async ({ url }) => {
 	const query = url.searchParams.get('q');
@@ -17,7 +18,10 @@ export const GET: RequestHandler = async ({ url }) => {
 			feeds
 		});
 	} catch (error) {
-		console.error('Error querying PocketBase:', error);
-		return json({ error: 'Error querying database' }, { status: 500 });
+		logError('Error querying database', error);
+		return json(
+			{ error: 'Error querying database' },
+			{ status: 500, statusText: 'Internal Server Error' }
+		);
 	}
 };

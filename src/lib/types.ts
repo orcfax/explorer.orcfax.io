@@ -15,7 +15,8 @@ export const AssetSchema = z.object({
 	website: z.string().optional(),
 	fingerprint: z.string().optional(),
 	image_path: z.string().optional(),
-	background_color: z.string().optional()
+	background_color: z.string().optional(),
+	hasXerberusRiskRating: z.boolean().optional()
 });
 export type Asset = z.infer<typeof AssetSchema>;
 
