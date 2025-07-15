@@ -206,7 +206,6 @@ export async function getFactByURN(
 				quote_asset: record.expand?.feed.expand?.quote_asset
 			}
 		});
-		console.log('TEST 1: ', parsed);
 		if (!parsed.success) throw new Error('Failed to parse fact statement with feed');
 
 		return parsed.data;
