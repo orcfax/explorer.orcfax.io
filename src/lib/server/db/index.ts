@@ -210,7 +210,8 @@ export async function getFactByURN(
 
 		return parsed.data;
 	} catch (e) {
-		logError(`Error retrieving fact by URN ${factURN}`, e);
+		if (e instanceof Error && !e.message.includes('404'))
+			logError(`Error retrieving fact by URN ${factURN}`, e);
 		return null;
 	}
 }
