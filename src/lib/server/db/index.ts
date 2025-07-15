@@ -98,7 +98,7 @@ export async function getFeedByID(
 			db.collection('facts').getList(1, 1, {
 				filter: `network = "${network.id}" && feed="${dbFeed.id}"`,
 				sort: '-validation_date',
-				expand: 'base_asset,quote_asset'
+				expand: 'feed.base_asset,feed.quote_asset'
 			}),
 			fetchHistoricalValues(network.id, dbFeed.id)
 		]);
@@ -202,10 +202,11 @@ export async function getFactByURN(
 			...record,
 			feed: {
 				...record.expand?.feed,
-				base_asset: record.expand?.base_asset,
-				quote_asset: record.expand?.quote_asset
+				base_asset: record.expand?.feed.expand?.base_asset,
+				quote_asset: record.expand?.feed.expand?.quote_asset
 			}
 		});
+		console.log('TEST 1: ', parsed);
 		if (!parsed.success) throw new Error('Failed to parse fact statement with feed');
 
 		return parsed.data;
