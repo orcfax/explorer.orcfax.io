@@ -21,7 +21,6 @@ import {
 	SourceWithMetadataSchema
 } from '$lib/types';
 import { format, sub } from 'date-fns';
-import { env } from '$env/dynamic/public';
 import { format as formatZonedTime, toZonedTime } from 'date-fns-tz';
 import { error } from '@sveltejs/kit';
 import { logError } from '$lib/server/logger';
@@ -60,10 +59,9 @@ export async function getFactsPage(
 	return { facts, totalPages, totalFacts: totalItems };
 }
 
-export async function getFeeds(network: Network): Promise<DBFeedWithData[]> {
+export async function getFeeds(pb: PocketBase, network: Network): Promise<DBFeedWithData[]> {
 	try {
-		const response = await fetch(`${env.PUBLIC_DB_HOST}/api/explorer/feeds/${network.id}`);
-		const data = await response.json();
+		const data = await pb.send(`/api/explorer/feeds/${network.id}`, {});
 		const feeds = z.array(DBFeedWithDataSchema).parse(data);
 
 		return feeds;
@@ -323,10 +321,12 @@ export async function getAllNetworks(db: PocketBase): Promise<Network[]> {
 	}
 }
 
-export async function getNetworkSummary(networkID: string): Promise<NetworkSummary | null> {
+export async function getNetworkSummary(
+	pb: PocketBase,
+	networkID: string
+): Promise<NetworkSummary | null> {
 	try {
-		const response = await fetch(`${env.PUBLIC_DB_HOST}/api/explorer/dashboard/${networkID}`);
-		const data = await response.json();
+		const data = await pb.send(`/api/explorer/dashboard/${networkID}`, {});
 		return NetworkSummarySchema.parse(data);
 	} catch (error) {
 		await logError('Error retrieving network summary', error);
@@ -334,10 +334,9 @@ export async function getNetworkSummary(networkID: string): Promise<NetworkSumma
 	}
 }
 
-export async function getAllNodes(network: Network): Promise<NodeWithMetadata[]> {
+export async function getAllNodes(pb: PocketBase, network: Network): Promise<NodeWithMetadata[]> {
 	try {
-		const response = await fetch(`${env.PUBLIC_DB_HOST}/api/explorer/nodes/${network.id}`);
-		const data = await response.json();
+		const data = await pb.send(`/api/explorer/nodes/${network.id}`, {});
 		const nodes = z.array(NodeWithMetadataSchema).parse(data);
 		return nodes;
 	} catch (error) {
@@ -346,10 +345,12 @@ export async function getAllNodes(network: Network): Promise<NodeWithMetadata[]>
 	}
 }
 
-export async function getAllSources(networkID: string): Promise<SourceWithMetadata[]> {
+export async function getAllSources(
+	pb: PocketBase,
+	networkID: string
+): Promise<SourceWithMetadata[]> {
 	try {
-		const response = await fetch(`${env.PUBLIC_DB_HOST}/api/explorer/sources/${networkID}`);
-		const data = await response.json();
+		const data = await pb.send(`/api/explorer/sources/${networkID}`, {});
 		const sources = z.array(SourceWithMetadataSchema).parse(data);
 		return sources;
 	} catch (error) {
