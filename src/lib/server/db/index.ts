@@ -59,9 +59,9 @@ export async function getFactsPage(
 	return { facts, totalPages, totalFacts: totalItems };
 }
 
-export async function getFeeds(pb: PocketBase, network: Network): Promise<DBFeedWithData[]> {
+export async function getFeeds(db: PocketBase, network: Network): Promise<DBFeedWithData[]> {
 	try {
-		const data = await pb.send(`/api/explorer/feeds/${network.id}`, {});
+		const data = await db.send(`/api/explorer/feeds/${network.id}`, {});
 		const feeds = z.array(DBFeedWithDataSchema).parse(data);
 
 		return feeds;
@@ -322,11 +322,11 @@ export async function getAllNetworks(db: PocketBase): Promise<Network[]> {
 }
 
 export async function getNetworkSummary(
-	pb: PocketBase,
+	db: PocketBase,
 	networkID: string
 ): Promise<NetworkSummary | null> {
 	try {
-		const data = await pb.send(`/api/explorer/dashboard/${networkID}`, {});
+		const data = await db.send(`/api/explorer/dashboard/${networkID}`, {});
 		return NetworkSummarySchema.parse(data);
 	} catch (error) {
 		await logError('Error retrieving network summary', error);
@@ -334,9 +334,9 @@ export async function getNetworkSummary(
 	}
 }
 
-export async function getAllNodes(pb: PocketBase, network: Network): Promise<NodeWithMetadata[]> {
+export async function getAllNodes(db: PocketBase, network: Network): Promise<NodeWithMetadata[]> {
 	try {
-		const data = await pb.send(`/api/explorer/nodes/${network.id}`, {});
+		const data = await db.send(`/api/explorer/nodes/${network.id}`, {});
 		const nodes = z.array(NodeWithMetadataSchema).parse(data);
 		return nodes;
 	} catch (error) {
@@ -346,11 +346,11 @@ export async function getAllNodes(pb: PocketBase, network: Network): Promise<Nod
 }
 
 export async function getAllSources(
-	pb: PocketBase,
+	db: PocketBase,
 	networkID: string
 ): Promise<SourceWithMetadata[]> {
 	try {
-		const data = await pb.send(`/api/explorer/sources/${networkID}`, {});
+		const data = await db.send(`/api/explorer/sources/${networkID}`, {});
 		const sources = z.array(SourceWithMetadataSchema).parse(data);
 		return sources;
 	} catch (error) {

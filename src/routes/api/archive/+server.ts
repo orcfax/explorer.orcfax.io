@@ -7,7 +7,7 @@ import archiveViewer from '$lib/archive-viewer.html?raw';
 import { getArchiveFromURN } from '$lib/server/db/archive';
 import { logError } from '$lib/server/logger';
 
-export const GET: RequestHandler = async ({ url }) => {
+export const GET: RequestHandler = async ({ url, locals }) => {
 	try {
 		const storageUrn = url.searchParams.get('storageUrn');
 		const sourceType = url.searchParams.get('sourceType');
@@ -19,7 +19,7 @@ export const GET: RequestHandler = async ({ url }) => {
 				statusText: 'Missing parameters for archive download'
 			});
 
-		const archive = await getArchiveFromURN(networkID, storageUrn, sourceType);
+		const archive = await getArchiveFromURN(locals.pb, networkID, storageUrn, sourceType);
 
 		if (!archive) return new Response(null, { status: 404, statusText: 'Archive not found' });
 

@@ -16,6 +16,6 @@ export const load: LayoutServerLoad = async ({ url, locals }) => {
 		network,
 		networks,
 		// Lazy load / stream feeds
-		feeds: getFeeds(network)
+		feeds: getFeeds(locals.pb, network)
 	};
 };

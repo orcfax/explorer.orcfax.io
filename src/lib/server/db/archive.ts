@@ -31,6 +31,7 @@ import { logError } from '$lib/server/logger';
 import type PocketBase from 'pocketbase';
 
 export async function getArchive(
+	db: PocketBase,
 	network: Network,
 	fact: DBFactStatement,
 	sourceType: DBFeed['source_type']
@@ -63,7 +64,7 @@ export async function getArchive(
 
 		const directoryTree = await buildFileExplorer(archivedBagTarball.buffer);
 		const files = await getArchivedFilesFromTarball(archivedBagTarball.buffer);
-		const details = await getDetailsFromArchive(network.id, files, sourceType);
+		const details = await getDetailsFromArchive(db, network.id, files, sourceType);
 
 		return { fact, directoryTree, files, details };
 	} catch (e) {
@@ -78,6 +79,7 @@ export async function getArchive(
 }
 
 export async function getArchiveFromURN(
+	db: PocketBase,
 	networkID: string,
 	storage_urn: string,
 	sourceType: string
@@ -99,7 +101,7 @@ export async function getArchiveFromURN(
 
 		const directoryTree = await buildFileExplorer(archivedBagTarball.buffer);
 		const files = await getArchivedFilesFromTarball(archivedBagTarball.buffer);
-		const details = await getDetailsFromArchive(networkID, files, sourceType);
+		const details = await getDetailsFromArchive(db, networkID, files, sourceType);
 		const fact = getFactStatementFromArchive(files);
 
 		return { fact, directoryTree, files, details, archiveZip: archivedBagTarball };
@@ -127,12 +129,13 @@ function getFactStatementFromArchive(files: ArchivedFile[]): FactStatementStub {
 }
 
 async function getDetailsFromArchive(
+	db: PocketBase,
 	networkID: string,
 	files: ArchivedFile[],
 	sourceType: string
 ): Promise<ArchiveDetails | null> {
 	// Get message file names for source matching
-	const allSources = await getAllSources(networkID);
+	const allSources = await getAllSources(db, networkID);
 	const allFileNames = files.map((file) => file.fileName);
 	const messageFileNames = allFileNames
 		.filter((name) => name.includes('message-'))

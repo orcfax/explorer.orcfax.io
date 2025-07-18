@@ -1,15 +1,15 @@
 import type { PageServerLoad } from './$types';
 import { getAllNodes, getAllSources, getNetworkSummary } from '$lib/server/db';
 
-export const load: PageServerLoad = async ({ parent }) => {
+export const load: PageServerLoad = async ({ parent, locals }) => {
 	const { network, networks } = await parent();
 
 	return {
 		network,
 		networks,
 		// Lazy load / stream dashboard, nodes, and sources
-		dashboard: getNetworkSummary(network.id),
-		nodes: getAllNodes(network),
-		sources: getAllSources(network.id)
+		dashboard: getNetworkSummary(locals.pb, network.id),
+		nodes: getAllNodes(locals.pb, network),
+		sources: getAllSources(locals.pb, network.id)
 	};
 };
