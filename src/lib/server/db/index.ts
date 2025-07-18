@@ -22,16 +22,13 @@ import {
 } from '$lib/types';
 import { format, sub } from 'date-fns';
 import { env } from '$env/dynamic/public';
-import PocketBase from 'pocketbase';
 import { format as formatZonedTime, toZonedTime } from 'date-fns-tz';
 import { error } from '@sveltejs/kit';
 import { logError } from '$lib/server/logger';
-
-// Initialize Database
-const db = new PocketBase(env.PUBLIC_DB_HOST);
-db.autoCancellation(false);
+import type PocketBase from 'pocketbase';
 
 export async function getFactsPage(
+	db: PocketBase,
 	networkID: string,
 	page: number,
 	feedID: string | null
@@ -77,6 +74,7 @@ export async function getFeeds(network: Network): Promise<DBFeedWithData[]> {
 }
 
 export async function getFeedByID(
+	db: PocketBase,
 	network: Network,
 	feedID: string
 ): Promise<DBFeedWithData | null> {
@@ -100,7 +98,7 @@ export async function getFeedByID(
 				sort: '-validation_date',
 				expand: 'feed.base_asset,feed.quote_asset'
 			}),
-			fetchHistoricalValues(network.id, dbFeed.id)
+			fetchHistoricalValues(db, network.id, dbFeed.id)
 		]);
 
 		const latestFact = factRecord.items[0]
@@ -122,7 +120,7 @@ export async function getFeedByID(
 	}
 }
 
-export async function fetchHistoricalValues(networkID: string, feedId: string) {
+export async function fetchHistoricalValues(db: PocketBase, networkID: string, feedId: string) {
 	const now = new Date();
 	const isoString = now.toISOString();
 	const timeString = isoString.split('T')[1].slice(0, 12) + 'Z';
@@ -170,20 +168,8 @@ export async function fetchHistoricalValues(networkID: string, feedId: string) {
 	};
 }
 
-export async function getAllFeedsHistoricalValues(network: Network, feeds: DBFeedWithData[]) {
-	const historicalValues = await Promise.all(
-		feeds.map((feed) => fetchHistoricalValues(network.id, feed.id))
-	);
-	return historicalValues;
-}
-
-export async function doesFactExist(network: Network, factID?: string): Promise<boolean> {
-	if (!factID) return false;
-	const fact = await getFactByURN(network, factID);
-	return fact !== null ? true : false;
-}
-
 export async function getFactByURN(
+	db: PocketBase,
 	network: Network,
 	factURN: string,
 	filters = ''
@@ -217,6 +203,7 @@ export async function getFactByURN(
 }
 
 export async function getFeedFactsByDateRange(
+	db: PocketBase,
 	network: Network,
 	feedID: string,
 	rangeOfDays: number,
@@ -243,6 +230,7 @@ export async function getFeedFactsByDateRange(
 }
 
 export async function searchFactStatements(
+	db: PocketBase,
 	networkID: string,
 	query: string
 ): Promise<DBFactStatementWithFeed[]> {
@@ -275,6 +263,7 @@ export async function searchFactStatements(
 }
 
 export async function searchFeeds(
+	db: PocketBase,
 	networkID: string,
 	query: string
 ): Promise<Omit<Feed, 'latestFact' | 'oneDayAgo' | 'threeDaysAgo' | 'sevenDaysAgo'>[]> {
@@ -307,7 +296,7 @@ export async function searchFeeds(
 	}
 }
 
-export async function getAllNetworks(): Promise<Network[]> {
+export async function getAllNetworks(db: PocketBase): Promise<Network[]> {
 	try {
 		const response = await db.collection('networks').getFullList({
 			expand: 'policies_via_network'

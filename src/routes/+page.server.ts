@@ -1,8 +1,6 @@
-export const ssr = false;
-
 import type { PageServerLoad } from './$types';
 import { getAllNodes, getAllSources, getNetworkSummary } from '$lib/server/db';
-// TODO optimize loading
+
 export const load: PageServerLoad = async ({ parent }) => {
 	const { network, networks } = await parent();
 

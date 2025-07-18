@@ -3,15 +3,15 @@ import type { RequestHandler } from './$types';
 import { searchFactStatements, searchFeeds } from '$lib/server/db';
 import { logError } from '$lib/server/logger';
 
-export const GET: RequestHandler = async ({ url }) => {
+export const GET: RequestHandler = async ({ url, locals }) => {
 	const query = url.searchParams.get('q');
 	const networkID = url.searchParams.get('network');
 	if (!query) return json({ error: 'Query parameter is missing' }, { status: 400 });
 	if (!networkID) return json({ error: 'Network parameter is missing' }, { status: 400 });
 
 	try {
-		const factStatements = await searchFactStatements(networkID, query);
-		const feeds = await searchFeeds(networkID, query);
+		const factStatements = await searchFactStatements(locals.pb, networkID, query);
+		const feeds = await searchFeeds(locals.pb, networkID, query);
 
 		return json({
 			factStatements,

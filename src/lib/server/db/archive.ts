@@ -28,6 +28,7 @@ import {
 } from '$lib/types';
 import { z } from 'zod';
 import { logError } from '$lib/server/logger';
+import type PocketBase from 'pocketbase';
 
 export async function getArchive(
 	network: Network,
@@ -194,6 +195,7 @@ async function getDetailsFromArchive(
 }
 
 export async function getSelectedFact(
+	db: PocketBase,
 	network: Network,
 	factURN: string,
 	feed: DBFeedWithData
@@ -202,7 +204,7 @@ export async function getSelectedFact(
 
 	let selectedFact: DBFactStatementWithFeed = { ...feed.latestFact, feed };
 	if (factURN !== feed.latestFact.fact_urn) {
-		const fact = await getFactByURN(network, factURN, `feed="${feed.id}"`);
+		const fact = await getFactByURN(db, network, factURN, `feed="${feed.id}"`);
 		if (!fact) return null;
 		selectedFact = fact;
 	}

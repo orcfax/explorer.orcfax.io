@@ -1,5 +1,7 @@
+import PocketBase from 'pocketbase';
+import { env } from '$env/dynamic/public';
 import { logError } from '$lib/server/logger';
-import type { HandleServerError } from '@sveltejs/kit';
+import type { Handle, HandleServerError } from '@sveltejs/kit';
 
 export const handleError: HandleServerError = async ({ error, status, message }) => {
 	logError(message, `Status: ${status} - ${error}`);
@@ -8,4 +10,10 @@ export const handleError: HandleServerError = async ({ error, status, message })
 	return {
 		message: 'An unexpected error occurred'
 	};
+};
+
+export const handle: Handle = async ({ event, resolve }) => {
+	event.locals.pb = new PocketBase(env.PUBLIC_DB_HOST);
+	const response = await resolve(event);
+	return response;
 };
