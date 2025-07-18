@@ -1,4 +1,3 @@
-import 'dotenv/config';
 import { z } from 'zod';
 import {
 	type DBFactStatement,
@@ -8,7 +7,6 @@ import {
 	type DBFeedWithData,
 	type Network,
 	NetworkSchema,
-	PolicySchema,
 	DBFeedWithAssetsSchema,
 	DBFactStatementWithFeedSchema,
 	type DBFactStatementWithFeed,
@@ -20,11 +18,9 @@ import {
 	NodeWithMetadataSchema,
 	SourceWithMetadataSchema
 } from '$lib/types';
-import { format, sub } from 'date-fns';
-import { format as formatZonedTime, toZonedTime } from 'date-fns-tz';
-import { error } from '@sveltejs/kit';
 import { logError } from '$lib/server/logger';
 import type PocketBase from 'pocketbase';
+import { getFeedIDWithoutVersion } from '$lib/client/helpers';
 
 export async function getFactsPage(
 	db: PocketBase,
@@ -32,31 +28,27 @@ export async function getFactsPage(
 	page: number,
 	feedID: string | null
 ): Promise<GetFactsPageResponseDB> {
-	const FACTS_PAGE_LIMIT = 5;
-	const { items, totalPages, totalItems } = await db
-		.collection('facts')
-		.getList(page, FACTS_PAGE_LIMIT, {
-			sort: '-validation_date',
-			filter: `network = "${networkID}" ${feedID ? `&& feed.feed_id="${feedID}"` : ''}`,
-			expand: 'feed.base_asset,feed.quote_asset,participating_nodes'
+	try {
+		const queryParams = new URLSearchParams({
+			page: page.toString()
 		});
+		if (feedID) {
+			queryParams.append('feedId', feedID);
+		}
 
-	const facts = items.map((item) => {
-		if (!item.expand?.feed) error(500, 'Fact is missing feed');
-		const parsedFact = DBFactStatementWithFeedSchema.safeParse({
-			...item,
-			feed: {
-				...item.expand.feed,
-				base_asset: item.expand.feed.expand.base_asset,
-				quote_asset: item.expand.feed.expand.quote_asset
-			},
-			participating_nodes: item.expand?.participating_nodes
-		});
-		if (parsedFact.success) return parsedFact.data;
-		else error(500, `Invalid fact: ${parsedFact.error}`);
-	});
+		const data = await db.send(`/api/explorer/facts/${networkID}?${queryParams.toString()}`, {});
 
-	return { facts, totalPages, totalFacts: totalItems };
+		const facts = z.array(DBFactStatementWithFeedSchema).parse(data.facts);
+
+		return {
+			facts,
+			totalPages: data.totalPages,
+			totalFacts: data.totalFacts
+		};
+	} catch (error) {
+		await logError(`Error retrieving facts page`, error);
+		return { facts: [], totalPages: 0, totalFacts: 0 };
+	}
 }
 
 export async function getFeeds(db: PocketBase, network: Network): Promise<DBFeedWithData[]> {
@@ -77,93 +69,16 @@ export async function getFeedByID(
 	feedID: string
 ): Promise<DBFeedWithData | null> {
 	try {
-		const feedIDParsed = feedID.replace(/\/facts\/undefined$/, '');
-		const feedResponse = await db
-			.collection('feeds')
-			.getFirstListItem(`network = "${network.id}" && feed_id~"${feedIDParsed}"`, {
-				expand: 'base_asset,quote_asset'
-			});
+		const feedIDParsed = getFeedIDWithoutVersion(feedID.replace(/\/facts\/undefined$/, ''));
+		// URL-encode the feedID to handle slashes and other special characters
+		const encodedFeedID = encodeURIComponent(feedIDParsed);
+		const data = await db.send(`/api/explorer/feeds/${network.id}/${encodedFeedID}`, {});
 
-		const dbFeed = DBFeedWithAssetsSchema.parse({
-			...feedResponse,
-			base_asset: feedResponse.expand?.base_asset,
-			quote_asset: feedResponse.expand?.quote_asset
-		});
-
-		const [factRecord, historicalValues] = await Promise.all([
-			db.collection('facts').getList(1, 1, {
-				filter: `network = "${network.id}" && feed="${dbFeed.id}"`,
-				sort: '-validation_date',
-				expand: 'feed.base_asset,feed.quote_asset'
-			}),
-			fetchHistoricalValues(db, network.id, dbFeed.id)
-		]);
-
-		const latestFact = factRecord.items[0]
-			? DBFactStatementSchema.parse(factRecord.items[0])
-			: null;
-		const totalFacts = factRecord.totalItems;
-
-		return {
-			...dbFeed,
-			latestFact,
-			type_description: 'Current Exchange Rate',
-			type_description_short: 'CER',
-			totalFacts,
-			...historicalValues
-		};
+		return DBFeedWithDataSchema.parse(data);
 	} catch (error) {
 		await logError(`Error retrieving feed by ID`, error);
 		return null;
 	}
-}
-
-export async function fetchHistoricalValues(db: PocketBase, networkID: string, feedId: string) {
-	const now = new Date();
-	const isoString = now.toISOString();
-	const timeString = isoString.split('T')[1].slice(0, 12) + 'Z';
-
-	const getFormattedDateFilter = (days: number) => {
-		const newDate = sub(now, {
-			days
-		});
-		return (
-			formatZonedTime(toZonedTime(newDate, 'UTC'), 'yyyy-MM-dd', { timeZone: 'UTC' }) +
-			' ' +
-			timeString
-		);
-	};
-	const oneDayAgoFilter = getFormattedDateFilter(1);
-	const threeDaysAgoFilter = getFormattedDateFilter(3);
-	const sevenDaysAgoFilter = getFormattedDateFilter(7);
-
-	async function getNearestValue(filterDate: string) {
-		try {
-			const result = await db
-				.collection('facts')
-				.getFirstListItem(
-					`network = "${networkID}" && feed="${feedId}" && validation_date <= "${filterDate}"`,
-					{
-						sort: '-validation_date'
-					}
-				);
-			return result?.value;
-		} catch (e) {
-			return null;
-		}
-	}
-
-	const [oneDayAgo, threeDaysAgo, sevenDaysAgo] = await Promise.all([
-		getNearestValue(oneDayAgoFilter),
-		getNearestValue(threeDaysAgoFilter),
-		getNearestValue(sevenDaysAgoFilter)
-	]);
-
-	return {
-		oneDayAgo,
-		threeDaysAgo,
-		sevenDaysAgo
-	};
 }
 
 export async function getFactByURN(
@@ -173,26 +88,17 @@ export async function getFactByURN(
 	filters = ''
 ): Promise<DBFactStatementWithFeed | null> {
 	try {
-		const record = await db
-			.collection('facts')
-			.getFirstListItem(
-				`fact_urn="${factURN}" && network="${network.id}" ${filters ? `&& ${filters}` : ''}`,
-				{
-					expand: 'feed.quote_asset,feed.base_asset'
-				}
-			);
+		const queryParams = new URLSearchParams();
+		if (filters) {
+			queryParams.append('filters', filters);
+		}
 
-		const parsed = DBFactStatementWithFeedSchema.safeParse({
-			...record,
-			feed: {
-				...record.expand?.feed,
-				base_asset: record.expand?.feed.expand?.base_asset,
-				quote_asset: record.expand?.feed.expand?.quote_asset
-			}
-		});
-		if (!parsed.success) throw new Error('Failed to parse fact statement with feed');
+		const queryString = queryParams.toString();
+		const url = `/api/explorer/facts/${network.id}/${factURN}${queryString ? '?' + queryString : ''}`;
 
-		return parsed.data;
+		const data = await db.send(url, {});
+
+		return DBFactStatementWithFeedSchema.parse(data);
 	} catch (e) {
 		if (e instanceof Error && !e.message.includes('404'))
 			logError(`Error retrieving fact by URN ${factURN}`, e);
@@ -208,113 +114,63 @@ export async function getFeedFactsByDateRange(
 	startDate: Date
 ): Promise<DBFactStatement[]> {
 	try {
-		const endDateFilter = format(
-			new Date(startDate.getTime() - (rangeOfDays - 1) * 24 * 60 * 60 * 1000),
-			'yyyy-MM-dd'
-		);
-
-		const { items } = await db.collection('facts').getList(1, 5000, {
-			sort: '-validation_date',
-			filter: `network = "${network.id}" && feed='${feedID}' && validation_date > '${endDateFilter} 00:00:00.000Z'`
+		const queryParams = new URLSearchParams({
+			range: rangeOfDays.toString(),
+			startDate: startDate.toISOString()
 		});
 
-		const parsedFacts = z.array(DBFactStatementSchema).parse(items);
+		// URL-encode the feedID to handle slashes and other special characters
+		const encodedFeedID = encodeURIComponent(getFeedIDWithoutVersion(feedID));
+		const data = await db.send(
+			`/api/explorer/feeds/${network.id}/${encodedFeedID}/facts?${queryParams.toString()}`,
+			{}
+		);
 
-		return parsedFacts;
+		return z.array(DBFactStatementSchema).parse(data);
 	} catch (error) {
 		await logError(`Error retrieving feed facts by date range`, error);
 		return [];
 	}
 }
 
-export async function searchFactStatements(
+export async function searchUnified(
 	db: PocketBase,
 	networkID: string,
 	query: string
-): Promise<DBFactStatementWithFeed[]> {
+): Promise<{
+	facts: DBFactStatementWithFeed[];
+	feeds: Omit<Feed, 'latestFact' | 'oneDayAgo' | 'threeDaysAgo' | 'sevenDaysAgo'>[];
+}> {
 	try {
-		const records = await db.collection('facts').getList(1, 50, {
-			filter: `network = "${networkID}" && (fact_urn ~ "${query}" || storage_urn ~ "${query}" || transaction_id ~ "${query}" || block_hash ~ "${query}")`,
-			expand: 'feed.base_asset,feed.quote_asset'
+		const queryParams = new URLSearchParams({
+			q: query
 		});
 
-		const withExpandedFeeds = records.items.map((item) => {
-			if (!item.expand?.feed) error(500, 'Fact is missing feed');
-			const parsedFact = DBFactStatementWithFeedSchema.safeParse({
-				...item,
-				feed: {
-					...item.expand.feed,
-					base_asset: item.expand.feed.expand.base_asset,
-					quote_asset: item.expand.feed.expand.quote_asset
-				}
-			});
-			if (parsedFact.success) return parsedFact.data;
-			else error(500, `Invalid fact: ${parsedFact.error}`);
-		});
-		const parsedFacts = z.array(DBFactStatementWithFeedSchema).parse(withExpandedFeeds);
+		const data = await db.send(`/api/explorer/search/${networkID}?${queryParams.toString()}`, {});
 
-		return parsedFacts;
-	} catch (error) {
-		await logError(`Error retrieving fact statement records`, error);
-		return [];
-	}
-}
-
-export async function searchFeeds(
-	db: PocketBase,
-	networkID: string,
-	query: string
-): Promise<Omit<Feed, 'latestFact' | 'oneDayAgo' | 'threeDaysAgo' | 'sevenDaysAgo'>[]> {
-	try {
-		const records = await db.collection('feeds').getList(1, 50, {
-			filter: `network = "${networkID}" && feed_id ~ "${query}"`,
-			expand: 'base_asset,quote_asset'
-		});
-		const parsedFeeds = z.array(DBFeedWithAssetsSchema).parse(
-			records.items.map((item) => {
-				return {
-					...item,
-					base_asset: item.expand?.base_asset,
-					quote_asset: item.expand?.quote_asset
-				};
-			})
-		);
-
-		return parsedFeeds.map((feed) => {
-			return {
+		const facts = z.array(DBFactStatementWithFeedSchema).parse(data.facts || []);
+		const feeds = z
+			.array(DBFeedWithAssetsSchema)
+			.parse(data.feeds || [])
+			.map((feed) => ({
 				...feed,
 				type_description: 'Current Exchange Rate',
 				type_description_short: 'CER',
 				totalFacts: 0 // Setting to 0 only for searching feeds
-			};
-		});
+			}));
+
+		return { facts, feeds };
 	} catch (error) {
-		await logError(`Error retrieving feed records`, error);
-		return [];
+		await logError(`Error retrieving search results`, error);
+		return { facts: [], feeds: [] };
 	}
 }
 
 export async function getAllNetworks(db: PocketBase): Promise<Network[]> {
 	try {
-		const response = await db.collection('networks').getFullList({
-			expand: 'policies_via_network'
-		});
+		const data = await db.send('/api/explorer/networks', {});
 
-		const networks: Network[] = response.map((networkRecord) => {
-			const policies = networkRecord.expand?.policies_via_network
-				? z
-						.array(PolicySchema)
-						.parse(networkRecord.expand.policies_via_network)
-						.sort((a, b) => b.starting_slot - a.starting_slot)
-				: [];
-
-			return NetworkSchema.parse({
-				...networkRecord,
-				policies
-			});
-		});
-
-		return networks;
+		return z.array(NetworkSchema).parse(data);
 	} catch (error) {
 		await logError(`Error retrieving network records`, error);
 		return [];

@@ -7,7 +7,6 @@
 	import PriceDifferenceBadges from '$lib/components/PriceDifferenceBadges.svelte';
 	import FormattedCurrencyValue from '$lib/components/FormattedCurrencyValue.svelte';
 	import Skeleton from '$lib/components/ui/skeleton/skeleton.svelte';
-	import { feedsListStore } from '$lib/stores/feedsList';
 	import { readable } from 'svelte/store';
 	import { CircleHelp } from 'lucide-svelte';
 	import FeedSummaryFields from './FeedSummaryFields.svelte';
@@ -51,11 +50,8 @@
 						</Tooltip.Content>
 					</Tooltip.Root>
 				</div>
-				{#await $feedsListStore}
-					<Skeleton class="h-[3.88rem] w-[11.44rem]" />
-				{:then feeds}
-					<FeedQuickSwitcher {onFeedSwitch} initialFeedID={feed.feed_id} {feeds} />
-				{/await}
+
+				<FeedQuickSwitcher {onFeedSwitch} initialFeed={feed} />
 			</div>
 			<div class="hidden min-[850px]:flex w-full">
 				<FeedSummaryFields {feed} {riskRatings} />

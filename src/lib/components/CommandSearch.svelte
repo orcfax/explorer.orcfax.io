@@ -18,8 +18,8 @@
 	let query = '';
 	let isLoading = false;
 	let debounceTimer: ReturnType<typeof setTimeout>;
-	let results = writable<{ factStatements: DBFactStatementWithFeed[]; feeds: Feed[] }>({
-		factStatements: [],
+	let results = writable<{ facts: DBFactStatementWithFeed[]; feeds: Feed[] }>({
+		facts: [],
 		feeds: []
 	});
 
@@ -57,7 +57,7 @@
 
 	async function handleSearch(query: string): Promise<void> {
 		if (!query) {
-			results.set({ factStatements: [], feeds: [] });
+			results.set({ facts: [], feeds: [] });
 			isLoading = false;
 			return;
 		}
@@ -69,15 +69,15 @@
 			const data = await res.json();
 			if (res.ok) {
 				results.set({
-					factStatements: Array.isArray(data.factStatements) ? data.factStatements : [],
+					facts: Array.isArray(data.facts) ? data.facts : [],
 					feeds: Array.isArray(data.feeds) ? data.feeds : []
 				});
 			} else {
-				results.set({ factStatements: [], feeds: [] });
+				results.set({ facts: [], feeds: [] });
 			}
 		} catch (error) {
 			await logError('Search request failed', error);
-			results.set({ factStatements: [], feeds: [] });
+			results.set({ facts: [], feeds: [] });
 		} finally {
 			isLoading = false;
 		}
@@ -123,7 +123,7 @@
 			<Command.Loading>
 				<Loading class="min-h-[300px]" />
 			</Command.Loading>
-		{:else if $results.factStatements.length === 0 && $results.feeds.length === 0}
+		{:else if $results.facts.length === 0 && $results.feeds.length === 0}
 			<Command.Empty>No results found</Command.Empty>
 		{:else}
 			{#if $results.feeds.length > 0}
@@ -150,9 +150,9 @@
 				</Command.Group>
 			{/if}
 
-			{#if $results.factStatements.length > 0}
+			{#if $results.facts.length > 0}
 				<Command.Group heading="Fact Statements">
-					{#each $results.factStatements as item}
+					{#each $results.facts as item}
 						<Command.Item
 							value={item.fact_urn}
 							onSelect={() => onSelectItem(item)}

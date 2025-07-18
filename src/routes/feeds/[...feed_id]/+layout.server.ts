@@ -1,5 +1,5 @@
 import { error } from '@sveltejs/kit';
-import { getFeedByID, getFeedFactsByDateRange } from '$lib/server/db';
+import { getFeedByID, getFeedFactsByDateRange, getFeeds } from '$lib/server/db';
 import { getFeedChartRange } from '$lib/types';
 import type { LayoutServerLoad } from './$types';
 
@@ -13,7 +13,7 @@ export const load: LayoutServerLoad = async ({ parent, params, url, locals }) =>
 		? await getFeedFactsByDateRange(
 				locals.pb,
 				network,
-				feed.id,
+				feed.feed_id,
 				parseInt(range),
 				new Date(feed.latestFact.validation_date)
 			)
@@ -22,6 +22,7 @@ export const load: LayoutServerLoad = async ({ parent, params, url, locals }) =>
 	return {
 		feed,
 		chartFacts,
-		network
+		network,
+		feeds: getFeeds(locals.pb, network)
 	};
 };

@@ -22,8 +22,10 @@
 	import ValidationDetails from '$lib/components/ValidationDetails.svelte';
 	import FactStatementDetailsAccordion from '$lib/components/FactStatementDetailsAccordion.svelte';
 	import Skeleton from '$lib/components/ui/skeleton/skeleton.svelte';
+	import { feedsListStore } from '$lib/stores/feedsList';
 
 	export let data;
+	feedsListStore.set(data.feeds);
 
 	let factSummary: HTMLElement;
 	let selectedFact: FactStatement | null = data.selectedFact

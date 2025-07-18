@@ -8,13 +8,11 @@
 	import { networkStore } from '$lib/stores/network';
 	import AppHeader from '$lib/components/AppHeader.svelte';
 	import AppFooter from '$lib/components/AppFooter.svelte';
-	import { feedsListStore } from '$lib/stores/feedsList';
 
 	export let data;
 
 	$time;
 	$: networkStore.set({ network: data.network, networks: data.networks });
-	feedsListStore.set(data.feeds);
 
 	const queryClient = new QueryClient({
 		defaultOptions: {

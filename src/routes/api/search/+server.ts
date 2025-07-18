@@ -1,6 +1,6 @@
 import { json } from '@sveltejs/kit';
 import type { RequestHandler } from './$types';
-import { searchFactStatements, searchFeeds } from '$lib/server/db';
+import { searchUnified } from '$lib/server/db';
 import { logError } from '$lib/server/logger';
 
 export const GET: RequestHandler = async ({ url, locals }) => {
@@ -10,11 +10,10 @@ export const GET: RequestHandler = async ({ url, locals }) => {
 	if (!networkID) return json({ error: 'Network parameter is missing' }, { status: 400 });
 
 	try {
-		const factStatements = await searchFactStatements(locals.pb, networkID, query);
-		const feeds = await searchFeeds(locals.pb, networkID, query);
+		const { facts, feeds } = await searchUnified(locals.pb, networkID, query);
 
 		return json({
-			factStatements,
+			facts,
 			feeds
 		});
 	} catch (error) {

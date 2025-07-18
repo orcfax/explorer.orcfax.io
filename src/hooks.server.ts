@@ -1,3 +1,4 @@
+import 'dotenv/config';
 import PocketBase from 'pocketbase';
 import { env } from '$env/dynamic/public';
 import { logError } from '$lib/server/logger';
