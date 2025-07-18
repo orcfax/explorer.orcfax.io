@@ -1,5 +1,5 @@
 import { error } from '@sveltejs/kit';
-import { getAllNetworks, getFeeds } from '$lib/server/db';
+import { getAllNetworks } from '$lib/server/db';
 import type { LayoutServerLoad } from './$types';
 import { toTitleCase } from '$lib/client/helpers';
 import { DEFAULT_NETWORK_NAME } from '../lib/stores/network';
@@ -14,8 +14,6 @@ export const load: LayoutServerLoad = async ({ url, locals }) => {
 
 	return {
 		network,
-		networks,
-		// Lazy load / stream feeds
-		feeds: getFeeds(locals.pb, network)
+		networks
 	};
 };
