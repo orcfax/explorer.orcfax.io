@@ -6,7 +6,7 @@
 	import { createTable, Render, Subscribe } from 'svelte-headless-table';
 	import { addPagination } from 'svelte-headless-table/plugins';
 	import * as Table from '$lib/components/ui/table';
-	import Loading from '$lib/components/Loading.svelte';
+	import FactTableLoadingSkeleton from '$lib/components/FactTableLoadingSkeleton.svelte';
 	import { Button } from '$lib/components/ui/button';
 	import { goto } from '$app/navigation';
 	import FormattedCurrencyValue from './FormattedCurrencyValue.svelte';
@@ -91,7 +91,7 @@
 <svelte:window bind:innerWidth bind:innerHeight />
 
 {#if $response.isLoading}
-	<Loading />
+	<FactTableLoadingSkeleton {feedFilter} />
 {:else if $response.isError || !$response.data}
 	<div class="rounded-md border">
 		<div class="whitespace-nowrap py-4 pl-4 pr-3 text-sm text-gray-700 font-semibold sm:pl-6">

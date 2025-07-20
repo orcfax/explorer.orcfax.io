@@ -1,5 +1,10 @@
 import type { PageServerLoad } from './$types';
-import { getAllNodes, getAllSources, getFeeds, getNetworkSummary } from '$lib/server/db';
+import {
+	getAllNodes,
+	getAllSourcesWithMetadata,
+	getFeeds,
+	getNetworkSummary
+} from '$lib/server/db';
 
 export const load: PageServerLoad = async ({ parent, locals }) => {
 	const { network, networks } = await parent();
@@ -11,6 +16,6 @@ export const load: PageServerLoad = async ({ parent, locals }) => {
 		dashboard: getNetworkSummary(locals.pb, network.id),
 		feeds: getFeeds(locals.pb, network),
 		nodes: getAllNodes(locals.pb, network),
-		sources: getAllSources(locals.pb, network.id)
+		sources: getAllSourcesWithMetadata(locals.pb, network.id)
 	};
 };

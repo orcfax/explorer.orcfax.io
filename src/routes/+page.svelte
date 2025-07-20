@@ -2,11 +2,12 @@
 	import FactTable from '$lib/components/FactTable.svelte';
 	import FeedsList from '$lib/components/FeedsList.svelte';
 	import FeedsListLoadingSkeleton from '$lib/components/FeedsListLoadingSkeleton.svelte';
-	import Loading from '$lib/components/Loading.svelte';
 	import NetworkSummary from '$lib/components/NetworkSummary.svelte';
 	import NetworkSummaryLoadingSkeleton from '$lib/components/NetworkSummaryLoadingSkeleton.svelte';
 	import NodesTable from '$lib/components/NodesTable.svelte';
+	import NodesTableLoadingSkeleton from '$lib/components/NodesTableLoadingSkeleton.svelte';
 	import SourceTable from '$lib/components/SourceTable.svelte';
+	import SourceTableLoadingSkeleton from '$lib/components/SourceTableLoadingSkeleton.svelte';
 
 	export let data;
 </script>
@@ -39,7 +40,12 @@
 		</section>
 
 		{#await data.nodes}
-			<Loading />
+			<section id={`nodes`} class="flex-col mt-14 scroll-mt-24">
+				<h1 class="font-bold text-3xl pb-4">All Nodes</h1>
+				<div class="section-container p-7">
+					<NodesTableLoadingSkeleton />
+				</div>
+			</section>
 		{:then nodes}
 			<section id={`nodes`} class="flex-col mt-14 scroll-mt-24">
 				<h1 class="font-bold text-3xl pb-4">All Nodes</h1>
@@ -54,7 +60,12 @@
 		{/await}
 
 		{#await data.sources}
-			<Loading />
+			<section id={`sources`} class="flex-col mt-14 scroll-mt-24">
+				<h1 class="font-bold text-3xl pb-4">All Sources</h1>
+				<div class="section-container p-7">
+					<SourceTableLoadingSkeleton />
+				</div>
+			</section>
 		{:then sources}
 			<section id={`sources`} class="flex-col mt-14 scroll-mt-24">
 				<h1 class="font-bold text-3xl pb-4">All Sources</h1>

@@ -16,7 +16,9 @@ import {
 	type NetworkSummary,
 	NetworkSummarySchema,
 	NodeWithMetadataSchema,
-	SourceWithMetadataSchema
+	SourceWithMetadataSchema,
+	SourceSchema,
+	type Source
 } from '$lib/types';
 import { logError } from '$lib/server/logger';
 import type PocketBase from 'pocketbase';
@@ -201,16 +203,22 @@ export async function getAllNodes(db: PocketBase, network: Network): Promise<Nod
 	}
 }
 
-export async function getAllSources(
+export async function getAllSourcesWithMetadata(
 	db: PocketBase,
 	networkID: string
 ): Promise<SourceWithMetadata[]> {
 	try {
-		const data = await db.send(`/api/explorer/sources/${networkID}`, {});
+		const data = await db.send(`/api/explorer/sources-with-metadata/${networkID}`, {});
 		const sources = z.array(SourceWithMetadataSchema).parse(data);
 		return sources;
 	} catch (error) {
 		await logError('Error retrieving source records', error);
 		return [];
 	}
+}
+
+export async function getAllSources(db: PocketBase, networkID: string): Promise<Source[]> {
+	const data = await db.send(`/api/explorer/sources/${networkID}`, {});
+	const sources = z.array(SourceSchema).parse(data);
+	return sources;
 }
