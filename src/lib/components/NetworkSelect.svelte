@@ -30,7 +30,7 @@
 		if (selection.success) {
 			selectedNetwork = getSelectedNetwork(selection.data.value);
 
-			const newUrl = getNetworkUrl($page.url.href, selection.data.value);
+			const newUrl = getNetworkUrl($page.url.origin, selection.data.value);
 
 			// Nav to the new url
 			window.location.href = newUrl;
