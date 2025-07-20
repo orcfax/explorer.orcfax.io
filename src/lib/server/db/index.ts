@@ -102,7 +102,7 @@ export async function getFactByURN(
 
 		return DBFactStatementWithFeedSchema.parse(data);
 	} catch (e) {
-		if (e instanceof Error && !e.message.includes('404'))
+		if (e instanceof Error && 'status' in e && (e as any).status !== 404)
 			logError(`Error retrieving fact by URN ${factURN}`, e);
 		return null;
 	}
