@@ -16,5 +16,8 @@ export const handleError: HandleServerError = async ({ error, status, message })
 export const handle: Handle = async ({ event, resolve }) => {
 	event.locals.pb = new PocketBase(env.PUBLIC_DB_HOST);
 	const response = await resolve(event);
+	response.headers.set('X-Frame-Options', 'SAMEORIGIN');
+	response.headers.set('Content-Security-Policy', "frame-ancestors 'none'");
+
 	return response;
 };
