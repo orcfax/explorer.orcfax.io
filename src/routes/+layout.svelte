@@ -23,6 +23,16 @@
 	});
 </script>
 
+<!-- Setup Privacy-preserving Umami Analytics -->
+<svelte:head>
+	<script
+		async
+		defer
+		data-website-id="ebba4b47-0690-488d-ba73-457072a78d71"
+		src="https://analytics.server.orcfax.io/umami.js"
+	></script>
+</svelte:head>
+
 <QueryClientProvider client={queryClient}>
 	<ModeWatcher />
 	<div class="flex flex-col w-full h-full min-h-full">
