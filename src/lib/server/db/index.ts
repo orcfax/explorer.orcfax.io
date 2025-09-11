@@ -71,6 +71,7 @@ export async function getFeedByID(
 	feedID: string
 ): Promise<DBFeedWithData | null> {
 	try {
+		if (!feedID) return null;
 		const feedIDParsed = getFeedIDWithoutVersion(feedID.replace(/\/facts\/undefined$/, ''));
 		// URL-encode the feedID to handle slashes and other special characters
 		const encodedFeedID = encodeURIComponent(feedIDParsed);
@@ -78,7 +79,7 @@ export async function getFeedByID(
 
 		return DBFeedWithDataSchema.parse(data);
 	} catch (error) {
-		await logError(`Error retrieving feed by ID`, error);
+		await logError(`Error retrieving feed by ID ${feedID}`, error);
 		return null;
 	}
 }
