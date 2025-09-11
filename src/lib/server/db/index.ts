@@ -91,6 +91,7 @@ export async function getFactByURN(
 	filters = ''
 ): Promise<DBFactStatementWithFeed | null> {
 	try {
+		if (!factURN) return null;
 		const queryParams = new URLSearchParams();
 		if (filters) {
 			queryParams.append('filters', filters);
