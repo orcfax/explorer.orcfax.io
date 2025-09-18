@@ -120,20 +120,31 @@
 				</div>
 			</div>
 
-			{#await data.archive}
-				<Skeleton class="h-[80rem] w-full" />
-			{:then archive}
-				<ArchiveExplorer {archive} isArchiveIndexed={selectedFact?.is_archive_indexed ?? false} />
-			{:catch}
+			{#if selectedFact?.is_archive_indexed}
+				{#await data.archive}
+					<Skeleton class="h-[80rem] w-full" />
+				{:then archive}
+					<ArchiveExplorer {archive} isArchiveIndexed={selectedFact?.is_archive_indexed ?? false} />
+				{:catch}
+					<div
+						class="flex flex-col justify-center items-center text-center sm:text-start w-full rounded-lg bg-card text-card-foreground border"
+					>
+						<h4 class="text-lg pt-12 px-12 w-fit font-extrabold">
+							Failed to fetch Fact Statement archive
+						</h4>
+						<p class="pb-12 px-12 w-fit">Please check back or refresh in a few minutes.</p>
+					</div>
+				{/await}
+			{:else}
 				<div
-					class="flex flex-col justify-center items-center text-center w-full rounded-lg bg-card text-card-foreground border"
+					class="flex flex-col justify-center items-center text-center sm:text-start w-full rounded-lg bg-card text-card-foreground border"
 				>
-					<p class="pt-12 px-12 w-fit font-extrabold">
-						This Fact Statement has not been archived on Arweave yet.
-					</p>
-					<p class="pb-12 px-12 w-fit">Please check back or refresh in a few minutes.</p>
+					<h4 class="text-lg pt-12 px-12 w-fit font-extrabold">
+						Fact Statement not archived on Arweave yet
+					</h4>
+					<p class="pb-12 px-12 w-fit">Please check back later.</p>
 				</div>
-			{/await}
+			{/if}
 		</div>
 	</section>
 
