@@ -123,7 +123,7 @@
 			{#await data.archive}
 				<Skeleton class="h-[80rem] w-full" />
 			{:then archive}
-				<ArchiveExplorer {archive} />
+				<ArchiveExplorer {archive} isArchiveIndexed={selectedFact?.is_archive_indexed ?? false} />
 			{:catch}
 				<div
 					class="flex flex-col justify-center items-center text-center w-full rounded-lg bg-card text-card-foreground border"

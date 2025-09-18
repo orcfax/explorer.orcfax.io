@@ -8,6 +8,7 @@
 	import { networkStore } from '$lib/stores/network';
 
 	export let archive: Archive | null;
+	export let isArchiveIndexed: boolean;
 
 	const { network } = $networkStore;
 
@@ -40,12 +41,12 @@
 <div class="w-full">
 	<div class="flex gap-4">
 		<h3 class="font-bold text-2xl pb-4">Archive Explorer</h3>
-		{#if archive?.details}
+		{#if isArchiveIndexed && archive?.details}
 			<ArchiveDownloader {archive} />
 		{/if}
 	</div>
 
-	{#if archive && archive.directoryTree && archive.files}
+	{#if isArchiveIndexed && archive && archive.directoryTree && archive.files}
 		<Resizable.PaneGroup
 			class="border-2 rounded-lg h-80 bg-card text-card-foreground"
 			direction="horizontal"
@@ -60,17 +61,28 @@
 				<FileViewer file={selectedFile} />
 			</Resizable.Pane>
 		</Resizable.PaneGroup>
-	{:else if network.name === "Preview"}
+	{:else if network.name === 'Preview'}
 		<div
 			class="flex flex-col justify-center items-center text-center sm:text-start w-full rounded-lg bg-card text-card-foreground border"
 		>
 			<h4 class="text-lg p-12 w-fit">Unavailable for this network</h4>
 		</div>
+	{:else if isArchiveIndexed === false}
+		<div
+			class="flex flex-col justify-center items-center text-center sm:text-start w-full rounded-lg bg-card text-card-foreground border"
+		>
+			<h4 class="text-lg pt-12 px-12 w-fit font-extrabold">
+				Fact Statement not archived on Arweave yet
+			</h4>
+			<p class="pb-12 px-12 w-fit">Please check back later.</p>
+		</div>
 	{:else}
 		<div
 			class="flex flex-col justify-center items-center text-center sm:text-start w-full rounded-lg bg-card text-card-foreground border"
 		>
-			<h4 class="text-lg pt-12 px-12 w-fit font-extrabold">Archive Unavailable</h4>
+			<h4 class="text-lg pt-12 px-12 w-fit font-extrabold">
+				Failed to fetch Fact Statement archive
+			</h4>
 			<p class="pb-12 px-12 w-fit">Please check back or refresh in a few minutes.</p>
 		</div>
 	{/if}
