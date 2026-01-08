@@ -24,7 +24,7 @@
 	{/await}
 	<div class="w-full max-w-max md:mt-6">
 		<section id={`feeds`} class="flex flex-col items-center mt-14 scroll-mt-24">
-			<h2 class="font-bold text-3xl pb-4 self-start">Oracle Feeds</h2>
+			<h2 class="font-bold text-3xl pb-4 self-start">Orcfax oracle feeds</h2>
 			{#await data.feeds}
 				<FeedsListLoadingSkeleton />
 			{:then feeds}
