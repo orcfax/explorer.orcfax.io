@@ -1,6 +1,6 @@
 # Orcfax Fact Explorer
 
-A Human-Readable UI for Orcfax Oracle Network hosted at [explorer.orcfax.io](https://explorer.orcfax.io).
+A Human-Readable UI for Orcfax's blockchain oracle network hosted at [explorer.orcfax.io](https://explorer.orcfax.io).
 
 Depends on the following repos:
 
@@ -10,12 +10,12 @@ Depends on the following repos:
 
 ## Overview
 
-The Orcfax Fact Explorer is a SvelteKit application that provides a human-readable interface for exploring and analyzing data on the Orcfax Oracle Network. It offers a comprehensive view of the Orcfax network's data and operations.
+The Orcfax Fact Explorer is a SvelteKit application that provides a human-readable interface for exploring and analyzing data on the Orcfax blockchain oracle network. It offers a comprehensive view of the Orcfax network's data and operations.
 
 ### Key Features
 
 - **Fact Statement Explorer**: Browse and search through all fact statements with detailed information
-- **Oracle Feed Charts**: Explore all Orcfax feeds with helpful charts and tables
+- **Data Feed Charts**: Explore all Orcfax feeds with helpful charts and tables
 - **Network Summary**: View real-time statistics including total facts, active feeds, and 24-hour metrics
 - **Node Details**: Monitor node status, locations, and performance
 - **Source Details**: Explore the sources of a fact statement, and see the original data and processing steps used to generate the fact.

@@ -164,7 +164,7 @@
 				<Card.Root class="h-full sm:h-fit col-span-1">
 					<Card.Header class="flex flex-row items-center justify-between space-y-0 pb-0">
 						<Card.Title class="text-sm font-medium">
-							<a href="#nodes" class="underline">Orcfax oracle nodes</a>
+							<a href="#nodes" class="underline">Validator Nodes</a>
 						</Card.Title>
 						<NodeIcon />
 					</Card.Header>
