@@ -25,10 +25,10 @@
 	import { feedsListStore } from '$lib/stores/feedsList';
 
 	export let data;
-	feedsListStore.set(data.feeds);
+	$: feedsListStore.set(data.feeds);
 
 	let factSummary: HTMLElement;
-	let selectedFact: FactStatement | null = data.selectedFact
+	$: selectedFact = data.selectedFact
 		? formatFactStatementForDisplay(data.selectedFact, data.feed)
 		: null;
 
@@ -63,12 +63,7 @@
 		</a>
 		<h1 class="font-bold text-3xl pb-4 self-start">Feed Summary</h1>
 		<FeedSummary
-			onFeedSwitch={(feed) => {
-				if (feed)
-					selectedFact = feed.latestFact
-						? formatFactStatementForDisplay(feed.latestFact, feed)
-						: null;
-			}}
+			onFeedSwitch={() => {}}
 			{feed}
 			{riskRatings}
 			onLatestFactClick={handleSelectedFactChange}

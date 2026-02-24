@@ -21,7 +21,7 @@
 				</Tooltip.Content>
 			</Tooltip.Root>
 		{/if}
-		{#if fact.storage_urn && fact.id !== '4e97b11a-2e17-41fd-a2ca-4f7aad636403'}
+		{#if fact.storage_urn && fact.is_archive_indexed && fact.id !== '4e97b11a-2e17-41fd-a2ca-4f7aad636403'}
 			<Tooltip.Root openDelay={150}>
 				<Tooltip.Trigger>
 					<ArweaveLogo

@@ -37,7 +37,7 @@ export async function getArchive(
 	sourceType: DBFeed['source_type']
 ): Promise<Archive> {
 	try {
-		if (!fact.storage_urn)
+		if (!fact.storage_urn || !fact.is_archive_indexed)
 			return {
 				fact,
 				directoryTree: null,

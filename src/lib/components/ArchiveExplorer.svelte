@@ -3,7 +3,7 @@
 	import * as Resizable from '$lib/components/ui/resizable';
 	import FileViewer from './FileViewer.svelte';
 	import { selectedItemStore } from '$lib/stores/archive';
-	import type { Archive } from '$lib/types';
+	import type { Archive, ArchivedFile } from '$lib/types';
 	import ArchiveDownloader from '$lib/components/ArchiveDownloader.svelte';
 	import { networkStore } from '$lib/stores/network';
 
@@ -26,16 +26,21 @@
 	// 	}
 	// });
 
-	$: selectedFile = archive && archive.files ? archive.files[0] : null;
+	let selectedFile: ArchivedFile | null = null;
 
-	selectedItemStore.subscribe((value) => {
-		if (value) {
-			const file =
-				archive &&
-				archive.files?.find((file) => file.fileName.includes(value.substring(0, value.length - 2)));
-			if (file) selectedFile = file;
-		}
-	});
+	// Reset to first file and clear store selection when archive changes
+	$: if (archive) {
+		selectedFile = archive.files ? archive.files[0] : null;
+		selectedItemStore.set(null);
+	}
+
+	// Update selected file when user clicks in tree view
+	$: if ($selectedItemStore && archive?.files) {
+		const file = archive.files.find((f) =>
+			f.fileName.includes($selectedItemStore.substring(0, $selectedItemStore.length - 2))
+		);
+		if (file) selectedFile = file;
+	}
 </script>
 
 <div class="w-full">

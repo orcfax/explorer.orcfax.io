@@ -25,12 +25,13 @@
 					value={fact.storage_urn}
 					allowCopyToClipboard
 					ellipsisAndHover
-					accessoryLink={fact.storage_urn
+					accessoryLink={fact.is_archive_indexed
 						? {
-								text: 'View Transaction →',
+								text: 'View Transaction \u2192',
 								link: `https://viewblock.io/arweave/tx/${fact.storage_urn.slice(12)}`
 							}
 						: null}
+					accessory={fact.is_archive_indexed ? '' : 'Pending confirmation'}
 					{maxFieldLength}
 				/>
 				<FactCardField
@@ -39,7 +40,7 @@
 					allowCopyToClipboard
 					ellipsisAndHover
 					accessoryLink={{
-						text: 'View Wallet →',
+						text: 'View Wallet \u2192',
 						link: `https://viewblock.io/arweave/address/${$networkStore.network.arweave_wallet_address}`
 					}}
 					{maxFieldLength}
