@@ -29,6 +29,7 @@ import {
 import { z } from 'zod';
 import { logError } from '$lib/server/logger';
 import type PocketBase from 'pocketbase';
+import { env } from '$env/dynamic/public';
 
 export async function getArchive(
 	db: PocketBase,
@@ -46,7 +47,7 @@ export async function getArchive(
 			};
 
 		const archivedBagResponse = await fetch(
-			`https://arweave.net/${fact.storage_urn.slice(12)}`,
+			`${env.PUBLIC_PRIMARY_ARWEAVE_ENDPOINT}/${fact.storage_urn.slice(12)}`,
 			{}
 		);
 
@@ -85,7 +86,10 @@ export async function getArchiveFromURN(
 	sourceType: string
 ): Promise<ArchiveDownload | null> {
 	try {
-		const archivedBagResponse = await fetch(`https://arweave.net/${storage_urn.slice(12)}`, {});
+		const archivedBagResponse = await fetch(
+			`${env.PUBLIC_PRIMARY_ARWEAVE_ENDPOINT}/${storage_urn.slice(12)}`,
+			{}
+		);
 
 		if (!archivedBagResponse.body || !archivedBagResponse.ok) {
 			throw new Error(`Bad response from Arweave`);
