@@ -56,7 +56,10 @@ export async function getArchive(
 		}
 
 		const contentType = archivedBagResponse.headers.get('content-type');
-		if (!contentType || (!contentType.includes('x-tar') && !contentType.includes('gzip'))) {
+		if (
+			!contentType ||
+			(!contentType.includes('x-tar') && !contentType.includes('gzip') && !contentType.includes('octet-stream'))
+		) {
 			throw new Error(`Unexpected content type: ${contentType} for ${fact.fact_urn}`);
 		}
 
@@ -96,7 +99,10 @@ export async function getArchiveFromURN(
 		}
 
 		const contentType = archivedBagResponse.headers.get('content-type');
-		if (!contentType || (!contentType.includes('x-tar') && !contentType.includes('gzip'))) {
+		if (
+			!contentType ||
+			(!contentType.includes('x-tar') && !contentType.includes('gzip') && !contentType.includes('octet-stream'))
+		) {
 			throw new Error(`Unexpected content type: ${contentType}`);
 		}
 
