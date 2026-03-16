@@ -5,9 +5,12 @@ import { logError } from '$lib/server/logger';
 import type { Handle, HandleServerError } from '@sveltejs/kit';
 
 export const handleError: HandleServerError = async ({ error, status, message }) => {
-	logError(message, `Status: ${status} - ${error}`);
+	// Only send server errors (5xx) to Discord — 404s are expected
+	// behavior (scanner probes, mistyped URLs, etc.), not incidents
+	if (status >= 500) {
+		logError(message, `Status: ${status} - ${error}`);
+	}
 
-	// Return a user-friendly error response
 	return {
 		message: 'An unexpected error occurred'
 	};
