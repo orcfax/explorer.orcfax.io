@@ -39,7 +39,6 @@
 
 	async function handleSelectedFactChange(newFactStatement: FactStatement | null) {
 		const params = new URLSearchParams($page.url.searchParams);
-		selectedFact = newFactStatement;
 		factSummary.scrollIntoView({ behavior: 'smooth' });
 		await goto(
 			`${getFeedUrl(feed, newFactStatement ? newFactStatement.fact_urn : 'undefined')}?${params.toString()}`,
