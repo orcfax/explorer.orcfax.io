@@ -10,8 +10,6 @@
 	export let archive: Archive | null;
 	export let isArchiveIndexed: boolean;
 
-	const { network } = $networkStore;
-
 	// TODO: enable url store archive nav
 	// $: selectedFile = archive && archive.files ? archive.files[0] : null;
 
@@ -66,7 +64,7 @@
 				<FileViewer file={selectedFile} />
 			</Resizable.Pane>
 		</Resizable.PaneGroup>
-	{:else if network.name === 'Preview'}
+	{:else if $networkStore.network.name === 'Preview'}
 		<div
 			class="flex flex-col justify-center items-center text-center sm:text-start w-full rounded-lg bg-card text-card-foreground border"
 		>

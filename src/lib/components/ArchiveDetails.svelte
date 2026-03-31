@@ -5,8 +5,6 @@
 
 	export let fact: FactStatement | null;
 
-	const { network } = $networkStore;
-
 	let innerWidth = 0;
 	let innerHeight = 0;
 
@@ -47,7 +45,7 @@
 				/>
 				<!-- <FactCardField name="Storage Cost" value={`-`} accessory="" /> -->
 			</div>
-		{:else if network.name === 'Preview'}
+		{:else if $networkStore.network.name === 'Preview'}
 			<div class="flex flex-col">
 				<h4 class="text-lg">Unavailable for this network</h4>
 			</div>

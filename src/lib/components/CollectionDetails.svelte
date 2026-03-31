@@ -7,8 +7,6 @@
 	import { networkStore } from '$lib/stores/network';
 
 	export let archive: Promise<Archive> | null;
-
-	const { network } = $networkStore;
 </script>
 
 <section class="w-fit md:w-full xl:w-fit flex flex-col xl:self-start">
@@ -46,7 +44,7 @@
 						{archive.details.sources.length} sources
 					</p>
 				</div>
-			{:else if network.name === "Preview"}
+			{:else if $networkStore.network.name === 'Preview'}
 				<div class="flex flex-col">
 					<h4 class="text-lg">Unavailable for this network</h4>
 				</div>

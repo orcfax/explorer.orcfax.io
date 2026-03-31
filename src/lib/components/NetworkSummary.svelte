@@ -12,8 +12,6 @@
 
 	export let summary: NetworkSummary;
 
-	const { network } = $networkStore;
-
 	$: totalFacts = summary.totalFacts;
 	$: totalFacts24Hour = summary.totalFacts24Hour;
 	$: totalActiveFeeds = summary.totalActiveFeeds;
@@ -76,7 +74,7 @@
 						<DataSourceIcon />
 					</Card.Header>
 					<Card.Content>
-						{#if network.name === 'Preview'}
+						{#if $networkStore.network.name === 'Preview'}
 							<div class="flex flex-col">
 								<span class="text-md font-semibold text-muted-foreground">Unavailable</span>
 								<p class="text-xs text-muted-foreground font-semibold">for this network</p>
@@ -169,7 +167,7 @@
 						<NodeIcon />
 					</Card.Header>
 					<Card.Content>
-						{#if network.name === 'Preview'}
+						{#if $networkStore.network.name === 'Preview'}
 							<div class="flex flex-col">
 								<span class="text-md font-semibold text-muted-foreground">Unavailable</span>
 								<p class="text-xs text-muted-foreground font-semibold">for this network</p>
