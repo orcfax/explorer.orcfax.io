@@ -6,7 +6,8 @@ import {
 	getNetworkSummary
 } from '$lib/server/db';
 
-export const load: PageServerLoad = async ({ parent, locals }) => {
+export const load: PageServerLoad = async ({ parent, locals, depends }) => {
+	depends('app:live-data');
 	const { network, networks } = await parent();
 
 	return {

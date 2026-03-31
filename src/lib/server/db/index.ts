@@ -76,6 +76,7 @@ export async function getFeedByID(
 		// URL-encode the feedID to handle slashes and other special characters
 		const encodedFeedID = encodeURIComponent(feedIDParsed);
 		const data = await db.send(`/api/explorer/feeds/${network.id}/${encodedFeedID}`, {});
+		console.log(JSON.stringify(data, null, 2));
 
 		return DBFeedWithDataSchema.parse(data);
 	} catch (error) {

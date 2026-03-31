@@ -1,9 +1,11 @@
 import { error } from '@sveltejs/kit';
 import { getFeedByID, getFeedFactsByDateRange, getFeeds } from '$lib/server/db';
 import { getFeedChartRange } from '$lib/types';
+import { getXerberusRiskRating } from '$lib/server/xerberus';
 import type { LayoutServerLoad } from './$types';
 
-export const load: LayoutServerLoad = async ({ parent, params, url, locals }) => {
+export const load: LayoutServerLoad = async ({ parent, params, url, locals, depends }) => {
+	depends('app:live-data');
 	const { network } = await parent();
 	const feedID = params.feed_id.replace(/\/facts\/undefined$/, '');
 	const feed = await getFeedByID(locals.pb, network, feedID);
@@ -23,6 +25,10 @@ export const load: LayoutServerLoad = async ({ parent, params, url, locals }) =>
 		feed,
 		chartFacts,
 		network,
-		feeds: getFeeds(locals.pb, network)
+		feeds: getFeeds(locals.pb, network),
+		riskRatings: {
+			base: feed.base_asset?.fingerprint ? getXerberusRiskRating(feed.base_asset) : null,
+			quote: feed.quote_asset?.fingerprint ? getXerberusRiskRating(feed.quote_asset) : null
+		}
 	};
 };

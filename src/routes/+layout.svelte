@@ -1,6 +1,8 @@
 <script lang="ts">
 	import '../app.css';
 	import { browser } from '$app/environment';
+	import { invalidate } from '$app/navigation';
+	import { onMount } from 'svelte';
 	import { time } from '$lib/stores/time';
 	import { ModeWatcher } from 'mode-watcher';
 	import { SvelteQueryDevtools } from '@tanstack/svelte-query-devtools';
@@ -14,12 +16,33 @@
 	$time;
 	$: networkStore.set({ network: data.network, networks: data.networks });
 
+	const STALE_THRESHOLD_MS = 60_000;
+
 	const queryClient = new QueryClient({
 		defaultOptions: {
 			queries: {
-				enabled: browser
+				enabled: browser,
+				staleTime: STALE_THRESHOLD_MS
 			}
 		}
+	});
+
+	onMount(() => {
+		let hiddenAt: number | null = null;
+
+		function onVisibilityChange() {
+			if (document.hidden) {
+				hiddenAt = Date.now();
+			} else if (hiddenAt) {
+				if (Date.now() - hiddenAt > STALE_THRESHOLD_MS) {
+					invalidate('app:live-data');
+				}
+				hiddenAt = null;
+			}
+		}
+
+		document.addEventListener('visibilitychange', onVisibilityChange);
+		return () => document.removeEventListener('visibilitychange', onVisibilityChange);
 	});
 </script>
 

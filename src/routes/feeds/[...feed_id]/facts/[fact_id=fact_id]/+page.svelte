@@ -115,7 +115,7 @@
 			</div>
 
 			{#if selectedFact?.is_archive_indexed}
-				{#await data.archive}
+				{#await archive}
 					<Skeleton class="h-[80rem] w-full" />
 				{:then archive}
 					<ArchiveExplorer {archive} isArchiveIndexed={selectedFact?.is_archive_indexed ?? false} />
